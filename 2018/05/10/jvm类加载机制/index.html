@@ -1,0 +1,688 @@
+<!DOCTYPE html>
+
+
+
+  
+
+
+<html class="theme-next pisces use-motion" lang="zh-Hans">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css" />
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=5.1.3" rel="stylesheet" type="text/css" />
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=5.1.3">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=5.1.3">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=5.1.3">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=5.1.3" color="#222">
+
+
+
+
+
+  <meta name="keywords" content="Hexo, NexT" />
+
+
+
+
+
+
+
+
+
+
+<meta name="description" content="类加载时机　　类的生命周期为：加载，连接（验证，准备，解析），初始化，使用，卸载。这５大阶段。　　其中，加载，验证，准备，初始化，卸载，这５个阶段的顺序是固定的，解析是可以在初始化之后的。　　对于类的加载，由虚拟机自行把控，但是类的初始化不是的，虚拟机严格规定了５种情况下必须对类进行初始化。　　１．使用new 关键字实">
+<meta property="og:type" content="article">
+<meta property="og:title" content="jvm类加载机制">
+<meta property="og:url" content="https://skydh.github.io/2018/05/10/jvm类加载机制/index.html">
+<meta property="og:site_name" content="why are you so happy">
+<meta property="og:description" content="类加载时机　　类的生命周期为：加载，连接（验证，准备，解析），初始化，使用，卸载。这５大阶段。　　其中，加载，验证，准备，初始化，卸载，这５个阶段的顺序是固定的，解析是可以在初始化之后的。　　对于类的加载，由虚拟机自行把控，但是类的初始化不是的，虚拟机严格规定了５种情况下必须对类进行初始化。　　１．使用new 关键字实例化对象的时候，读取或设置一个类的静态字段，调用一个类的静态方法。　　２．通过j">
+<meta property="og:locale" content="zh-Hans">
+<meta property="og:updated_time" content="2018-05-11T08:55:16.121Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="jvm类加载机制">
+<meta name="twitter:description" content="类加载时机　　类的生命周期为：加载，连接（验证，准备，解析），初始化，使用，卸载。这５大阶段。　　其中，加载，验证，准备，初始化，卸载，这５个阶段的顺序是固定的，解析是可以在初始化之后的。　　对于类的加载，由虚拟机自行把控，但是类的初始化不是的，虚拟机严格规定了５种情况下必须对类进行初始化。　　１．使用new 关键字实例化对象的时候，读取或设置一个类的静态字段，调用一个类的静态方法。　　２．通过j">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Pisces',
+    version: '5.1.3',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: true,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    duoshuo: {
+      userId: '0',
+      author: '博主'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="https://skydh.github.io/2018/05/10/jvm类加载机制/"/>
+
+
+
+
+
+  <title>jvm类加载机制 | why are you so happy</title>
+  
+
+
+
+
+
+
+
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/"  class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">why are you so happy</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle">clear 航</p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br />
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />
+            
+            归档
+          </a>
+        </li>
+      
+
+      
+    </ul>
+  
+
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="https://skydh.github.io/2018/05/10/jvm类加载机制/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="董航">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="why are you so happy">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">jvm类加载机制</h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2018-05-10T15:49:31+08:00">
+                2018-05-10
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <h2 id="类加载时机"><a href="#类加载时机" class="headerlink" title="类加载时机"></a>类加载时机</h2><p>　　类的生命周期为：加载，连接（验证，准备，解析），初始化，使用，卸载。这５大阶段。<br>　　其中，加载，验证，准备，初始化，卸载，这５个阶段的顺序是固定的，解析是可以在初始化之后的。<br>　　对于类的加载，由虚拟机自行把控，但是类的初始化不是的，虚拟机严格规定了５种情况下必须对类进行初始化。<br>　　１．使用new 关键字实例化对象的时候，读取或设置一个类的静态字段，调用一个类的静态方法。<br>　　２．通过java.lang.reflect包对类进行反射调用的时候。<br>　　３．初始化一个类，其父类还没被初始化时，父类必须先进行初始化。<br>　　４．包含main()方法的类，虚拟机会优先进行初始化。<br>　　５．jdk1.7以后的动态语言支持的。<br>　　以下情况不会触发类的初始化。没有触发上面５种情况。<br>　　１.通过子类调用父类的静态变量。不会对子类进行初始化。<br>　　２．通过数组定义来引用类，A[] a=new A[10];A这个类不会触发初始化。<br>　　３．引用类的静态常量时不会触发初始化，因为这个量存放到了常量池里面。这个常量的引用会在编译期间进行传播优化，会将这个常量存到NOInitiazation类的常量池中以后这个类对常量的访问都会被转换为对NOInitiazation类的常量池的引用，因此不会对该类进行初始化。</p>
+<h2 id="加载"><a href="#加载" class="headerlink" title="加载"></a>加载</h2><p>　　加载要做３个事情。<br>　　１．通过一个类的全限定名来获取定义此类的２进制字节流<br>　　２．将这个字节流所代表的的静态存储结构转化为方法区的运行时数据结构。<br>　　３．生成一个java.lang.Class对象来代表这个类，作为访问这个类的入口。<br>　　第一件事就是很开放的有以下方式读取。<br>　　１．从zip包中读取，比如从jar，war读取。<br>　　２．网络中读取，比如Applet.<br>　　３．运行时动态生成，比如java很经典的动态代理。<br>　　４．由其他文件生成<br>　　我们可以用虚拟机自身的类加载器来加载，也可以用我们自身的类加载器来获取字节流。<br>　　数组类的加载与众不同。<br>　　１．如果数组的组件类型是引用类型。数组将在加载这个类型的类加载器的类名称空间＼上标示。<br>　　２．如果数组的组件类型不是引用类型，是常见类型，那么虚拟机会把数组标记为与引导类加载器关联。<br>　　类加载完成后将其放入java内存的中的方法区中（前面提到过java运行时数据分布存储），然后在java内存中（不一定是java堆）创建一个java.lang.Class类对象。</p>
+<h2 id="验证"><a href="#验证" class="headerlink" title="验证"></a>验证</h2><p>　　验证Class文件字节流是否满足当前虚拟机要求。<br>　　１．文件格式验证<br>　　２．元数据验证，主要判断是否符合java语法。<br>　　３．字节码验证，保证程序语法是符合逻辑的。<br>　　４.符号引用验证，对类自身信息外的验证，看看相关类是否可以找到之类的。</p>
+<h2 id="准备"><a href="#准备" class="headerlink" title="准备"></a>准备</h2><p>　　准备阶段为类变量分配内存，并且赋初始值。所需的内存从方法区里面获取，比如 public static int value=123;中，初始值为0，boolean为false,而123则是在初始化时才赋值上去。当然如果是final类型的量，那么是可以在准备阶段赋值123的。</p>
+<h2 id="解析"><a href="#解析" class="headerlink" title="解析"></a>解析</h2><p>　　解析阶段是虚拟机将常量池内的符号引用替换为直接引用的过程。<br>　　符号引用：一组符号来描述所引用的目标，符号可以是任何形式的字面量，只要在使用时可以定位到目标即可，符号引用和虚拟机的内存布局无关，引用的目标不一定加载到内存中。比如，在java编译时，java类不知道所引用类的实际地址，只能用符号引用来代替。<br>　　直接引用就是直接指向目标的指针，相对偏移量，或者句柄等。</p>
+<h2 id="初始化"><a href="#初始化" class="headerlink" title="初始化"></a>初始化</h2><p>　　类的初始化就是类加载的最后一步，也是执行类加载的最后一部分，初始化也就是执行类加载方法的过程。<br>　　１．类加载方法会自动收集所有类变量的赋值动作，和静态代码块合并成的。<br>　　２．类构造方法和类构造函数不一样，他不需要显示调用父类的构造函数，虚拟机会自动保证父类的类构造方法先执行。因此java.lang.Object类的类构造方法最先执行。<br>　　３．类构造方法不是必须的，如果类或者接口里面没有静态代码块，那就没有类构造方法。<br>　　４．接口不能有静态代码块，但是可以有静态变量，所以接口和类一样也会生成类构造方法，但是只有当负借口中定义的变量被使用时，父接口才会初始化。<br>　　５．虚拟机保证一个类在多线程环境中被正确的加锁，同步。
+ 　　</p>
+
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2018/05/09/jvm内存分配策略/" rel="next" title="jvm内存分配策略">
+                <i class="fa fa-chevron-left"></i> jvm内存分配策略
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2018/05/11/jvm类加载器/" rel="prev" title="jvm类加载器">
+                jvm类加载器 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <p class="site-author-name" itemprop="name">董航</p>
+              <p class="site-description motion-element" itemprop="description">clear 航</p>
+          </div>
+
+          <nav class="site-state motion-element">
+
+            
+              <div class="site-state-item site-state-posts">
+              
+                <a href="/archives/">
+              
+                  <span class="site-state-item-count">100</span>
+                  <span class="site-state-item-name">日志</span>
+                </a>
+              </div>
+            
+
+            
+
+            
+
+          </nav>
+
+          
+
+          <div class="links-of-author motion-element">
+            
+          </div>
+
+          
+          
+
+          
+          
+
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#类加载时机"><span class="nav-number">1.</span> <span class="nav-text">类加载时机</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#加载"><span class="nav-number">2.</span> <span class="nav-text">加载</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#验证"><span class="nav-number">3.</span> <span class="nav-text">验证</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#准备"><span class="nav-number">4.</span> <span class="nav-text">准备</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#解析"><span class="nav-number">5.</span> <span class="nav-text">解析</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#初始化"><span class="nav-number">6.</span> <span class="nav-text">初始化</span></a></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <script async src="https://dn-lbstatics.qbox.me/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+<div class="copyright">&copy; <span itemprop="copyrightYear">2019</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">董航</span>
+
+  
+</div>
+
+
+<div class="powered-by">
+<i class="fa fa-user-md"></i><span id="busuanzi_container_site_uv">
+  本站访客数:<span id="busuanzi_value_site_uv"></span>
+</span>
+</div>
+
+  <div class="powered-by">由 <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a> 强力驱动</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">主题 &mdash; <a class="theme-link" target="_blank" href="https://github.com/iissnan/hexo-theme-next">NexT.Pisces</a> v5.1.3</div>
+
+
+
+
+        
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/canvas-nest/canvas-nest.min.js"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.3"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.3"></script>
+
+
+
+  
+  
+
+
+  <script type="text/javascript" src="/js/src/affix.js?v=5.1.3"></script>
+
+  <script type="text/javascript" src="/js/src/schemes/pisces.js?v=5.1.3"></script>
+
+
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.3"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.3"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.3"></script>
+
+
+
+  
+
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>

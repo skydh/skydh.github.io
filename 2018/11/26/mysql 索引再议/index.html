@@ -1,0 +1,691 @@
+<!DOCTYPE html>
+
+
+
+  
+
+
+<html class="theme-next pisces use-motion" lang="zh-Hans">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css" />
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=5.1.3" rel="stylesheet" type="text/css" />
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=5.1.3">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=5.1.3">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=5.1.3">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=5.1.3" color="#222">
+
+
+
+
+
+  <meta name="keywords" content="Hexo, NexT" />
+
+
+
+
+
+
+
+
+
+
+<meta name="description" content="二级索引与一级索引　　在mysql里面，我们默认用主键作为一级索引，因此只有一个。主键索引对应叶子节点指向的是整行数据。而其他我们自己建立的索引则统统都是2级索引，二级索引的叶子节点指向的则是主键。因此我们根据二级索引查询数据的时候是先根据索引查询到主键值，在回表根据聚簇索引查询整行数据。 B+树　　我们为什么用B+树">
+<meta property="og:type" content="article">
+<meta property="og:title" content="mysql 索引再议">
+<meta property="og:url" content="https://skydh.github.io/2018/11/26/mysql 索引再议/index.html">
+<meta property="og:site_name" content="why are you so happy">
+<meta property="og:description" content="二级索引与一级索引　　在mysql里面，我们默认用主键作为一级索引，因此只有一个。主键索引对应叶子节点指向的是整行数据。而其他我们自己建立的索引则统统都是2级索引，二级索引的叶子节点指向的则是主键。因此我们根据二级索引查询数据的时候是先根据索引查询到主键值，在回表根据聚簇索引查询整行数据。 B+树　　我们为什么用B+树，是因为其树高度不高。我们根据索引查询的时候，没读到一个数据都是对树高度的遍历。">
+<meta property="og:locale" content="zh-Hans">
+<meta property="og:updated_time" content="2019-04-16T11:19:01.949Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="mysql 索引再议">
+<meta name="twitter:description" content="二级索引与一级索引　　在mysql里面，我们默认用主键作为一级索引，因此只有一个。主键索引对应叶子节点指向的是整行数据。而其他我们自己建立的索引则统统都是2级索引，二级索引的叶子节点指向的则是主键。因此我们根据二级索引查询数据的时候是先根据索引查询到主键值，在回表根据聚簇索引查询整行数据。 B+树　　我们为什么用B+树，是因为其树高度不高。我们根据索引查询的时候，没读到一个数据都是对树高度的遍历。">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Pisces',
+    version: '5.1.3',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: true,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    duoshuo: {
+      userId: '0',
+      author: '博主'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="https://skydh.github.io/2018/11/26/mysql 索引再议/"/>
+
+
+
+
+
+  <title>mysql 索引再议 | why are you so happy</title>
+  
+
+
+
+
+
+
+
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/"  class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">why are you so happy</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle">clear 航</p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br />
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />
+            
+            归档
+          </a>
+        </li>
+      
+
+      
+    </ul>
+  
+
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="https://skydh.github.io/2018/11/26/mysql 索引再议/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="董航">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="why are you so happy">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">mysql 索引再议</h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2018-11-26T10:32:44+08:00">
+                2018-11-26
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <h2 id="二级索引与一级索引"><a href="#二级索引与一级索引" class="headerlink" title="二级索引与一级索引"></a>二级索引与一级索引</h2><p>　　在mysql里面，我们默认用主键作为一级索引，因此只有一个。主键索引对应叶子节点指向的是整行数据。而其他我们自己建立的索引则统统都是2级索引，二级索引的叶子节点指向的则是主键。因此我们根据二级索引查询数据的时候是先根据索引查询到主键值，在回表根据聚簇索引查询整行数据。</p>
+<h2 id="B-树"><a href="#B-树" class="headerlink" title="B+树"></a>B+树</h2><p>　　我们为什么用B+树，是因为其树高度不高。我们根据索引查询的时候，没读到一个数据都是对树高度的遍历。每一次读取都是一次磁盘io,磁盘io效率太低，因此我们大多使用相对更加矮小的b+树。</p>
+<h2 id="重建索引"><a href="#重建索引" class="headerlink" title="重建索引"></a>重建索引</h2><p>　　有时候数据量大了，因为索引的分页操作，导致其占了很多空间，因此要重建索引，来释放空间。</p>
+<h2 id="覆盖索引"><a href="#覆盖索引" class="headerlink" title="覆盖索引"></a>覆盖索引</h2><p>　　覆盖索引，指的是那些不需要回表的索引。也就是只用走一个ｂ+树。<br>因为我们要查询的内容已经在第一条二级索引里面获取到了。因此使用覆盖索引是个优化手段非常好的一个策略。</p>
+<h2 id="最左前缀原则"><a href="#最左前缀原则" class="headerlink" title="最左前缀原则"></a>最左前缀原则</h2><p>　　对于联合索引，（a,b,c），查询条件必须含有a才奏效，这就是最左匹配原则。还有字段模糊查询，必须是 “1%”之类的，前面的必须要有值。</p>
+<h2 id="mysql5-6之后的索引下推"><a href="#mysql5-6之后的索引下推" class="headerlink" title="mysql5.6之后的索引下推"></a>mysql5.6之后的索引下推</h2><p>　　在mysql 5.6之前，对于联合索引来说，在mysql5.6之前，mysql的联合索引中（a，b）,在查询里面where a=”” and b=””；这类的sql我们的索引只能用到a这个字段来过滤，b是用不到的。<br>　　在mysql5.6以及之后的mysql对其做了优化，不只是用到了a,还用到了b,这个就是索引下推，从而大量减少了回表操作。</p>
+<h2 id="索引不准"><a href="#索引不准" class="headerlink" title="索引不准"></a>索引不准</h2><p>　　在mysql里面，优化器会对sql进行分析，判断来选择使用什么索引，当我们使用 show index 会发现index的基数不对，这个统计是粗糙的，是其随机选出n个数据页，统计其不同值，得到一个平均值，然后乘以页数，得到其值，同时，当数据量跟新吵过一定值的时候，会再次触发统计。有时候优化器会使用性能不好的索引，我们必须手动指定，挥着删除该索引等。索引不准的原因可能是。开启了一个事务，。没有关闭，然后又新开一个事务，删除大量数据，由于undolog可能导致判断基数时失效。</p>
+<h2 id="前缀索引"><a href="#前缀索引" class="headerlink" title="前缀索引"></a>前缀索引</h2><p>　　对于字符串字段来说，我们可以给一些超长的字段加前缀索引，从而减少索引文件的大小，比如邮箱，我们只需要比对前面的。缺点是，无法使用覆盖索引，索引区分度下降，查询次数变多。ps(为什么区分度很重要，前面说过了，你用一个索引查询的时候，如果都是一样的，那么每次都要遍历索引，在遍历表，效率比全表扫描还低)。举个例子，对于身份证号，我们如何建立索引呢，如果直接建立索引，但是身份证号太长了，如果建立索引，索引文件会非常大的。采用方案如下，在新建一个字段，给这个字段加个索引，这个字段的值是根据crc32()计算出来的值，当我们根据身份证号查询的时候，2个条件都加一下，这样就可以，索引文件小了很多，同时索引区分度也很高。很赞。</p>
+<h2 id="索引遇坑事件"><a href="#索引遇坑事件" class="headerlink" title="索引遇坑事件"></a>索引遇坑事件</h2><p>　　１．使用索引字段函数<br>　　当你查询的数据列使用了函数，那么即使这个字段加了索引，那么依旧不适用索引。索引字段不能用函数，但是索引字段参数是可以用函数的，因此不是加了函数就不用索引了。</p>
+<p>　　２．隐式转换<br>　　比如你这个sql的这个字段varchar类型加了索引，但是explain一下后，发现没有使用索引，为何呢。<br>　　这是因为在mysql里面，字符串和数字比较，是字符串转为为数字，因此当你索引字段是varchar,参数是int的时候，mysql优化器会默认给你的索引字段加CAST(tradid AS signed int) 进行转换，当然若是索引字段是int，参数是字符串，那么就不会存在问题。因为是参数在转换。<br>　　<br>　　３．隐式字符转换<br>　　当２个表的字符集不同的时候，做表关联是用不上关联字段的索引的，很好理解，２个字符集不一样自然无法比较，那么就需要默认转换，这个转换和java的向上转型一样，都是向长度大的转型，因此有时候会对索引字段加函数操作，因此无法使用索引了。这个就要区分，谁被谁关联。我以前的文章说过，2个表2个字段都有索引，那么就是选择记录少的作为外表。记录多的走内表索引，因此，对于内表来说如果是被转换的，那么就无法走索引了，因为相当于对索引字段调用了函数。对此的优化方案，一。把字符类型修改。2数据量大，在参数那里就转换。<br>　　总结：索引字段不能使用函数，参数使用函数不影响sql.字符串转数字，utf8=utfmb4,</p>
+
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2018/11/26/2个数据库差异对比/" rel="next" title="2个数据库差异对比分析">
+                <i class="fa fa-chevron-left"></i> 2个数据库差异对比分析
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2018/11/27/mysql 锁/" rel="prev" title="mysql 锁">
+                mysql 锁 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <p class="site-author-name" itemprop="name">董航</p>
+              <p class="site-description motion-element" itemprop="description">clear 航</p>
+          </div>
+
+          <nav class="site-state motion-element">
+
+            
+              <div class="site-state-item site-state-posts">
+              
+                <a href="/archives/">
+              
+                  <span class="site-state-item-count">100</span>
+                  <span class="site-state-item-name">日志</span>
+                </a>
+              </div>
+            
+
+            
+
+            
+
+          </nav>
+
+          
+
+          <div class="links-of-author motion-element">
+            
+          </div>
+
+          
+          
+
+          
+          
+
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#二级索引与一级索引"><span class="nav-number">1.</span> <span class="nav-text">二级索引与一级索引</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#B-树"><span class="nav-number">2.</span> <span class="nav-text">B+树</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#重建索引"><span class="nav-number">3.</span> <span class="nav-text">重建索引</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#覆盖索引"><span class="nav-number">4.</span> <span class="nav-text">覆盖索引</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#最左前缀原则"><span class="nav-number">5.</span> <span class="nav-text">最左前缀原则</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#mysql5-6之后的索引下推"><span class="nav-number">6.</span> <span class="nav-text">mysql5.6之后的索引下推</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#索引不准"><span class="nav-number">7.</span> <span class="nav-text">索引不准</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#前缀索引"><span class="nav-number">8.</span> <span class="nav-text">前缀索引</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#索引遇坑事件"><span class="nav-number">9.</span> <span class="nav-text">索引遇坑事件</span></a></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <script async src="https://dn-lbstatics.qbox.me/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+<div class="copyright">&copy; <span itemprop="copyrightYear">2019</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">董航</span>
+
+  
+</div>
+
+
+<div class="powered-by">
+<i class="fa fa-user-md"></i><span id="busuanzi_container_site_uv">
+  本站访客数:<span id="busuanzi_value_site_uv"></span>
+</span>
+</div>
+
+  <div class="powered-by">由 <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a> 强力驱动</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">主题 &mdash; <a class="theme-link" target="_blank" href="https://github.com/iissnan/hexo-theme-next">NexT.Pisces</a> v5.1.3</div>
+
+
+
+
+        
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/canvas-nest/canvas-nest.min.js"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.3"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.3"></script>
+
+
+
+  
+  
+
+
+  <script type="text/javascript" src="/js/src/affix.js?v=5.1.3"></script>
+
+  <script type="text/javascript" src="/js/src/schemes/pisces.js?v=5.1.3"></script>
+
+
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.3"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.3"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.3"></script>
+
+
+
+  
+
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>

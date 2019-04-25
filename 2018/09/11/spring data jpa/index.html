@@ -1,0 +1,733 @@
+<!DOCTYPE html>
+
+
+
+  
+
+
+<html class="theme-next pisces use-motion" lang="zh-Hans">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css" />
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=5.1.3" rel="stylesheet" type="text/css" />
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=5.1.3">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=5.1.3">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=5.1.3">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=5.1.3" color="#222">
+
+
+
+
+
+  <meta name="keywords" content="Hexo, NexT" />
+
+
+
+
+
+
+
+
+
+
+<meta name="description" content="目的　　公司框架为这个。且大多数同学不了解这个怎么玩。为了避免采坑太多，这里先学习总结下。 代码地址以及相关介绍　　本代码使用spring+spring mvc+spring data jpa+hibernate+mysql(8.0之后的版本)　　git地址：https://github.com/skydh/Sprin">
+<meta property="og:type" content="article">
+<meta property="og:title" content="spring data jpa">
+<meta property="og:url" content="https://skydh.github.io/2018/09/11/spring data jpa/index.html">
+<meta property="og:site_name" content="why are you so happy">
+<meta property="og:description" content="目的　　公司框架为这个。且大多数同学不了解这个怎么玩。为了避免采坑太多，这里先学习总结下。 代码地址以及相关介绍　　本代码使用spring+spring mvc+spring data jpa+hibernate+mysql(8.0之后的版本)　　git地址：https://github.com/skydh/SpringJpaLearn　　为了方便公司的小伙伴们看。　　公司内部git地址：http">
+<meta property="og:locale" content="zh-Hans">
+<meta property="og:image" content="https://raw.githubusercontent.com/skydh/picture/master/jpa.png">
+<meta property="og:updated_time" content="2018-10-12T04:53:46.028Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="spring data jpa">
+<meta name="twitter:description" content="目的　　公司框架为这个。且大多数同学不了解这个怎么玩。为了避免采坑太多，这里先学习总结下。 代码地址以及相关介绍　　本代码使用spring+spring mvc+spring data jpa+hibernate+mysql(8.0之后的版本)　　git地址：https://github.com/skydh/SpringJpaLearn　　为了方便公司的小伙伴们看。　　公司内部git地址：http">
+<meta name="twitter:image" content="https://raw.githubusercontent.com/skydh/picture/master/jpa.png">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Pisces',
+    version: '5.1.3',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: true,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    duoshuo: {
+      userId: '0',
+      author: '博主'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="https://skydh.github.io/2018/09/11/spring data jpa/"/>
+
+
+
+
+
+  <title>spring data jpa | why are you so happy</title>
+  
+
+
+
+
+
+
+
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/"  class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">why are you so happy</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle">clear 航</p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br />
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />
+            
+            归档
+          </a>
+        </li>
+      
+
+      
+    </ul>
+  
+
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="https://skydh.github.io/2018/09/11/spring data jpa/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="董航">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="why are you so happy">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">spring data jpa</h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2018-09-11T10:02:07+08:00">
+                2018-09-11
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <h2 id="目的"><a href="#目的" class="headerlink" title="目的"></a>目的</h2><p>　　公司框架为这个。且大多数同学不了解这个怎么玩。为了避免采坑太多，这里先学习总结下。</p>
+<h2 id="代码地址以及相关介绍"><a href="#代码地址以及相关介绍" class="headerlink" title="代码地址以及相关介绍"></a>代码地址以及相关介绍</h2><p>　　本代码使用spring+spring mvc+spring data jpa+hibernate+mysql(8.0之后的版本)<br>　　git地址：<a href="https://github.com/skydh/SpringJpaLearn" target="_blank" rel="noopener">https://github.com/skydh/SpringJpaLearn</a><br>　　为了方便公司的小伙伴们看。<br>　　公司内部git地址：<a href="http://git.ipo.com/donghang846/spring-jpa-learn.git" target="_blank" rel="noopener">http://git.ipo.com/donghang846/spring-jpa-learn.git</a>
+　　</p>
+<h2 id="单表的3种简单查询模式以及注意点。"><a href="#单表的3种简单查询模式以及注意点。" class="headerlink" title="单表的3种简单查询模式以及注意点。"></a>单表的3种简单查询模式以及注意点。</h2><p>　　１．直接调用接口自带的方法。我们继承的是JpaRepository接口。主要有</p>
+<pre><code>count() 获取表多少数据。
+findOne() 根据id获取数据。
+save() 保存数据。
+等。
+</code></pre><p>　　注意点：</p>
+<p>　　第一点.getone()和findone()作用一样都是根据id获取对象，但是getone是懒加载，没有配置的要报错，还有实体转json的时候也会报错。再看了源代码对接口的解释findOne返回实体，而getOne则是返回实体的引用。总而言之，最好用findOne.<br>　　<br>　　第二点：我们调用save方法时，如果主键不是自增的，我们必须在entity里面增加id,因为jpa会先根据这个id在数据库里面查询数据，如果有数据，那么生成的sql则是更新语句，也就是这个save方法同时承担了更新的职责。<br>　　<br>　　２．在对应的dao接口里面写好方法，调用这个接口即可调用sql获取数据。spring-data-jpa会根据方法的名字来自动生成sql语句，我们只需要按照方法定义的规则即可。规则如我网上找的表。<br>    <img src="https://raw.githubusercontent.com/skydh/picture/master/jpa.png" alt="aaa"><br>　　案例如下：</p>
+<pre><code>public interface UserDao extends JpaRepository&lt;User, Serializable&gt; {
+
+/**
+ * 根据name,id 找这个人
+ * @param name
+ * @param id
+ * @return
+ */
+User findByNameAndId(String name,Integer id);
+</code></pre><p>}</p>
+<p>　　３.当上面２方法都不满足你的需求的时候，或者想自己写sql稳定精确一点的。可以自定义sql。案例如下：</p>
+<pre><code>public interface UserDao extends JpaRepository&lt;User, Serializable&gt; {
+
+@Query(value=&quot;select * from User where address= :address&quot; ,nativeQuery = true)
+List&lt;User&gt; findUserByAddress(@Param(&quot;address&quot;)String address );
+}
+</code></pre><p>　　这里有几个注意点<br>　　１．这里我推荐使用　nativeQuery = true　方式，直接写sql，因为确定了，我们的数据库是mysql,所以我们直接写mysql的sql即可。<br>　　２．除了查询语句这种快照读之外，其余所有的语句都要加　@Transactional<br>　　@Modifying<br>　　例子如下：</p>
+<pre><code>@Transactional
+@Modifying
+@Query(value=&quot;update User set address= :address where name= :name&quot;)
+void updateData(@Param(&quot;name&quot;)String name,@Param(&quot;address&quot;)String address);
+</code></pre><p>　　<br>　　因为jpa对于非快照操作，要求必须都是事务操作。</p>
+<h2 id="多表查询"><a href="#多表查询" class="headerlink" title="多表查询"></a>多表查询</h2><p>　　这边鉴于大多数同学都喜欢mybatis，喜欢写原生sql,这边采用EntityManager这个类来进行多表查询，相对于specification，确实利于优化和调试。<br>　　话不多说，上代码：</p>
+<pre><code>@Repository
+public class UserDao {
+@Autowired 
+private EntityManager entityManager;
+public void getUser() {
+    StringBuilder sb = new StringBuilder();
+    sb.append(&quot;select a.name as name ,b.name as name1 from user a inner join Orders b on a.id=b.user_id&quot;);
+    Query query = entityManager.createNativeQuery(sb.toString());
+    List&lt;Object&gt; list = query.getResultList();
+    for (Object user : list) {
+        System.out.println(user);
+    }
+}
+}
+</code></pre><p>　　如此可以多表查询，且很方便。我们可以在自己拼装sql的时候加逻辑判断。<br>　　几个注意点：<br>　　１．这个有的表的字段有重复名的我们必须起别名，不然报错。这边最好用有Native关键字的方法，便于我们使用原生sql.</p>
+<pre><code>Query query1 = entityManager.createNativeQuery(sb.toString(),UserEntity.class);
+</code></pre><p>　　第一个返回的都是一个个Object对象，我们要自己拼装成自己需要的vo,但是当sql返回的都是一个表的数据时，我们可以在后面传这个这个类的Class对象。这样不用拼装sql了。但是坑爹的是，我们必须将这个entity的所有字段都要对应上才行。<br>　　由于上面要一个个对应字段，太麻烦了，这边写了一个工具类，帮助大家提高效率，和代码工整度。代码就不细说了，有问题联系我修改哈。</p>
+
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2018/09/10/redis限流/" rel="next" title="redis之简单限流">
+                <i class="fa fa-chevron-left"></i> redis之简单限流
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2018/09/12/redis io模型/" rel="prev" title="redis io模型">
+                redis io模型 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <p class="site-author-name" itemprop="name">董航</p>
+              <p class="site-description motion-element" itemprop="description">clear 航</p>
+          </div>
+
+          <nav class="site-state motion-element">
+
+            
+              <div class="site-state-item site-state-posts">
+              
+                <a href="/archives/">
+              
+                  <span class="site-state-item-count">100</span>
+                  <span class="site-state-item-name">日志</span>
+                </a>
+              </div>
+            
+
+            
+
+            
+
+          </nav>
+
+          
+
+          <div class="links-of-author motion-element">
+            
+          </div>
+
+          
+          
+
+          
+          
+
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#目的"><span class="nav-number">1.</span> <span class="nav-text">目的</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#代码地址以及相关介绍"><span class="nav-number">2.</span> <span class="nav-text">代码地址以及相关介绍</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#单表的3种简单查询模式以及注意点。"><span class="nav-number">3.</span> <span class="nav-text">单表的3种简单查询模式以及注意点。</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#多表查询"><span class="nav-number">4.</span> <span class="nav-text">多表查询</span></a></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <script async src="https://dn-lbstatics.qbox.me/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+<div class="copyright">&copy; <span itemprop="copyrightYear">2019</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">董航</span>
+
+  
+</div>
+
+
+<div class="powered-by">
+<i class="fa fa-user-md"></i><span id="busuanzi_container_site_uv">
+  本站访客数:<span id="busuanzi_value_site_uv"></span>
+</span>
+</div>
+
+  <div class="powered-by">由 <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a> 强力驱动</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">主题 &mdash; <a class="theme-link" target="_blank" href="https://github.com/iissnan/hexo-theme-next">NexT.Pisces</a> v5.1.3</div>
+
+
+
+
+        
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/canvas-nest/canvas-nest.min.js"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.3"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.3"></script>
+
+
+
+  
+  
+
+
+  <script type="text/javascript" src="/js/src/affix.js?v=5.1.3"></script>
+
+  <script type="text/javascript" src="/js/src/schemes/pisces.js?v=5.1.3"></script>
+
+
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.3"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.3"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.3"></script>
+
+
+
+  
+
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>

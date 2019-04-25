@@ -1,0 +1,836 @@
+<!DOCTYPE html>
+
+
+
+  
+
+
+<html class="theme-next pisces use-motion" lang="zh-Hans">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css" />
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=5.1.3" rel="stylesheet" type="text/css" />
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=5.1.3">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=5.1.3">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=5.1.3">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=5.1.3" color="#222">
+
+
+
+
+
+  <meta name="keywords" content="Hexo, NexT" />
+
+
+
+
+
+
+
+
+
+
+<meta name="description" content="阻塞和非阻塞　　阻塞是函数没有返回结果就一直等待，知道得到返回结果。非阻塞则是函数没有返回结果自己不用等待可以去干别的事情，这是函数内部的的实现区别，也就是函数未就绪时是直接返回结果。 　　 同步和异步　　同步是指主动请求并且等待结果。当数据就绪后在读写时必须阻塞，异步则是请求到数据后可以继续处理其他任务，随后等待结果">
+<meta property="og:type" content="article">
+<meta property="og:title" content="java NIO.">
+<meta property="og:url" content="https://skydh.github.io/2018/02/24/java nio/index.html">
+<meta property="og:site_name" content="why are you so happy">
+<meta property="og:description" content="阻塞和非阻塞　　阻塞是函数没有返回结果就一直等待，知道得到返回结果。非阻塞则是函数没有返回结果自己不用等待可以去干别的事情，这是函数内部的的实现区别，也就是函数未就绪时是直接返回结果。 　　 同步和异步　　同步是指主动请求并且等待结果。当数据就绪后在读写时必须阻塞，异步则是请求到数据后可以继续处理其他任务，随后等待结果，这可以使得进程读写时不阻塞。 小结　　所以说，阻塞，非阻塞和同步，异步是不一样">
+<meta property="og:locale" content="zh-Hans">
+<meta property="og:updated_time" content="2018-09-13T02:46:50.271Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="java NIO.">
+<meta name="twitter:description" content="阻塞和非阻塞　　阻塞是函数没有返回结果就一直等待，知道得到返回结果。非阻塞则是函数没有返回结果自己不用等待可以去干别的事情，这是函数内部的的实现区别，也就是函数未就绪时是直接返回结果。 　　 同步和异步　　同步是指主动请求并且等待结果。当数据就绪后在读写时必须阻塞，异步则是请求到数据后可以继续处理其他任务，随后等待结果，这可以使得进程读写时不阻塞。 小结　　所以说，阻塞，非阻塞和同步，异步是不一样">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Pisces',
+    version: '5.1.3',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: true,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    duoshuo: {
+      userId: '0',
+      author: '博主'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="https://skydh.github.io/2018/02/24/java nio/"/>
+
+
+
+
+
+  <title>java NIO. | why are you so happy</title>
+  
+
+
+
+
+
+
+
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/"  class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">why are you so happy</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle">clear 航</p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br />
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />
+            
+            归档
+          </a>
+        </li>
+      
+
+      
+    </ul>
+  
+
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="https://skydh.github.io/2018/02/24/java nio/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="董航">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="why are you so happy">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">java NIO.</h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2018-02-24T09:15:41+08:00">
+                2018-02-24
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <h2 id="阻塞和非阻塞"><a href="#阻塞和非阻塞" class="headerlink" title="阻塞和非阻塞"></a>阻塞和非阻塞</h2><p>　　阻塞是函数没有返回结果就一直等待，知道得到返回结果。非阻塞则是函数没有返回结果自己不用等待可以去干别的事情，这是函数内部的的实现区别，也就是函数未就绪时是直接返回结果。
+　　</p>
+<h2 id="同步和异步"><a href="#同步和异步" class="headerlink" title="同步和异步"></a>同步和异步</h2><p>　　同步是指主动请求并且等待结果。当数据就绪后在读写时必须阻塞，异步则是请求到数据后可以继续处理其他任务，随后等待结果，这可以使得进程读写时不阻塞。</p>
+<h2 id="小结"><a href="#小结" class="headerlink" title="小结"></a>小结</h2><p>　　所以说，阻塞，非阻塞和同步，异步是不一样的概念，阻塞和非阻塞是函数的实现方式就是未就绪时是否直接返回结果，阻塞和非阻塞在程序中也算是同步的，而异步则是不管是不是直接返回结果，我都可以干别的事，等到返回结果再处理。</p>
+<h2 id="java-NIO"><a href="#java-NIO" class="headerlink" title="java NIO"></a>java NIO</h2><p>　　java的最初io流是阻塞的BIO流,不适合于多连接的处理情况。因为多个连接就要多个线程。而NIO的出现解决了这个问题。而且NIO的操作方式类似于操作系统，因此效率会更加高一些。<br>　　io的操作是基于字节流和字符流，是单向的比如inputStreanm，只能读，而NIO则是基于Channel和Buffer，是双向，比如Channel是双向的既可以用来读也可以来写。<br>　　NIO是非阻塞的，IO则是阻塞的，一个线程调用read()方法时，如果没有操作完，该线程就会一直阻塞。对于这个线程而言，这时他不能干别的事了，因为程序时顺序执行的。NIO则是不一样的，无论是读取数据还是写入数据都不会使得这个线程阻塞下去。可以继续干自己的事情。</p>
+<h2 id="代码示例"><a href="#代码示例" class="headerlink" title="代码示例"></a>代码示例</h2><p>　　直接代码示例吧，具体的Channel，Buffer，Selector的用法可以查询java官方api。</p>
+<p>　　这里直接上几个代码案例，直接对比。</p>
+<p><pre><br>public class Test {</pre></p>
+<pre><code>public static void main(String[] args) throws Exception {
+    File file = new File(&quot;data.txt&quot;);
+    FileInputStream fileOutputStream = new FileInputStream(file);
+    FileChannel fileChannel = fileOutputStream.getChannel();
+    ByteBuffer byteBuffer = ByteBuffer.allocate(10);
+    // String string = &quot;nio test&quot;;
+    int a = fileChannel.read(byteBuffer);
+    System.out.println(a);
+
+    while (a != -1) {
+        byteBuffer.flip();
+        while (byteBuffer.hasRemaining()) {
+            System.out.print((char) byteBuffer.get());
+        }
+        byteBuffer.compact();
+        a = fileChannel.read(byteBuffer);
+    }
+}
+</code></pre><p>}<br><br>　　这个代码是读取一个文件，并且运用NIO的方式输出出来。有了大概的印象，那么我们来看看在socket中，这些操作时怎么处理的，非阻塞机制到底怎么提高了这个的优化效率。<br>　　第一个是ｉｏ的服务器</p>
+<p><pre><br> public class Snippet {<br>    public static void main(String[] args) {<br>        ServerSocket serverSocket = null;<br>        InputStream in = null;<br>        try {<br>            serverSocket = new ServerSocket(8088);<br>            int recvMsgSize = 0;<br>            byte[] recvBuf = new byte[1024];<br>            while (true) {<br>                Socket clntSocket = serverSocket.accept();<br>                SocketAddress clientAddress = clntSocket.getRemoteSocketAddress();<br>                System.out.println(“Handling client at “ + clientAddress);<br>                in = clntSocket.getInputStream();<br>                while ((recvMsgSize = in.read(recvBuf)) != -1) {<br>                    byte[] temp = new byte[recvMsgSize];<br>                    // System.arraycopy(recvBuf, 0, temp, 0, recvMsgSize);<br>                    System.out.println(new String(temp));<br>                }<br>            }<br>        } catch (IOException e) {<br>            e.printStackTrace();<br>        } finally {<br>            try {<br>                if (serverSocket != null) {<br>                    serverSocket.close();<br>                }<br>                if (in != null) {<br>                    in.close();<br>                }<br>            } catch (IOException e) {<br>                e.printStackTrace();<br>            }<br>        }<br>    }<br>}</pre></p>
+<p><br>　　客户端代码直接用ＮＩＯ的模式写吧</p>
+<p><pre><br> public class NioClient {<br>    public static void main(String[] args) {<br>        ByteBuffer buffer = ByteBuffer.allocate(1024);<br>        SocketChannel socketChannel = null;<br>        try {<br>            socketChannel = SocketChannel.open();<br>            socketChannel.configureBlocking(false);<br>            socketChannel.connect(new InetSocketAddress(“127.0.0.1”, 8088));<br>            System.out.println(“aaa”);</pre></p>
+<pre><code>        if (socketChannel.finishConnect()) {
+            int i = 0;
+            while (i&lt;10) {
+                TimeUnit.SECONDS.sleep(1);
+                String info = &quot;I&apos;m &quot; + i++ + &quot;-th information from client&quot;;
+                buffer.clear();
+                buffer.put(info.getBytes());
+                buffer.flip();
+                while (buffer.hasRemaining()) {// 判断是否数据读完
+                    System.out.println(buffer);
+                    socketChannel.write(buffer);
+                }
+            }
+        }
+    } catch (IOException | InterruptedException e) {
+        e.printStackTrace();
+    } finally {
+        try {
+            if (socketChannel != null) {
+                socketChannel.close();
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+}
+</code></pre><p>}</p>
+<p><br>　　假设服务器是这种代码，客户端有多个连接到来，那么一次只能连接一个，直到用完，或许有的小伙伴说，多线程啊，每个线程一个连接，线程池管理。恩，但是线程太消耗资源，而且线程转换也会消耗资源。那么ｎｉｏ来了，我们来看看Ｎｉｏ的实现。</p>
+<pre><code>public class ServerConnect
+{
+    private static final int BUF_SIZE=1024;
+    private static final int PORT = 8080;
+    private static final int TIMEOUT = 3000;
+
+    public static void main(String[] args)
+    {
+        selector();
+    }
+
+    public static void handleAccept(SelectionKey key) throws IOException{
+        ServerSocketChannel ssChannel = (ServerSocketChannel)key.channel();
+        SocketChannel sc = ssChannel.accept();
+        sc.configureBlocking(false);
+        sc.register(key.selector(), SelectionKey.OP_READ,ByteBuffer.allocateDirect(BUF_SIZE));
+    }
+
+    public static void handleRead(SelectionKey key) throws IOException{
+        SocketChannel sc = (SocketChannel)key.channel();
+        ByteBuffer buf = (ByteBuffer)key.attachment();
+        long bytesRead = sc.read(buf);
+        while(bytesRead&gt;0){
+            buf.flip();
+            while(buf.hasRemaining()){
+                System.out.print((char)buf.get());
+            }
+            System.out.println();
+            buf.clear();
+            bytesRead = sc.read(buf);
+        }
+        if(bytesRead == -1){
+            sc.close();
+        }
+    }
+
+    public static void handleWrite(SelectionKey key) throws IOException{
+        ByteBuffer buf = (ByteBuffer)key.attachment();
+        buf.flip();
+        SocketChannel sc = (SocketChannel) key.channel();
+        while(buf.hasRemaining()){
+            sc.write(buf);
+        }
+        buf.compact();
+    }
+
+    public static void selector() {
+        Selector selector = null;
+        ServerSocketChannel ssc = null;
+        try{
+            selector = Selector.open();
+            ssc= ServerSocketChannel.open();
+            ssc.socket().bind(new InetSocketAddress(PORT));
+            ssc.configureBlocking(false);
+            ssc.register(selector, SelectionKey.OP_ACCEPT);
+
+            while(true){
+                if(selector.select(TIMEOUT) == 0){
+                    System.out.println(&quot;==&quot;);
+                    continue;
+                }
+                Iterator&lt;SelectionKey&gt; iter = selector.selectedKeys().iterator();
+                while(iter.hasNext()){
+                    SelectionKey key = iter.next();
+                    if(key.isAcceptable()){
+                        handleAccept(key);
+                    }
+                    if(key.isReadable()){
+                        handleRead(key);
+                    }
+                    if(key.isWritable() &amp;&amp; key.isValid()){
+                        handleWrite(key);
+                    }
+                    if(key.isConnectable()){
+                        System.out.println(&quot;isConnectable = true&quot;);
+                    }
+                    iter.remove();
+                }
+            }
+
+        }catch(IOException e){
+            e.printStackTrace();
+        }finally{
+            try{
+                if(selector!=null){
+                    selector.close();
+                }
+                if(ssc!=null){
+                    ssc.close();
+                }
+            }catch(IOException e){
+                e.printStackTrace();
+            }
+        }
+    }
+}
+</code></pre><p>   Selector运行单线程处理多个Channel，如果你的应用打开了多个通道，但每个连接的流量都很低，使用Selector就会很方便。例如在一个聊天服务器中。要使用Selector, 得向Selector注册Channel，然后调用它的select()方法。这个方法会一直阻塞到某个注册的通道有事件就绪。一旦这个方法返回，线程就可以处理这些事件，事件的例子有如新的连接进来、数据接收。<br>　　我们在上面的代码里面将ServerSocketChannel注册到Selector里面，接受accept事件，每当有一个连接到来，select()就会有返回值，因为这个事件完成了，就会触发下面的操作，然后我们把这个新加入的连接也放到selector里面，等待读事件，或者写事件，当这个事件准备好了，就会启动返回。</p>
+
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2018/02/24/servelet/" rel="next" title="浅析Servlet协议">
+                <i class="fa fa-chevron-left"></i> 浅析Servlet协议
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2018/02/24/tomcat 浅析/" rel="prev" title="Tomcat浅析">
+                Tomcat浅析 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <p class="site-author-name" itemprop="name">董航</p>
+              <p class="site-description motion-element" itemprop="description">clear 航</p>
+          </div>
+
+          <nav class="site-state motion-element">
+
+            
+              <div class="site-state-item site-state-posts">
+              
+                <a href="/archives/">
+              
+                  <span class="site-state-item-count">100</span>
+                  <span class="site-state-item-name">日志</span>
+                </a>
+              </div>
+            
+
+            
+
+            
+
+          </nav>
+
+          
+
+          <div class="links-of-author motion-element">
+            
+          </div>
+
+          
+          
+
+          
+          
+
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#阻塞和非阻塞"><span class="nav-number">1.</span> <span class="nav-text">阻塞和非阻塞</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#同步和异步"><span class="nav-number">2.</span> <span class="nav-text">同步和异步</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#小结"><span class="nav-number">3.</span> <span class="nav-text">小结</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#java-NIO"><span class="nav-number">4.</span> <span class="nav-text">java NIO</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#代码示例"><span class="nav-number">5.</span> <span class="nav-text">代码示例</span></a></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <script async src="https://dn-lbstatics.qbox.me/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+<div class="copyright">&copy; <span itemprop="copyrightYear">2019</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">董航</span>
+
+  
+</div>
+
+
+<div class="powered-by">
+<i class="fa fa-user-md"></i><span id="busuanzi_container_site_uv">
+  本站访客数:<span id="busuanzi_value_site_uv"></span>
+</span>
+</div>
+
+  <div class="powered-by">由 <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a> 强力驱动</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">主题 &mdash; <a class="theme-link" target="_blank" href="https://github.com/iissnan/hexo-theme-next">NexT.Pisces</a> v5.1.3</div>
+
+
+
+
+        
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/canvas-nest/canvas-nest.min.js"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.3"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.3"></script>
+
+
+
+  
+  
+
+
+  <script type="text/javascript" src="/js/src/affix.js?v=5.1.3"></script>
+
+  <script type="text/javascript" src="/js/src/schemes/pisces.js?v=5.1.3"></script>
+
+
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.3"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.3"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.3"></script>
+
+
+
+  
+
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>

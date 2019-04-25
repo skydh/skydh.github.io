@@ -1,0 +1,714 @@
+<!DOCTYPE html>
+
+
+
+  
+
+
+<html class="theme-next pisces use-motion" lang="zh-Hans">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css" />
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=5.1.3" rel="stylesheet" type="text/css" />
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=5.1.3">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=5.1.3">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=5.1.3">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=5.1.3" color="#222">
+
+
+
+
+
+  <meta name="keywords" content="Hexo, NexT" />
+
+
+
+
+
+
+
+
+
+
+<meta name="description" content="什么是DNS协议　　我们知道网络上每个站点的位置是靠ip来确认的，想要访问一个网站必须知道他的ip地址。但是ip地址全部是数字，很不好记忆。也不方便记忆，于是就有了域名。每个域名都有对应的ip地址，网上的域名非常多。且网上域名和ip对应关系也经常变化，因此需要有专门的把域名装换为ip的服务器，这个就是DNS服务器，我们">
+<meta property="og:type" content="article">
+<meta property="og:title" content="DNS协议">
+<meta property="og:url" content="https://skydh.github.io/2018/02/08/DNS协议简介/index.html">
+<meta property="og:site_name" content="why are you so happy">
+<meta property="og:description" content="什么是DNS协议　　我们知道网络上每个站点的位置是靠ip来确认的，想要访问一个网站必须知道他的ip地址。但是ip地址全部是数字，很不好记忆。也不方便记忆，于是就有了域名。每个域名都有对应的ip地址，网上的域名非常多。且网上域名和ip对应关系也经常变化，因此需要有专门的把域名装换为ip的服务器，这个就是DNS服务器，我们把域名传递过去他就会返回对应的ip。我们可以用nslookup来获取域名信息。看">
+<meta property="og:locale" content="zh-Hans">
+<meta property="og:image" content="https://raw.githubusercontent.com/skydh/picture/master/DNS_001.png">
+<meta property="og:updated_time" content="2018-02-08T03:37:24.020Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="DNS协议">
+<meta name="twitter:description" content="什么是DNS协议　　我们知道网络上每个站点的位置是靠ip来确认的，想要访问一个网站必须知道他的ip地址。但是ip地址全部是数字，很不好记忆。也不方便记忆，于是就有了域名。每个域名都有对应的ip地址，网上的域名非常多。且网上域名和ip对应关系也经常变化，因此需要有专门的把域名装换为ip的服务器，这个就是DNS服务器，我们把域名传递过去他就会返回对应的ip。我们可以用nslookup来获取域名信息。看">
+<meta name="twitter:image" content="https://raw.githubusercontent.com/skydh/picture/master/DNS_001.png">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Pisces',
+    version: '5.1.3',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: true,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    duoshuo: {
+      userId: '0',
+      author: '博主'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="https://skydh.github.io/2018/02/08/DNS协议简介/"/>
+
+
+
+
+
+  <title>DNS协议 | why are you so happy</title>
+  
+
+
+
+
+
+
+
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/"  class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">why are you so happy</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle">clear 航</p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br />
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />
+            
+            归档
+          </a>
+        </li>
+      
+
+      
+    </ul>
+  
+
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="https://skydh.github.io/2018/02/08/DNS协议简介/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="董航">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="why are you so happy">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">DNS协议</h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2018-02-08T09:33:46+08:00">
+                2018-02-08
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <h2 id="什么是DNS协议"><a href="#什么是DNS协议" class="headerlink" title="什么是DNS协议"></a>什么是DNS协议</h2><p>　　我们知道网络上每个站点的位置是靠ip来确认的，想要访问一个网站必须知道他的ip地址。但是ip地址全部是数字，很不好记忆。也不方便记忆，于是就有了域名。每个域名都有对应的ip地址，网上的域名非常多。且网上域名和ip对应关系也经常变化，因此需要有专门的把域名装换为ip的服务器，这个就是DNS服务器，我们把域名传递过去他就会返回对应的ip。我们可以用nslookup来获取域名信息。看下面的例子</p>
+<p><img src="https://raw.githubusercontent.com/skydh/picture/master/DNS_001.png" alt="aaa"><br>　　域名服务器的域名是：ns.wuhan.net.cn<br>　　域名服务器的ip是： 202.103.24.68<br>　　被解析的域名对应ip是：180.97.33.107 ，180.97.33.108<br>　　被解析域名的CNAME域名是：www.a.shifen.com<br>　　什么是CNAME?<br>　　CNAME是将别的域名装换为一个域名，再将这个域名解析到A记录上，也就是在转换为ip,为什么需要这么做，一个网站要是有多个域名，如果对应ip变了，那么所有的对应关系都要修改，但是有了中间层这个域名，那么则只要改一下就行了。</p>
+<h2 id="DNS注册"><a href="#DNS注册" class="headerlink" title="DNS注册"></a>DNS注册</h2><p>　　DNS是如何获取到ip和域名的对应关系呢？那是通过万网注册。DNS服务器则可以获取到其信息了。</p>
+<h2 id="DNS地址获取"><a href="#DNS地址获取" class="headerlink" title="DNS地址获取"></a>DNS地址获取</h2><p>　　可以在网络配置页面进行DNS配置。可以选择自动获取，也可以设置固定的DNS地址。</p>
+<h2 id="本机自己配置ip"><a href="#本机自己配置ip" class="headerlink" title="本机自己配置ip"></a>本机自己配置ip</h2><p>　　Windows下这个目录C:\Windows\System32\drivers\etc可以配置对应域名和ip,本机解析域名时先从hosts下找，找不到再从DNS服务器上找。<br>　　这个是我本机的hosts</p>
+<pre>
+        # Copyright (c) 1993-2009 Microsoft Corp.
+        #
+        # This is a sample HOSTS file used by Microsoft TCP/IP for Windows.
+        #
+        # This file contains the mappings of IP addresses to host names. Each
+        # entry should be kept on an individual line. The IP address should
+        # be placed in the first column followed by the corresponding host name.
+        # The IP address and the host name should be separated by at least one
+        # space.
+        #
+        # Additionally, comments (such as these) may be inserted on individual
+        # lines or following the machine name denoted by a '#' symbol.
+        #
+        # For example:
+        #
+        #      102.54.94.97     rhino.acme.com          # source server
+        #       38.25.63.10     x.acme.com              # x client host
+
+        # localhost name resolution is handled within DNS itself.
+        #    127.0.0.1       localhost
+        #    ::1             localhost
+        10.11.248.91 zjy.cscec.com.cn
+
+
+</pre>
+
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2018/02/07/session 和token/" rel="next" title="session,token">
+                <i class="fa fa-chevron-left"></i> session,token
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2018/02/08/tcp ip协议/" rel="prev" title="tcp/ip协议">
+                tcp/ip协议 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <p class="site-author-name" itemprop="name">董航</p>
+              <p class="site-description motion-element" itemprop="description">clear 航</p>
+          </div>
+
+          <nav class="site-state motion-element">
+
+            
+              <div class="site-state-item site-state-posts">
+              
+                <a href="/archives/">
+              
+                  <span class="site-state-item-count">100</span>
+                  <span class="site-state-item-name">日志</span>
+                </a>
+              </div>
+            
+
+            
+
+            
+
+          </nav>
+
+          
+
+          <div class="links-of-author motion-element">
+            
+          </div>
+
+          
+          
+
+          
+          
+
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#什么是DNS协议"><span class="nav-number">1.</span> <span class="nav-text">什么是DNS协议</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#DNS注册"><span class="nav-number">2.</span> <span class="nav-text">DNS注册</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#DNS地址获取"><span class="nav-number">3.</span> <span class="nav-text">DNS地址获取</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#本机自己配置ip"><span class="nav-number">4.</span> <span class="nav-text">本机自己配置ip</span></a></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <script async src="https://dn-lbstatics.qbox.me/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+<div class="copyright">&copy; <span itemprop="copyrightYear">2019</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">董航</span>
+
+  
+</div>
+
+
+<div class="powered-by">
+<i class="fa fa-user-md"></i><span id="busuanzi_container_site_uv">
+  本站访客数:<span id="busuanzi_value_site_uv"></span>
+</span>
+</div>
+
+  <div class="powered-by">由 <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a> 强力驱动</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">主题 &mdash; <a class="theme-link" target="_blank" href="https://github.com/iissnan/hexo-theme-next">NexT.Pisces</a> v5.1.3</div>
+
+
+
+
+        
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/canvas-nest/canvas-nest.min.js"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.3"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.3"></script>
+
+
+
+  
+  
+
+
+  <script type="text/javascript" src="/js/src/affix.js?v=5.1.3"></script>
+
+  <script type="text/javascript" src="/js/src/schemes/pisces.js?v=5.1.3"></script>
+
+
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.3"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.3"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.3"></script>
+
+
+
+  
+
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>

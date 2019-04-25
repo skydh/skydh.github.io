@@ -1,0 +1,733 @@
+<!DOCTYPE html>
+
+
+
+  
+
+
+<html class="theme-next pisces use-motion" lang="zh-Hans">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css" />
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=5.1.3" rel="stylesheet" type="text/css" />
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=5.1.3">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=5.1.3">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=5.1.3">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=5.1.3" color="#222">
+
+
+
+
+
+  <meta name="keywords" content="Hexo, NexT" />
+
+
+
+
+
+
+
+
+
+
+<meta name="description" content="为何有泛型　　１．泛型是在编译期间进行校验的以保证类型安全。 　　２．集合不会保证对象的类型，如果不用泛型。那么集合统一用父类object类型来指代，由于java语言的特性，在编译期间，父类和子类都可以用父类来指代，即使在运行期间都是自己的实际类型，集合这个类也是这样的，如果没用用泛型，他们用object这个统一的父类">
+<meta property="og:type" content="article">
+<meta property="og:title" content="java 泛型">
+<meta property="og:url" content="https://skydh.github.io/2018/05/04/java泛型/index.html">
+<meta property="og:site_name" content="why are you so happy">
+<meta property="og:description" content="为何有泛型　　１．泛型是在编译期间进行校验的以保证类型安全。 　　２．集合不会保证对象的类型，如果不用泛型。那么集合统一用父类object类型来指代，由于java语言的特性，在编译期间，父类和子类都可以用父类来指代，即使在运行期间都是自己的实际类型，集合这个类也是这样的，如果没用用泛型，他们用object这个统一的父类来指代，但是如果在编译期间你要使用子类特有的方法时的话还是要转换成子类类型，现在">
+<meta property="og:locale" content="zh-Hans">
+<meta property="og:updated_time" content="2018-05-07T01:29:22.156Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="java 泛型">
+<meta name="twitter:description" content="为何有泛型　　１．泛型是在编译期间进行校验的以保证类型安全。 　　２．集合不会保证对象的类型，如果不用泛型。那么集合统一用父类object类型来指代，由于java语言的特性，在编译期间，父类和子类都可以用父类来指代，即使在运行期间都是自己的实际类型，集合这个类也是这样的，如果没用用泛型，他们用object这个统一的父类来指代，但是如果在编译期间你要使用子类特有的方法时的话还是要转换成子类类型，现在">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Pisces',
+    version: '5.1.3',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: true,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    duoshuo: {
+      userId: '0',
+      author: '博主'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="https://skydh.github.io/2018/05/04/java泛型/"/>
+
+
+
+
+
+  <title>java 泛型 | why are you so happy</title>
+  
+
+
+
+
+
+
+
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/"  class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">why are you so happy</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle">clear 航</p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br />
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />
+            
+            归档
+          </a>
+        </li>
+      
+
+      
+    </ul>
+  
+
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="https://skydh.github.io/2018/05/04/java泛型/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="董航">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="why are you so happy">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">java 泛型</h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2018-05-04T11:51:48+08:00">
+                2018-05-04
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <h2 id="为何有泛型"><a href="#为何有泛型" class="headerlink" title="为何有泛型"></a>为何有泛型</h2><p>　　１．泛型是在编译期间进行校验的以保证类型安全。</p>
+<p>　　２．集合不会保证对象的类型，如果不用泛型。那么集合统一用父类object类型来指代，由于java语言的特性，在编译期间，父类和子类都可以用父类来指代，即使在运行期间都是自己的实际类型，集合这个类也是这样的，如果没用用泛型，他们用object这个统一的父类来指代，但是如果在编译期间你要使用子类特有的方法时的话还是要转换成子类类型，现在问题来了，集合类里面什么元素几乎都可以添加，毕竟都是object的子类，但是我们要使用的话，就会出现问题了，我们不知道到底是不是我们要使用的子类，万一集合里面添加了一个不是我们要用的子类，我们转换使用的时候就会报错：java.lang.ClassCastException。</p>
+<h2 id="最简单的泛型实例"><a href="#最简单的泛型实例" class="headerlink" title="最简单的泛型实例"></a>最简单的泛型实例</h2><p>　　List<string> list = new ArrayList<string>();</string></string></p>
+<p>　　就像这个加了String这个限制，放到集合里面的元素必须是String类型，取出数据的时候也没必要转换为string类型了，因为编译器已经知道了，不需要转换了（额外说下这个多态，多态的原理也正是这个原理，父类可以在编译期间指代子类，但是实际运行还是本身的类型，要是想用子类特有的方法，父类是不行的，虽然确实可以使用，但是编译时不会通过的，会报错，说找不到这个方法。）</p>
+<h2 id="自定义泛型接口、泛型类和泛型方法"><a href="#自定义泛型接口、泛型类和泛型方法" class="headerlink" title="自定义泛型接口、泛型类和泛型方法"></a>自定义泛型接口、泛型类和泛型方法</h2><pre><code>class Box&lt;T&gt; {
+    private T data;
+    public Box() {
+    }
+    public Box(T data) {
+        this.data = data;
+    }
+    public T getData() {
+      return data;
+    }
+}
+
+
+public class DemoTest {
+    public static void main(String[] args) {
+        Box&lt;String&gt; name = new Box&lt;String&gt;(&quot;dh&quot;);
+        Box&lt;Integer&gt; age = new Box&lt;Integer&gt;(123);
+        System.out.println(&quot;name class:&quot; + name.getClass());      // com.dh.Box
+        System.out.println(&quot;age class:&quot; + age.getClass());        // com.dh.Box
+        System.out.println(name.getClass() == age.getClass());    // true
+    }
+}
+</code></pre><p>　　在这里我们用Ｔ来来接收来自外部的参数，泛型终究只是编译期的东西，不会带到运行期，主要就是校验所传信息是否正确罢了，当然在逻辑上我们可以理解这是一些不同类（毕竟一个是String类型，一个是Integer类型），但是实际上这些都是相同的类，就是我们在生成对象的时候，给这个对象传了一个类型参数过去，就是这个类型参数是这个类的一点限制，多了一个参数，一个校验参数罢了。</p>
+<h2 id="类型通配符"><a href="#类型通配符" class="headerlink" title="类型通配符"></a>类型通配符</h2><pre><code>public class DemoTest {
+    public static void main(String[] args) {
+        Box&lt;String&gt; name = new Box&lt;String&gt;(&quot;dh&quot;);
+        Box&lt;Integer&gt; age = new Box&lt;Integer&gt;(123);
+        Box&lt;Number&gt; number = new Box&lt;Number&gt;(456);
+        getData(name);
+        getData(age);
+        getData(number);
+          get1rData(number); // 1
+        getUpperNumberData(age);    // 2
+        getUpperNumberData(number); // 3
+    }
+    public static void getData(Box&lt;?&gt; data) {
+        System.out.println(&quot;data :&quot; + data.getData());
+    }
+    public static void getUpperNumberData(Box&lt;? extends Number&gt; data){
+        System.out.println(&quot;data :&quot; + data.getData());
+    }
+    public static void get1rData(Box&lt;? super Number&gt; data) {
+        System.out.println(&quot;data :&quot; + data.getData());
+    }
+}
+</code></pre><p> 　　结果如下：<br>    data :dh<br>    data :123<br>    data :456<br>    data :456<br>    data :123<br>    data :456<br>　　我们用？来代替具体的参数类型，主要是为了匹配我们创建类ＢＯＸ时用了Ｔ这个形参。？可以说是所有形参的父类。可以指代任何泛型，是实际参数，不是形参。就是固定好的。</p>
+<p>　　&lt;? extends T&gt;必须是T和T的子类</p>
+<p>　　&lt;? Super T&gt;必须是T或T的父类<br>　　从上面的例子可以很容易的看出来。</p>
+
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2018/05/04/java重写规则/" rel="next" title="java 重写规则">
+                <i class="fa fa-chevron-left"></i> java 重写规则
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2018/05/08/java垃圾回收算法/" rel="prev" title="jvm垃圾回收算法">
+                jvm垃圾回收算法 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <p class="site-author-name" itemprop="name">董航</p>
+              <p class="site-description motion-element" itemprop="description">clear 航</p>
+          </div>
+
+          <nav class="site-state motion-element">
+
+            
+              <div class="site-state-item site-state-posts">
+              
+                <a href="/archives/">
+              
+                  <span class="site-state-item-count">100</span>
+                  <span class="site-state-item-name">日志</span>
+                </a>
+              </div>
+            
+
+            
+
+            
+
+          </nav>
+
+          
+
+          <div class="links-of-author motion-element">
+            
+          </div>
+
+          
+          
+
+          
+          
+
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#为何有泛型"><span class="nav-number">1.</span> <span class="nav-text">为何有泛型</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#最简单的泛型实例"><span class="nav-number">2.</span> <span class="nav-text">最简单的泛型实例</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#自定义泛型接口、泛型类和泛型方法"><span class="nav-number">3.</span> <span class="nav-text">自定义泛型接口、泛型类和泛型方法</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#类型通配符"><span class="nav-number">4.</span> <span class="nav-text">类型通配符</span></a></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <script async src="https://dn-lbstatics.qbox.me/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+<div class="copyright">&copy; <span itemprop="copyrightYear">2019</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">董航</span>
+
+  
+</div>
+
+
+<div class="powered-by">
+<i class="fa fa-user-md"></i><span id="busuanzi_container_site_uv">
+  本站访客数:<span id="busuanzi_value_site_uv"></span>
+</span>
+</div>
+
+  <div class="powered-by">由 <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a> 强力驱动</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">主题 &mdash; <a class="theme-link" target="_blank" href="https://github.com/iissnan/hexo-theme-next">NexT.Pisces</a> v5.1.3</div>
+
+
+
+
+        
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/canvas-nest/canvas-nest.min.js"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.3"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.3"></script>
+
+
+
+  
+  
+
+
+  <script type="text/javascript" src="/js/src/affix.js?v=5.1.3"></script>
+
+  <script type="text/javascript" src="/js/src/schemes/pisces.js?v=5.1.3"></script>
+
+
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.3"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.3"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.3"></script>
+
+
+
+  
+
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>

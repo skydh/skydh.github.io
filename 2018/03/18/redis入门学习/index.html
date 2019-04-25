@@ -1,0 +1,748 @@
+<!DOCTYPE html>
+
+
+
+  
+
+
+<html class="theme-next pisces use-motion" lang="zh-Hans">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css" />
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=5.1.3" rel="stylesheet" type="text/css" />
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=5.1.3">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=5.1.3">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=5.1.3">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=5.1.3" color="#222">
+
+
+
+
+
+  <meta name="keywords" content="Hexo, NexT" />
+
+
+
+
+
+
+
+
+
+
+<meta name="description" content="NOSQL　　为什么需要NOSQL?　　１．高并发读写。　　２．海量数据的高效率的存储和访问。　　３．高可扩展和高可用性。　　什么是NOSQL?　　NOSQL是not only sql。非关系数据库。　　NOSQL数据库的四大分类。　　键值存储：ｒｅｄｉｓ．　　列存储：ＨＢＡＳＥ，　　文档数据库：ＭＯＮＧＤＢ．　　图形">
+<meta property="og:type" content="article">
+<meta property="og:title" content="redis入门学习">
+<meta property="og:url" content="https://skydh.github.io/2018/03/18/redis入门学习/index.html">
+<meta property="og:site_name" content="why are you so happy">
+<meta property="og:description" content="NOSQL　　为什么需要NOSQL?　　１．高并发读写。　　２．海量数据的高效率的存储和访问。　　３．高可扩展和高可用性。　　什么是NOSQL?　　NOSQL是not only sql。非关系数据库。　　NOSQL数据库的四大分类。　　键值存储：ｒｅｄｉｓ．　　列存储：ＨＢＡＳＥ，　　文档数据库：ＭＯＮＧＤＢ．　　图形数据库：Ｎｅｏ４ｊ，  Redis概述　　高性能的键值对数据库，也是内存数据库很">
+<meta property="og:locale" content="zh-Hans">
+<meta property="og:image" content="https://raw.githubusercontent.com/skydh/picture/master/nosql.png">
+<meta property="og:updated_time" content="2019-02-19T03:41:21.202Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="redis入门学习">
+<meta name="twitter:description" content="NOSQL　　为什么需要NOSQL?　　１．高并发读写。　　２．海量数据的高效率的存储和访问。　　３．高可扩展和高可用性。　　什么是NOSQL?　　NOSQL是not only sql。非关系数据库。　　NOSQL数据库的四大分类。　　键值存储：ｒｅｄｉｓ．　　列存储：ＨＢＡＳＥ，　　文档数据库：ＭＯＮＧＤＢ．　　图形数据库：Ｎｅｏ４ｊ，  Redis概述　　高性能的键值对数据库，也是内存数据库很">
+<meta name="twitter:image" content="https://raw.githubusercontent.com/skydh/picture/master/nosql.png">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Pisces',
+    version: '5.1.3',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: true,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    duoshuo: {
+      userId: '0',
+      author: '博主'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="https://skydh.github.io/2018/03/18/redis入门学习/"/>
+
+
+
+
+
+  <title>redis入门学习 | why are you so happy</title>
+  
+
+
+
+
+
+
+
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/"  class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">why are you so happy</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle">clear 航</p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br />
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />
+            
+            归档
+          </a>
+        </li>
+      
+
+      
+    </ul>
+  
+
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="https://skydh.github.io/2018/03/18/redis入门学习/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="董航">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="why are you so happy">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">redis入门学习</h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2018-03-18T17:11:52+08:00">
+                2018-03-18
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <h2 id="NOSQL"><a href="#NOSQL" class="headerlink" title="NOSQL"></a>NOSQL</h2><p>　　为什么需要NOSQL?<br>　　１．高并发读写。<br>　　２．海量数据的高效率的存储和访问。<br>　　３．高可扩展和高可用性。<br>　　什么是NOSQL?<br>　　NOSQL是not only sql。非关系数据库。<br>　　NOSQL数据库的四大分类。<br>　　键值存储：ｒｅｄｉｓ．<br>　　列存储：ＨＢＡＳＥ，<br>　　文档数据库：ＭＯＮＧＤＢ．<br>　　图形数据库：Ｎｅｏ４ｊ，</p>
+<p><img src="https://raw.githubusercontent.com/skydh/picture/master/nosql.png" alt="aaa"></p>
+<h2 id="Redis概述"><a href="#Redis概述" class="headerlink" title="Redis概述"></a>Redis概述</h2><p>　　高性能的键值对数据库，也是内存数据库很快，支持很多键值数据类型：<br>　　字符串类型。<br>　　列表类型。<br>　　有序集合类型。<br>　　散列类型。<br>　　集合类型。<br>　　Redis主要用于场景。<br>　　缓存。　任务队列。网站访问统计等。</p>
+<h2 id="Redis安装"><a href="#Redis安装" class="headerlink" title="Redis安装"></a>Redis安装</h2><p>　　工具：CentOS,虚拟机VM,FileZilla,SecureCRT,官网下载的redis压缩包这5个工具。<br>　　１，打开虚拟机，用ifconfig查看网络地址，然后打开SecureCRT连接到这个虚拟机，然后进行操作.<br>　　２．打开FileZilla,连上虚拟机，然后找到找到文件传送到虚拟机里面的centos里面。<br>　　３．安装Gcc环境：yum install gcc c++,在线安装gcc。<br>　　４，解压这个redis压缩包。命令如下： tar -zxvf redis-4.0.8.tar.gz。然后进入到解压的包里面，编译这个redis。命令是： make,好了之后就是安装了，命令如下所示：make PREFIX=/usr/local/redis install,中间的是我的安装路径。然后进入到解压路径，找到redis.conf这个文件，复制到安装路径。命令如下：cp redis.conf /usr/local/redis。然后进入到安装路径下，找到这个文件打开编辑这个文件，将 daemonize no,改成yes。再然后启动redis,进入到安装目录的redis包下命令如下: ./bin/redis-server ./redis.conf。然后用这个命令：ps -ef | grep -i redis查看redis是否成功启动。，进入到redis的操作界面命令如下： redis.cli进行交互。至此，安装完毕</p>
+<h2 id="jedis介绍"><a href="#jedis介绍" class="headerlink" title="jedis介绍"></a>jedis介绍</h2><p>　　Jedis是redis的基本连接java操作接口。是redis官网首选的java客户端开发包。注意地址你要先ifconfig，查看地址。<br>代码演示下</p>
+<pre>
+
+    public class JunitTest {
+        @Test
+        public void demo1() {
+            //System.out.println("111");
+            Jedis jedis = new Jedis("192.168.1.106", 6379);
+            jedis.set("name1", "dh");
+            System.out.println(jedis.get("name1"));
+            jedis.close();
+        }
+
+    }
+</pre>
+
+<p><pre><br>    @Test<br>    public void demo2() {<br>        // System.out.println(“111”);</pre></p>
+<pre><code>    JedisPoolConfig jedisPoolConfig = new JedisPoolConfig();
+    // 最大数
+    jedisPoolConfig.setMaxTotal(20);
+    // 最大空闲数
+    jedisPoolConfig.setMaxIdle(10);
+
+    JedisPool jedisPool = new JedisPool(jedisPoolConfig, &quot;192.168.1.106&quot;, 6379);
+
+    Jedis jedis = null;
+    try {
+        jedis = jedisPool.getResource();
+        jedis.set(&quot;name1&quot;, &quot;dh&quot;);
+        System.out.println(jedis.get(&quot;name1&quot;));
+    } catch (Exception e) {
+    } finally {
+        jedis.close();
+        jedisPool.close();
+    }
+
+}
+</code></pre><p><br>　　相关的maven1依赖自己加。这里我要说的是以下几点，第一。直接运行会报错的，很多原因，CentOs方案如下：<br>　　１.开启防火墙：systemctl start firewalld.service<br>　　２．开启端口firewall-cmd –zone=public –add-port=80/tcp –permanent<br>　　命令含义：<br>　　–zone #作用域<br>　　–add-port=80/tcp #添加端口，格式为：端口/通讯协议<br>　　–permanent #永久生效，没有此参数重启后失效<br>　　３．重启防火墙：firewall-cmd –reload<br>　　４．修改上面redis包下的redis.conf文件1&gt;注释掉bind<br>   为#bind 127.0.0.1<br>　　2&gt;默认不是守护进程方式运行，这里可以修改<br>　　daemonize yes<br>　　3&gt;禁用保护模式<br>　　protected-mode no<br>　　５．若是SecureCRT无法连接虚拟机，输入：systemctl restart sshd.service<br>　　然后在运行，搞定。</p>
+<h2 id="redis基本数据结构"><a href="#redis基本数据结构" class="headerlink" title="redis基本数据结构"></a>redis基本数据结构</h2><p>　　五大基本数据类型：字符串（String）,字符串列表（list）,有序字符创集合（sorted set）,哈希（hash）,字符串集合（set）<br>　　key定义的注意点：1,key值不要太长，不要超过1024字节。2,不要太短，可读性太差，3命名规范</p>
+<h3 id="字符串String"><a href="#字符串String" class="headerlink" title="字符串String"></a>字符串String</h3><p>　　存入redis是2进制操作的，最大是512M.<br>　　基本命令：赋值：set company yonyou,取值 get company,取值并且赋值getset company baidu “mmm”,删除 del company.加值操作： incr num，若num不存在，那么创建值为0，且加一，若是存在那么加一，若是无法转为整形，报错。同样还有decr num是减一操作。incrby num 5,这是一次加5，其余的和incr一样，decrby num 5,这是和incryby相反的。append compay dh,是在company这个key的value的值后面添加一个字符串。返回值为字符串长度。若是不存在，那么直接创建这个值。<br>　　基本用法：将用户信息序列化之后存到redis里面。然后取出反序列化。<br>　　数据结构：数据结构类似ArrayList，是动态的，为了减少频繁的扩容，会预先分配冗余空间。当字符串大小小于1M时，扩容时翻倍扩容，大于等于1M时则是一次扩容1M。</p>
+<h3 id="存储Hash"><a href="#存储Hash" class="headerlink" title="存储Hash"></a>存储Hash</h3><p>　　String key 和String Value的map容器，每个Hash可以存很多键值对。相当于java里面的HashMap.当第一维数组发生碰撞时，会将碰撞的数据形成链表。<br>　　基本用法：也可以存储用户信息，可以把信息，也就是每个字段单独存储。用的时候不用一下子全部取出来，只用取出自己要用的部分。可以减少网络io，但是这种数据结构性能太差。<br>　　赋值：hest myhash username dh,多个赋值，hmset myhash username dh age 21.取值：hget myhash username,一次取多个值hget myhash username age.全部取出来 hgetall myhash.<br>　　删除：单个删除：hdel myhash user age,del myhash是删除整个集合。同一样可以加值操作， hincrby myhash age 5,也有删除操作hdecrby myhash age 5,判断hash中是否存在某个key:hexists myhash username,成功返回1，不成功返回0.判断hash中多少属性key:hlen myhash.获得所有的key:hkeys myhash,获取所有value:hvalue myhash</p>
+<h3 id="list"><a href="#list" class="headerlink" title="list"></a>list</h3><p>　　按照插入顺序的链表。可以从头部和尾部插入，没有key时创建这个key，数据没了删除这个key,链表的操作特征，大家都懂的。可以用作队列和栈。由于该结构是链表结构，如果按照顺序获取数据，左出或者右出都可以很高效，但是如果按照下标获取数据，那么久可能会很慢，因为要一个个遍历，时间复杂度高。<br>　　这个list的实际存储并不是纯粹的linkedList，而是一个叫做快速链表的一个结构，首先数据量小的时候使用一块连续的内存存储，这个结构就是ziplist,也就是压缩列表，所有元素紧挨一起存储，分配一块连续的内存，当数据量大的时候才会变成快速链表，就是多个ziplist连在一起。</p>
+<p>　　这些方式来存储数据ArrayList,linklist双向链表<br>　　左边插入数据Ipush mylist a,b,c,建立一个list,并且把数据插进去，就像栈一样，返回值是链表的个数。<br>　　右侧插入rpush mylist a b,c<br>　　查看链表　lrange mylist 0 5,查看链表0-5的元素。０代表第一个元素，－１代表最后一个元素。那么查看索引信息的<br>　　左侧弹出元素　lpop mylist<br>　　右侧弹出元素　rpop mylist<br>　　获取元素个数　llen mylist<br>　　lpushx,rpushx这个和lpush差不多一样，但是没有这个key的时候是不会创建这个链表的。<br>　　lrem mylist count 1,当cout&gt;0,那么从头开始删除数目为count的1，当count&lt;0,从尾部开始删除绝对值为count的1，如果count=0，那么删除所有的1，。<br>　　lset mylist 3 mmm,效果是吧第四个元素替换为mmm,<br>　　linsert mylist before b 11,在这个mylist的这个list里面的这个b元素前边插入11<br>　　linsert mylist after b 11,在这个mylist的这个list里面的这个b元素后边插入11。<br>　　 rpoplpush mylist mylist1 将list1结尾的元素放到list2首部,这个主要用于消息队列。</p>
+<h3 id="存储set。"><a href="#存储set。" class="headerlink" title="存储set。"></a>存储set。</h3><p>　　和java的set集合类似。也类似于集合。<br>　　sadd myset a b c，添加元素<br>　　srem  myset a删除元素<br>　　smembers myset 返回集合的所有元素。<br>　　sismember myset a,判断集合是否存在a,返回值为1表示存在，返回值为0表示不存在。<br>　　sdiff myset myset1,返回myset1中没有，但是myset有的值。<br>　　sinter myset myset1 返回这2个都有的值，也就是交集。<br>　　sunion myset myset1 ,这个就是求着2个集合的并集。<br>　　scard myset 返回集合的数目<br>　　srandmember myset 返回随机一个集合的元素<br>　　sdiffstore my1 myset myset1,就是将myset，myset1按这个顺序做一个差集，再把这个差集添加到my1这个集合里面去。<br>　　sinterstore my1 myset myset1,就是将myset，myset1做一个交集，再把这个交集添加到my1这个集合里面去。<br>　　sunionstore my1 myset myset1,就是将myset，myset1做一个并集，再把这个并集添加到my1这个集合里面去。
+　　</p>
+<h3 id="Sorted-set"><a href="#Sorted-set" class="headerlink" title="Sorted-set"></a>Sorted-set</h3><p>　　和Set差不多属性，就是多了个排序的能力。<br>　　zadd mysort 70 cs 80 ls 90 ss,增加3个元素，前面的是分数，代表其在sorted-set中的顺序，如果在添加zadd mysort 100 cs,这个value已经有了，那么就会用新的分数代替旧的分数。<br>　　zscore mysort cs 获取cs这个value对应的分数。<br>　　zcard mysort 返回这个sorted-set里面多少元素。<br>　　zrem mysort tom ww,删除tom,ww这个2个值。<br>　　zrange mysort 0 -1,和list的操作一样。这个只是返回值。<br>　　zrange mysqrt 0 -1 withscores，多返回了分数，从小到大的顺序出来。<br>　　zrevrange mysort 0 -1 withscores 从大到小排序。<br>　　zremrangebyrank mysort 0 4,范围删除。<br>　　zremrangebyscore mysort 80 100,按照分数范围删除。<br>　　zrangebyscore mysort 0 100,分数从0到100的value<br>　　zrangebyscore mysort 0 100 withscores 和上面一样就是多了分数。<br>　　zrangebyscore mysort 0 100 withscores limit 0 2,选取前面2个数据<br>　　zincrby mysort 3 ls，给ls这个元素的分数加3.<br>　　zcount mysort 80 90,分数80到90的个数。<br>　　 底层实现：这个底层是基于跳跃表实现的。为了满足随机插入，删除，定位，因此采用跳跃表。跳跃表是类似于这种层级制。最下面一层元素都会串起来，然后每隔几个元素选出一个代表，将这几个代表串起来，然后在这些代表里面在选出代表，在串起来，不断向上。</p>
+<h3 id="keys操作"><a href="#keys操作" class="headerlink" title="keys操作"></a>keys操作</h3><p>　　keys * 查看所有的keys<br>　　keys my? 以my开头的keys.<br>　　del my1,my2,删除这些keys.<br>　　exists mykeys判断这个key是否存在。<br>　　rename company newname,给这个key重命名<br>　　expire newname 1000.1000秒就过期。ke<br>　　ttl newname 所剩超时时间<br>　　type newname返回类型</p>
+<h2 id="Redis特性"><a href="#Redis特性" class="headerlink" title="Redis特性"></a>Redis特性</h2><h3 id="多数据库"><a href="#多数据库" class="headerlink" title="多数据库"></a>多数据库</h3><p>　　一个Redis可以包含多个数据库。一个Redis最多16个数据库，客户端默认连接的是0号数据库。类似于mysql可以创建多个数据库。<br>　　select 1,选择一号数据库<br>　　move myset 1,这个就是把当前数据库的这个key移到1号数据库里面。</p>
+<h3 id="事务"><a href="#事务" class="headerlink" title="事务"></a>事务</h3><p>　　multi exec discard<br>　　事务会让命令串行化执行，同时也不会向其他客户端提供服务。从而保证事务。<br>　　用multi来开启事务，用exec来提交事务。用discard来进行回滚。<br>　　当你用multi时，后续的命令都会被加到命令队列里面。直到遇见exec来提交。</p>
+<h2 id="Redis持久化"><a href="#Redis持久化" class="headerlink" title="Redis持久化"></a>Redis持久化</h2><p>　　就是把redis的数据同步到硬盘上，redis快是由于其运行在内存里面的。<br>　　２种方式实现持久化。<br>　　ＲＤＢ，ＡＯＦ这２个方式。<br>　　RDB，就是指定时间内就把数据写入硬盘。<br>　　配置：<br>　　打开我们的redis的配置文件redis.conf，<br>    save 900 1<br>    save 300 10<br>    save 60 10000<br>　　就是每900秒若是有一个key变化就写入文件。第二个就是每300秒有10个key变化时就写入文件，第三个就是每60秒有10000key变化时就写入文件。<br>　　dbfilename dump.rdb<br>　　文件名字。<br>　　dir ./当前路径。<br>　　aof，将以日志记录每个数据操作，启动时，重新加载。<br>　　配置：打开redis.conf这个文件找到这个appendonly no,这个是配置这个redis是否发开的方式。将之改为yes就是启动这个aof配置。<br>　　３个同步方案；<br>　　appendsync always ,每次操作都同步<br>　　appendfsync </p>
+<h2 id="info-指令"><a href="#info-指令" class="headerlink" title="info 指令"></a>info 指令</h2><p>　　我们可以用info指令查看redis运行状态。其大致分为9大块。</p>
+<pre><code>Server 服务器运行的环境参数
+Clients 客户端相关信息
+Memory 服务器运行内存统计数据
+Persistence 持久化信息
+Stats 通用统计数据
+Replication 主从复制相关信息
+CPU CPU 使用情况
+Cluster 集群信息
+KeySpace 键值对统计数量信息
+</code></pre><p>　　我们可以根据这些信息判断这些时候redis是否需要集群啊，等问题，来调整redis。</p>
+
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2018/03/12/mybatis简介/" rel="next" title="mybatis简介">
+                <i class="fa fa-chevron-left"></i> mybatis简介
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2018/03/18/spring事务机制/" rel="prev" title="spring 事务机制">
+                spring 事务机制 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <p class="site-author-name" itemprop="name">董航</p>
+              <p class="site-description motion-element" itemprop="description">clear 航</p>
+          </div>
+
+          <nav class="site-state motion-element">
+
+            
+              <div class="site-state-item site-state-posts">
+              
+                <a href="/archives/">
+              
+                  <span class="site-state-item-count">100</span>
+                  <span class="site-state-item-name">日志</span>
+                </a>
+              </div>
+            
+
+            
+
+            
+
+          </nav>
+
+          
+
+          <div class="links-of-author motion-element">
+            
+          </div>
+
+          
+          
+
+          
+          
+
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#NOSQL"><span class="nav-number">1.</span> <span class="nav-text">NOSQL</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Redis概述"><span class="nav-number">2.</span> <span class="nav-text">Redis概述</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Redis安装"><span class="nav-number">3.</span> <span class="nav-text">Redis安装</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#jedis介绍"><span class="nav-number">4.</span> <span class="nav-text">jedis介绍</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#redis基本数据结构"><span class="nav-number">5.</span> <span class="nav-text">redis基本数据结构</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#字符串String"><span class="nav-number">5.1.</span> <span class="nav-text">字符串String</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#存储Hash"><span class="nav-number">5.2.</span> <span class="nav-text">存储Hash</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#list"><span class="nav-number">5.3.</span> <span class="nav-text">list</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#存储set。"><span class="nav-number">5.4.</span> <span class="nav-text">存储set。</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Sorted-set"><span class="nav-number">5.5.</span> <span class="nav-text">Sorted-set</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#keys操作"><span class="nav-number">5.6.</span> <span class="nav-text">keys操作</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Redis特性"><span class="nav-number">6.</span> <span class="nav-text">Redis特性</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#多数据库"><span class="nav-number">6.1.</span> <span class="nav-text">多数据库</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#事务"><span class="nav-number">6.2.</span> <span class="nav-text">事务</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Redis持久化"><span class="nav-number">7.</span> <span class="nav-text">Redis持久化</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#info-指令"><span class="nav-number">8.</span> <span class="nav-text">info 指令</span></a></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <script async src="https://dn-lbstatics.qbox.me/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+<div class="copyright">&copy; <span itemprop="copyrightYear">2019</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">董航</span>
+
+  
+</div>
+
+
+<div class="powered-by">
+<i class="fa fa-user-md"></i><span id="busuanzi_container_site_uv">
+  本站访客数:<span id="busuanzi_value_site_uv"></span>
+</span>
+</div>
+
+  <div class="powered-by">由 <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a> 强力驱动</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">主题 &mdash; <a class="theme-link" target="_blank" href="https://github.com/iissnan/hexo-theme-next">NexT.Pisces</a> v5.1.3</div>
+
+
+
+
+        
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/canvas-nest/canvas-nest.min.js"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.3"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.3"></script>
+
+
+
+  
+  
+
+
+  <script type="text/javascript" src="/js/src/affix.js?v=5.1.3"></script>
+
+  <script type="text/javascript" src="/js/src/schemes/pisces.js?v=5.1.3"></script>
+
+
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.3"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.3"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.3"></script>
+
+
+
+  
+
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>

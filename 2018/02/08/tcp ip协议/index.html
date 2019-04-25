@@ -1,0 +1,690 @@
+<!DOCTYPE html>
+
+
+
+  
+
+
+<html class="theme-next pisces use-motion" lang="zh-Hans">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css" />
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=5.1.3" rel="stylesheet" type="text/css" />
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=5.1.3">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=5.1.3">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=5.1.3">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=5.1.3" color="#222">
+
+
+
+
+
+  <meta name="keywords" content="Hexo, NexT" />
+
+
+
+
+
+
+
+
+
+
+<meta name="description" content="什么是tcp/ip协议　　tcp/ip是2个协议，tcp是运输端协议，ip是网络端协议，这2个协议一般一起使用的。ip协议是来确定和找到地址的，tcp则是具体的传输信息的工作。 tcp的三次握手和四次挥手协议　　理解这个过程首先要知道tcp的2个序号和3个标志位的含义。　　seq:表示传输数据的序号。tcp传输时每一个">
+<meta property="og:type" content="article">
+<meta property="og:title" content="tcp&#x2F;ip协议">
+<meta property="og:url" content="https://skydh.github.io/2018/02/08/tcp ip协议/index.html">
+<meta property="og:site_name" content="why are you so happy">
+<meta property="og:description" content="什么是tcp/ip协议　　tcp/ip是2个协议，tcp是运输端协议，ip是网络端协议，这2个协议一般一起使用的。ip协议是来确定和找到地址的，tcp则是具体的传输信息的工作。 tcp的三次握手和四次挥手协议　　理解这个过程首先要知道tcp的2个序号和3个标志位的含义。　　seq:表示传输数据的序号。tcp传输时每一个字节都有序号，发送时会把第一个序号发过去。接收端通过序号判断数据是否完整，如果不">
+<meta property="og:locale" content="zh-Hans">
+<meta property="og:image" content="https://raw.githubusercontent.com/skydh/picture/master/tcp_001.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/skydh/picture/master/tcp_002.png">
+<meta property="og:updated_time" content="2018-02-09T02:28:18.792Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="tcp&#x2F;ip协议">
+<meta name="twitter:description" content="什么是tcp/ip协议　　tcp/ip是2个协议，tcp是运输端协议，ip是网络端协议，这2个协议一般一起使用的。ip协议是来确定和找到地址的，tcp则是具体的传输信息的工作。 tcp的三次握手和四次挥手协议　　理解这个过程首先要知道tcp的2个序号和3个标志位的含义。　　seq:表示传输数据的序号。tcp传输时每一个字节都有序号，发送时会把第一个序号发过去。接收端通过序号判断数据是否完整，如果不">
+<meta name="twitter:image" content="https://raw.githubusercontent.com/skydh/picture/master/tcp_001.png">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Pisces',
+    version: '5.1.3',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: true,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    duoshuo: {
+      userId: '0',
+      author: '博主'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="https://skydh.github.io/2018/02/08/tcp ip协议/"/>
+
+
+
+
+
+  <title>tcp/ip协议 | why are you so happy</title>
+  
+
+
+
+
+
+
+
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/"  class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">why are you so happy</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle">clear 航</p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br />
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />
+            
+            归档
+          </a>
+        </li>
+      
+
+      
+    </ul>
+  
+
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="https://skydh.github.io/2018/02/08/tcp ip协议/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="董航">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="why are you so happy">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">tcp/ip协议</h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2018-02-08T14:24:27+08:00">
+                2018-02-08
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <h2 id="什么是tcp-ip协议"><a href="#什么是tcp-ip协议" class="headerlink" title="什么是tcp/ip协议"></a>什么是tcp/ip协议</h2><p>　　tcp/ip是2个协议，tcp是运输端协议，ip是网络端协议，这2个协议一般一起使用的。ip协议是来确定和找到地址的，tcp则是具体的传输信息的工作。</p>
+<h2 id="tcp的三次握手和四次挥手协议"><a href="#tcp的三次握手和四次挥手协议" class="headerlink" title="tcp的三次握手和四次挥手协议"></a>tcp的三次握手和四次挥手协议</h2><p>　　理解这个过程首先要知道tcp的2个序号和3个标志位的含义。<br>　　seq:表示传输数据的序号。tcp传输时每一个字节都有序号，发送时会把第一个序号发过去。接收端通过序号判断数据是否完整，如果不完整则重发。<br>　　ack:表示确认号，接受端表示数据已经完整接受，向发送端发送确认号。表示希望接受到数据的编号。一般为接受端报文最后的序号+1.<br>　　ACk：表示确认位。只有ACK=1时ack才会起作用。正常通信时ACK=1,第一次的话没有接收方确认是0.<br>　　SYN:这个是同步标志位，当SYN=1,ACK=0时表示这是个连接请求报文段，握手完成后SYN标志位为1<br>　　FIN:FIN=1表示数据已经发送完要求释放运输连接。</p>
+<p><img src="https://raw.githubusercontent.com/skydh/picture/master/tcp_001.png" alt="aaa"><br><img src="https://raw.githubusercontent.com/skydh/picture/master/tcp_002.png" alt="aaa"><br>　　简述下３次握手和四次挥手<br>　　三次握手<br>　    1.客户端向服务端发送连接请求包，ACk位为0，SYN为1，seq=X,ACk是因为没有接受到确认信息故为0，因此需要同步标志位来确认其为有效连接。<br>　　２．服务端向客户端发送确认信息：标识位SYN=1，ACK=1，希望收到的下个信息的序号为ack=x+1;自身的seq序号为y.<br>　　３．客户端向服务端发送确认报文，ACK=1,SYN=1,ack=y+1,seq=x+1。<br>　　为何需要三次握手？<br>　　第一次，服务端知道自己接受数据没问题，第二次，客户端知道自己自己发送数据和接受数据没问题，第三次服务端知道自己发送数据没问题。然后，数据开始发送。<br>　　四次挥手<br>　　１．客户发送FIN=1,seq=x,来像服务器发送终止请求。<br>　　２．服务端接受到FIN后，发送一个ACK=1,seq=y,ACK=x+1.<br>　　３．关闭服务端到客户端的连接，且发送一个FIN给客户端。<br>　　４．客户端收到FIN后，且发送一个ACK=1,seq=x+1,ack=y+1.<br>　　简而言之这样的：<br>　　第一次客户端发送一个fin,表示自己数据发完了，服务端收到后，若是数据没有发送完，就发送一个ack，表示，已经收到你的请求，但是服务端数据没有发送完，继续发送数据，等到数据发送完了，就发送一个fin,客户端收到fin后就发送一个ack,表示确认收到，服务端就可以关闭连接了。但是客户端还是要等一个周期时间，如果客户端发送ack丢失了，服务端没有收到就会继续发送fin,直到收到信息后，才关闭，而客户端在一定周期内没有收到信号也关闭。<br>　　为何是结束是4次握手？<br>　　数据可能没有发送完。如果都是同时发送完了，那么也是3次握手，3次握手是由于没有数据传送<br>　　注意到每一次连接都要消耗3次握手和4次握手，<br>　　故有了tcp长连接和短连接，http的长连接和短连接实际上就是tcp的．</p>
+<p>　　短连接：就是一次简单的tcp连接，数据发送完直接关闭。连接→数据传输→关闭连接</p>
+<p>　　长连接：就是在一次连接内多次发送数据包，中间若是没有数据那么靠心跳保活协议维护， 连接→数据传输→保持连接(心跳)→数据传输→保持连接(心跳)→……→关闭连接<br>　　这样子就减少了多次连接所消耗的握手
+　　</p>
+
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2018/02/08/DNS协议简介/" rel="next" title="DNS协议">
+                <i class="fa fa-chevron-left"></i> DNS协议
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2018/02/09/http协议浅析/" rel="prev" title="浅析http协议">
+                浅析http协议 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <p class="site-author-name" itemprop="name">董航</p>
+              <p class="site-description motion-element" itemprop="description">clear 航</p>
+          </div>
+
+          <nav class="site-state motion-element">
+
+            
+              <div class="site-state-item site-state-posts">
+              
+                <a href="/archives/">
+              
+                  <span class="site-state-item-count">100</span>
+                  <span class="site-state-item-name">日志</span>
+                </a>
+              </div>
+            
+
+            
+
+            
+
+          </nav>
+
+          
+
+          <div class="links-of-author motion-element">
+            
+          </div>
+
+          
+          
+
+          
+          
+
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#什么是tcp-ip协议"><span class="nav-number">1.</span> <span class="nav-text">什么是tcp/ip协议</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#tcp的三次握手和四次挥手协议"><span class="nav-number">2.</span> <span class="nav-text">tcp的三次握手和四次挥手协议</span></a></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <script async src="https://dn-lbstatics.qbox.me/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+<div class="copyright">&copy; <span itemprop="copyrightYear">2019</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">董航</span>
+
+  
+</div>
+
+
+<div class="powered-by">
+<i class="fa fa-user-md"></i><span id="busuanzi_container_site_uv">
+  本站访客数:<span id="busuanzi_value_site_uv"></span>
+</span>
+</div>
+
+  <div class="powered-by">由 <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a> 强力驱动</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">主题 &mdash; <a class="theme-link" target="_blank" href="https://github.com/iissnan/hexo-theme-next">NexT.Pisces</a> v5.1.3</div>
+
+
+
+
+        
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/canvas-nest/canvas-nest.min.js"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.3"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.3"></script>
+
+
+
+  
+  
+
+
+  <script type="text/javascript" src="/js/src/affix.js?v=5.1.3"></script>
+
+  <script type="text/javascript" src="/js/src/schemes/pisces.js?v=5.1.3"></script>
+
+
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.3"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.3"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.3"></script>
+
+
+
+  
+
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>
