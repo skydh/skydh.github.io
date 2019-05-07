@@ -79,17 +79,17 @@
 
 
 
-<meta name="description" content="clear 航">
+<meta name="description" content="约定配置　　maven约定大于配置：　　${basedir}    存放pom.xml和所有的子目录　　${basedir}/src/main/java    项目的java源代码　　${basedir}/src/main/resources    项目的资源，比如property文件，springmvc.xml　　$">
 <meta property="og:type" content="article">
 <meta property="og:title" content="maven">
 <meta property="og:url" content="https://skydh.github.io/2019/04/16/maven/index.html">
 <meta property="og:site_name" content="why are you so happy">
-<meta property="og:description" content="clear 航">
+<meta property="og:description" content="约定配置　　maven约定大于配置：　　${basedir}    存放pom.xml和所有的子目录　　${basedir}/src/main/java    项目的java源代码　　${basedir}/src/main/resources    项目的资源，比如property文件，springmvc.xml　　${basedir}/src/test/java    项目的测试类，比如说Jun">
 <meta property="og:locale" content="zh-Hans">
-<meta property="og:updated_time" content="2019-04-16T01:24:16.708Z">
+<meta property="og:updated_time" content="2019-05-07T06:43:45.052Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="maven">
-<meta name="twitter:description" content="clear 航">
+<meta name="twitter:description" content="约定配置　　maven约定大于配置：　　${basedir}    存放pom.xml和所有的子目录　　${basedir}/src/main/java    项目的java源代码　　${basedir}/src/main/resources    项目的资源，比如property文件，springmvc.xml　　${basedir}/src/test/java    项目的测试类，比如说Jun">
 
 
 
@@ -299,7 +299,12 @@
       
 
       
-        
+        <h2 id="约定配置"><a href="#约定配置" class="headerlink" title="约定配置"></a>约定配置</h2><p>　　maven约定大于配置：<br>　　${basedir}    存放pom.xml和所有的子目录<br>　　${basedir}/src/main/java    项目的java源代码<br>　　${basedir}/src/main/resources    项目的资源，比如property文件，springmvc.xml<br>　　${basedir}/src/test/java    项目的测试类，比如说Junit代码<br>　　${basedir}/src/test/resources    测试用的资源<br>　　${basedir}/src/main/webapp/WEB-INF    web应用文件目录，web项目的信息，比如存放web.xml、本地图片、jsp视图页面<br>　　${basedir}/target    打包输出目录<br>　　${basedir}/target/classes    编译输出目录<br>　　${basedir}/target/test-classes    测试编译输出目录<br>　　Test.java    Maven只会自动运行符合该命名规则的测试类<br>　　~/.m2/repository    Maven默认的本地仓库目录位置。</p>
+<h2 id="pom"><a href="#pom" class="headerlink" title="pom"></a>pom</h2><h3 id="pom基本标签简介"><a href="#pom基本标签简介" class="headerlink" title="pom基本标签简介"></a>pom基本标签简介</h3><p>　　groupId：公司或者组织的唯一标志，并且配置时生成的路径也是由此生成， 如<br>　　<groupid>com.companyname.project-group</groupid>，maven会将该项目打成的jar包放本地路径：/com/companyname/project-group<br>　　artifactId：项目的唯一ID，一个groupId下面可能多个项目，就是靠artifactId来区分的。<br>　　version：版本号。<br>　　project：工程的根标签。<br>　　modelVersion：模型版本，基本都是4.0</p>
+<h3 id="父pom"><a href="#父pom" class="headerlink" title="父pom"></a>父pom</h3><p>　　所有的pom都要继承一个父pom。父pom声明了一些可被继承的默认设置。maven使用effective pom(父pom+自己工程pom的配置)来执行目标，目的是为了尽可能减少配置。
+　　</p>
+<h2 id="maven生命周期"><a href="#maven生命周期" class="headerlink" title="maven生命周期"></a>maven生命周期</h2><p>　　validate：验证项目是否正确且所有必须信息是可用的。<br>　　compile：执行编译    源代码编译在此阶段完成。<br>　　Test：使用适当的单元测试框架（例如JUnit）运行测试<br>　　package：打包创建JAR/WAR包如在 pom.xml 中定义提及的包<br>　　verify：    检查    对集成测试的结果进行检查，以保证质量达标<br>　　install：安装安装打包的项目到本地仓库，以供其他项目使用<br>　　deploy：    部署    拷贝最终的工程包到远程仓库中，以共享给其他开发人员和工程</p>
+
       
     </div>
     
@@ -387,8 +392,17 @@
       
 
       
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
 
-      <section class="site-overview-wrap sidebar-panel sidebar-panel-active">
+      <section class="site-overview-wrap sidebar-panel">
         <div class="site-overview">
           <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
             
@@ -432,6 +446,22 @@
         </div>
       </section>
 
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#约定配置"><span class="nav-number">1.</span> <span class="nav-text">约定配置</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#pom"><span class="nav-number">2.</span> <span class="nav-text">pom</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#pom基本标签简介"><span class="nav-number">2.1.</span> <span class="nav-text">pom基本标签简介</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#父pom"><span class="nav-number">2.2.</span> <span class="nav-text">父pom</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#maven生命周期"><span class="nav-number">3.</span> <span class="nav-text">maven生命周期</span></a></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
       
 
       

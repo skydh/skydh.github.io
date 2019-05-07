@@ -86,7 +86,7 @@
 <meta property="og:site_name" content="why are you so happy">
 <meta property="og:description" content="mysql主从基本原理　　一个主库，可以读写，一个从库可读，不可写。　　流程：一个更新操作：　　１．主库执行更新操作，写入到binlog里面。，备库和主库维持一个长连接。主库内部有个线程，专门用于服务备库的这个长连接。    2.备库通过change master 设置主库A的ip，端口，用户名，密码，以及要从哪个位置来请求binlog，这个位置包含文件名和日志偏移量。　　３．备库执行start">
 <meta property="og:locale" content="zh-Hans">
-<meta property="og:updated_time" content="2019-04-24T12:40:18.110Z">
+<meta property="og:updated_time" content="2019-05-06T10:55:00.382Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="mysql 主从">
 <meta name="twitter:description" content="mysql主从基本原理　　一个主库，可以读写，一个从库可读，不可写。　　流程：一个更新操作：　　１．主库执行更新操作，写入到binlog里面。，备库和主库维持一个长连接。主库内部有个线程，专门用于服务备库的这个长连接。    2.备库通过change master 设置主库A的ip，端口，用户名，密码，以及要从哪个位置来请求binlog，这个位置包含文件名和日志偏移量。　　３．备库执行start">
@@ -299,8 +299,10 @@
       
 
       
-        <h2 id="mysql主从基本原理"><a href="#mysql主从基本原理" class="headerlink" title="mysql主从基本原理"></a>mysql主从基本原理</h2><p>　　一个主库，可以读写，一个从库可读，不可写。<br>　　流程：一个更新操作：<br>　　１．主库执行更新操作，写入到binlog里面。，备库和主库维持一个长连接。主库内部有个线程，专门用于服务备库的这个长连接。<br>    2.备库通过change master 设置主库A的ip，端口，用户名，密码，以及要从哪个位置来请求binlog，这个位置包含文件名和日志偏移量。<br>　　３．备库执行start slave 命令，这个时候，备库会启动2个线程。一个叫做 io_thread（用来负责和主库建立连接），主库检验完用户名。密码后开始按照备库传过来的位置读取binlog，发送给备库，备库拿到数据后，放到relay log。另一个线程就是sql_thread ，读取relay log.然后执行。</p>
-<h2 id="binlog３个格式"><a href="#binlog３个格式" class="headerlink" title="binlog３个格式"></a>binlog３个格式</h2><p>　　statement：记录原语句。<br>　　row：记录的是修改后的动作。比如删除 id=1,新增 id2=2等信息。直接记录的就是数据.<br>　　mix：混合上面2个格式的。为何有这种格式呢？statement，直接执行语句可能导致报错，而row占的空间太大。使用mix，不存在歧义的语句采用statement,存在歧义的使用row。<br>　　歧义sql:<br>　　 delete from t   where a&gt;=4 and t_modified&lt;=’2018-11-10’ limit 1;<br>　　其可能使用ａ这个索引，或者t_modified这个索引。采用不同索引，可能删除的数据不一样。<br>　　row格式日志其保存了修改前后的变化，如果误操作了，可以查看回滚。</p>
+        <h2 id="mysql主从基本原理"><a href="#mysql主从基本原理" class="headerlink" title="mysql主从基本原理"></a>mysql主从基本原理</h2><p>　　一个主库，可以读写，一个从库可读，不可写。<br>　　流程：一个更新操作：<br>　　１．主库执行更新操作，写入到binlog里面。，备库和主库维持一个长连接。主库内部有个线程，专门用于服务备库的这个长连接。<br>    2.备库通过change master 设置主库A的ip，端口，用户名，密码，以及要从哪个位置来请求binlog，这个位置包含文件名和日志偏移量。<br>　　３．备库执行start slave 命令，这个时候，备库会启动2个线程。一个叫做 io_thread（用来负责和主库建立连接），主库检验完用户名。密码后开始按照备库传过来的位置读取binlog，发送给备库，备库拿到数据后，放到relay log。另一个线程就是sql_thread ，读取relay log.然后执行。<br>　　双主结构：从节点和主节点互为主备关系。切换时不修改主备关系。但是从节点依旧是readonly.互为主备存在循环日志关系，比如a把binlog发给了b，b接受到后吧日志发给了a，如此就循环了，这边方法时每个库的serverid保持不一样，当接受日志的时候，当发现serverid和自己一样时，丢掉日志。</p>
+<h2 id="binlog３个格式"><a href="#binlog３个格式" class="headerlink" title="binlog３个格式"></a>binlog３个格式</h2><p>　　statement：记录原语句。<br>　　row：记录的是修改后的动作。比如删除 id=1,新增 id2=2等信息。直接记录的就是数据.<br>　　mix：混合上面2个格式的。为何有这种格式呢？statement，直接执行语句可能导致报错，而row占的空间太大。使用mix，不存在歧义的语句采用statement,存在歧义的使用row。<br>　　歧义sql:<br>　　 delete from t   where a&gt;=4 and t_modified&lt;=’2018-11-10’ limit 1;<br>　　其可能使用ａ这个索引，或者t_modified这个索引。采用不同索引，可能删除的数据不一样。<br>　　row格式日志其保存了修改前后的变化，如果误操作了，可以查看回滚。所以一般都是用这个row这种格式来记录binlog。如果用statement格式的binlog恢复数据时，要先用mysqlbinlog解析出来，再把结果发给mysql执行。</p>
+<h2 id="主备延迟"><a href="#主备延迟" class="headerlink" title="主备延迟"></a>主备延迟</h2><p>　　每个事务都有一个时间，这个时间就是主库写入时间，而主备延迟是从库写入的系统时间，减去这个主库写入时间的差值。这个时间值一般来源于，从库接受到数据，到写入到从库的时间。网络影响较小。<br>　　原因如下：<br>　　１.由于备库没有请求，于是给备库配置的机器极差，但是，备库同步数据时，对磁盘的操作也是有的，更新操作也很多，因此，造成了大量的延迟。<br>　　２．让备库去处理请求，由于考虑到只是读请求，因此不加限制，导致备库同步数据慢。<br>　　　针对原因２解决方案：<br>　　　１：增加几个从库<br>　　　２．将信息binlog输出到外部系统Hadoop来减轻压力。<br>　　　３．大事务，一个大的事务，在主库都执行了很久，何况从库。<br>　　  ４．DDL,ddl会重建表。而大表的重建，性能损耗很大。<br>　　３．备库的并行复制能力</p>
+<h2 id="双主切换流程"><a href="#双主切换流程" class="headerlink" title="双主切换流程"></a>双主切换流程</h2><p>　　１．判断延迟时间是否小于一个阈值。否则重复这一步。<br>　　２．将主库改为只读，<br>　　３．判断备库的延迟时间是否为０.<br>　　４．将备库改为可读写。<br>　　５，将请求切换到备库Ｂ．<br>　　其中最耗时的是步骤３，因此我们要控制好步骤一的阈值，从而减少不可用时间。　按照这个步骤可以让可靠性达到最高。，但是可用性会随之下降。假设先执行４．５步骤，可用性最高，一直可用，主库插入一个数据４，主键自增，（１,４）。然后切换主备，这个（１,４）没有写入到从库，然后新增数据５，从库存了（１,５）然后，接受到存４，存了（２,４）然后主从数据库不一致了。　　　如果是row格式的binlog，那就不是数据不一致，那是数据根本存不进去。<br>　　如果发生异常，主库宕机了，而从库延迟时间极长，那么切换为从库，会造成系统长时间不可用。因此mysql高可用是建立在延迟时间短的情况下的。</p>
 
       
     </div>
@@ -449,7 +451,7 @@
             
 
             
-              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#mysql主从基本原理"><span class="nav-number">1.</span> <span class="nav-text">mysql主从基本原理</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#binlog３个格式"><span class="nav-number">2.</span> <span class="nav-text">binlog３个格式</span></a></li></ol></div>
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#mysql主从基本原理"><span class="nav-number">1.</span> <span class="nav-text">mysql主从基本原理</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#binlog３个格式"><span class="nav-number">2.</span> <span class="nav-text">binlog３个格式</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#主备延迟"><span class="nav-number">3.</span> <span class="nav-text">主备延迟</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#双主切换流程"><span class="nav-number">4.</span> <span class="nav-text">双主切换流程</span></a></li></ol></div>
             
 
           </div>

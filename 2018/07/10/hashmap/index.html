@@ -86,7 +86,7 @@
 <meta property="og:site_name" content="why are you so happy">
 <meta property="og:description" content="基本信息　　HashMap可以接受null键值和值，而Hashtable则不能；HashMap是非synchronized;HashMap很快；以及HashMap储存的是键值对。 注意点　　１．当两个对象的hashcode相同会发生什么？　　因为hashcode相同，所以它们的bucket位置相同，‘碰撞’会发生。因为HashMap使用链表存储对象，这个Entry(包含有键值对的Map.Entry">
 <meta property="og:locale" content="zh-Hans">
-<meta property="og:updated_time" content="2018-07-13T01:41:04.051Z">
+<meta property="og:updated_time" content="2019-04-29T07:26:33.099Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="hashmap">
 <meta name="twitter:description" content="基本信息　　HashMap可以接受null键值和值，而Hashtable则不能；HashMap是非synchronized;HashMap很快；以及HashMap储存的是键值对。 注意点　　１．当两个对象的hashcode相同会发生什么？　　因为hashcode相同，所以它们的bucket位置相同，‘碰撞’会发生。因为HashMap使用链表存储对象，这个Entry(包含有键值对的Map.Entry">
@@ -399,6 +399,7 @@ public V get(K key) {
 }
 </code></pre><h2 id="gt-gt-gt-操作符"><a href="#gt-gt-gt-操作符" class="headerlink" title="&gt;&gt;&gt;操作符"></a>&gt;&gt;&gt;操作符</h2><p>　这个操作符的作用是将当前整数，转换为２进制后，右移。比如<br>２&gt;&gt;&gt;1,就是10右移1位剩下了一个1，就是1。<br>　　案例如下：<br>    public static void main(String [] args)<br>    {<br>        System.out.println(4&gt;&gt;&gt; 1);<br>    }<br>　　结果是２．<br>    public static void main(String [] args)<br>    {<br>        System.out.println(4&gt;&gt;&gt; 2);<br>    }<br>　　结果是１</p>
 <h2 id="1-8增加了对其优化。"><a href="#1-8增加了对其优化。" class="headerlink" title="1.8增加了对其优化。"></a>1.8增加了对其优化。</h2><p>　　其原因是hash的的平均分布可能有问题，有可能导致链表过长，从而使得效率变的很低。因此加了一个新的结构红黑树，如果说1.8之前的hashMap是数组+链表，那么现在版本的就是数组+链表+红黑树。当链表长度<8时，默认以前的方式加元素，也就是数组+链表，当链表>8时则将链表转换为红黑树。（红黑树是一个自平衡的二叉查找树，其插入删除时为了保持红黑树的平衡特征，回自旋来保证，可以将其理解为一个具有自平衡的查找2叉树）</8时，默认以前的方式加元素，也就是数组+链表，当链表></p>
+<h2 id="hashmap线程不安全"><a href="#hashmap线程不安全" class="headerlink" title="hashmap线程不安全"></a>hashmap线程不安全</h2><p>　　hashmap没有做加锁处理，举个简单例子，2个线程插入一个数据，其hashcode都是一样的，在极端情况下，可能导致插入少了一个数据。</p>
 
       
     </div>
@@ -551,7 +552,7 @@ public V get(K key) {
             
 
             
-              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#基本信息"><span class="nav-number">1.</span> <span class="nav-text">基本信息</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#注意点"><span class="nav-number">2.</span> <span class="nav-text">注意点</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#简单实现一个hashmap"><span class="nav-number">3.</span> <span class="nav-text">简单实现一个hashmap</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#gt-gt-gt-操作符"><span class="nav-number">4.</span> <span class="nav-text">>>>操作符</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#1-8增加了对其优化。"><span class="nav-number">5.</span> <span class="nav-text">1.8增加了对其优化。</span></a></li></ol></div>
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#基本信息"><span class="nav-number">1.</span> <span class="nav-text">基本信息</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#注意点"><span class="nav-number">2.</span> <span class="nav-text">注意点</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#简单实现一个hashmap"><span class="nav-number">3.</span> <span class="nav-text">简单实现一个hashmap</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#gt-gt-gt-操作符"><span class="nav-number">4.</span> <span class="nav-text">>>>操作符</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#1-8增加了对其优化。"><span class="nav-number">5.</span> <span class="nav-text">1.8增加了对其优化。</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#hashmap线程不安全"><span class="nav-number">6.</span> <span class="nav-text">hashmap线程不安全</span></a></li></ol></div>
             
 
           </div>
