@@ -232,6 +232,287 @@
   
   
   <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="https://skydh.github.io/2018/06/19/ControllerAdvice注解/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="董航">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="why are you so happy">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                <a class="post-title-link" href="/2018/06/19/ControllerAdvice注解/" itemprop="url">ControllerAdvice用法解析</a></h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2018-06-19T20:32:58+08:00">
+                2018-06-19
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            <h2 id="简介"><a href="#简介" class="headerlink" title="简介"></a>简介</h2><p>　　通过@ControllerAdvice注解可以将对于控制器的全局配置放在同一个位置。<br>　　注解了@Controller的类的方法可以使用@ExceptionHandler、@InitBinder、@ModelAttribute注解到方法上。<br>　　@ControllerAdvice注解将作用在所有注解了@RequestMapping的控制器的方法上<br>　　@ExceptionHandler：用于全局处理控制器里的异常。</p>
+<h2 id="用法"><a href="#用法" class="headerlink" title="用法"></a>用法</h2><pre><code>@ControllerAdvice
+@ResponseBody
+public class BusinessExceptionHandler {
+    @ExceptionHandler(value = Exception.class)
+    public JsonBackData exceptionHandler(HttpServletRequest request, Exception e) {
+        e.printStackTrace();
+        JsonBackData back = new JsonBackData();
+        if (e instanceof BusinessException) {
+            BusinessException ex = (BusinessException) e;
+            back.setSuccess(false);
+            back.setBackMsg(ex.getMessage());
+        }
+        return back;
+    }
+</code></pre><p>　　加了这个全局配置的Bean后，以前我的代码是这样的：</p>
+<pre><code>@RequestMapping(value = &quot;queryDetail&quot;)
+@ResponseBody
+public JsonBackData queryDetail(@RequestParam String id) {
+    JsonBackData back = new JsonBackData();
+    try {
+        OpenSourceThrottleAdjustVO vo = openSourceThrottlePlanQueryService.findById(id);
+        back.setBackData(vo);
+        back.setSuccess(true);
+        back.setBackMsg(&quot;查询详细信息成功&quot;);
+    } catch (BusinessException e) {
+        back.setSuccess(false);
+        back.setBackMsg(&quot;查询详细信息失败:&quot; + e.getMessage());
+    }
+    return back;
+}
+</code></pre><p> 　多了很多无关信息。几乎每个类都要try catch一下，代码极度冗余。<br>但是加了上面的全局处理控制器的异常处理后。代码就变成了下面的了。</p>
+<pre><code>@RequestMapping(value = &quot;queryDetail&quot;)
+@ResponseBody
+public JsonBackData queryDetail(@RequestParam String id) {
+    JsonBackData back = new JsonBackData();
+    OpenSourceThrottleAdjustVO vo = openSourceThrottlePlanQueryService.findById(id);
+    back.setBackData(vo);
+    back.setSuccess(true);
+    back.setBackMsg(&quot;查询详细信息成功&quot;);
+    return back;
+}
+</code></pre>
+          
+        
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="https://skydh.github.io/2018/06/12/原因/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="董航">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="why are you so happy">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                <a class="post-title-link" href="/2018/06/12/原因/" itemprop="url">原因</a></h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2018-06-12T17:24:50+08:00">
+                2018-06-12
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            <p>　　最近帮女朋友做毕设写论文，又要上班，没时间写了。</p>
+
+          
+        
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
     <link itemprop="mainEntityOfPage" href="https://skydh.github.io/2018/06/08/秒杀/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -1223,271 +1504,11 @@ public void test(B b){...} ...2
 
 
     
-      
-
-  
-
-  
-  
-  
-
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-  
-  
-  
-  <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="https://skydh.github.io/2018/05/09/jvm内存分配策略/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="董航">
-      <meta itemprop="description" content="">
-      <meta itemprop="image" content="/images/avatar.gif">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="why are you so happy">
-    </span>
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-                
-                <a class="post-title-link" href="/2018/05/09/jvm内存分配策略/" itemprop="url">jvm内存分配策略</a></h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">发表于</span>
-              
-              <time title="创建于" itemprop="dateCreated datePublished" datetime="2018-05-09T15:05:24+08:00">
-                2018-05-09
-              </time>
-            
-
-            
-
-            
-          </span>
-
-          
-
-          
-            
-          
-
-          
-          
-
-          
-
-          
-
-          
-
-        </div>
-      </header>
-    
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          
-            <h2 id="对象优先在新生代分配"><a href="#对象优先在新生代分配" class="headerlink" title="对象优先在新生代分配"></a>对象优先在新生代分配</h2><p>　　就是新生的对象按照原则一般在新生代内存区给其分配空间。</p>
-<h2 id="大对象直接进入老年态"><a href="#大对象直接进入老年态" class="headerlink" title="大对象直接进入老年态"></a>大对象直接进入老年态</h2><p>　　大对象是指需要大量连续的内存空间的对象，比如非常长的字符串或者数组。因为出现这些对象意味着虚拟机要进行一次垃圾回收才可以安置这些对象，可以在虚拟机启动的时候设置 -XX pretenuresizethreshold 参数 来设置大于这个参数的大对象直接进入老年态。</p>
-<h2 id="长期存活的对象将进入老年态"><a href="#长期存活的对象将进入老年态" class="headerlink" title="长期存活的对象将进入老年态"></a>长期存活的对象将进入老年态</h2><p>　　既然虚拟机采用了分带管理的策略来管理内存，那么如何判断一个对象时应该在老年态还是新生态中。虚拟机给每个对象设置了一个年龄计算器，当对象在Eden出生，并且活过了第一次垃圾回收，那么该对象将进入到Suivivor空间，年龄也会增加一，妹熬过一次就加一，当达到一个阈值时，就会被移动到老年态中，这个阈值默认是15，也可以通过参数配置和设置。</p>
-<h2 id="动态对象年龄判定"><a href="#动态对象年龄判定" class="headerlink" title="动态对象年龄判定"></a>动态对象年龄判定</h2><p>　　为了更好的适应虚拟机的内存整理，虚拟机还有一个原则，如果在新生代的Suivivor空间的相同年龄对象所占的内存大于Suivivor一半时，将大于和等于这个年龄的对象加入到老年代。</p>
-<h2 id="空间分配担保"><a href="#空间分配担保" class="headerlink" title="空间分配担保"></a>空间分配担保</h2><p>　　在新生代发生垃圾回收时，虚拟机都会先检查这个老年态最大可用连续空间是否大于新生代所有对象总空间，如果成立，那么这次垃圾回收是安全的，可以直接进行垃圾回收。如果不成立，就会查看HandlePromotionFailure这个值是否设置开启的，如果开启，就会继续判断老年代最大可用连续空间是否大于历次垃圾回收晋升到老年代对象的平均大小，如果大于，则进行一次啊垃圾回收。如果小于或者这个参数设置为关闭状态，那么就要进行一次啊Full GC。<br>　　为何如此？前面说了，新生代垃圾回收是复制算法，新生代内存分为8:1:1，每次垃圾回收就会将9份的移到剩余一份里面的，可能溢出，那么就用老年代担保，所以如此哦。一般上面的参数会默认设置为开启状态。</p>
-
-          
-        
-      
-    </div>
-    
-    
-    
-
-    
-
-    
-
-    
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </div>
-  
-  
-  
-  </article>
-
-
-    
-      
-
-  
-
-  
-  
-  
-
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-  
-  
-  
-  <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="https://skydh.github.io/2018/05/08/java垃圾回收算法/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="董航">
-      <meta itemprop="description" content="">
-      <meta itemprop="image" content="/images/avatar.gif">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="why are you so happy">
-    </span>
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-                
-                <a class="post-title-link" href="/2018/05/08/java垃圾回收算法/" itemprop="url">jvm垃圾回收算法</a></h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">发表于</span>
-              
-              <time title="创建于" itemprop="dateCreated datePublished" datetime="2018-05-08T17:30:29+08:00">
-                2018-05-08
-              </time>
-            
-
-            
-
-            
-          </span>
-
-          
-
-          
-            
-          
-
-          
-          
-
-          
-
-          
-
-          
-
-        </div>
-      </header>
-    
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          
-            <h2 id="引用"><a href="#引用" class="headerlink" title="引用"></a>引用</h2><p>　　强引用：这个引用在程序代码间很常见，类似于Object a=new Object（），这样直接声明的对象，只要强引用还存在，那么这个对象就不会被gc回收。<br>　　软引用：java用SoftReference类来实现软引用。软引用关联的对象会在系统即将发生内存溢出，也就是内存不够时，将会把这些对象进行回收，如果回收后依旧没有足够的内存才会抛出内存溢出异常。<br>　　弱引用：java用WeakReference类实现弱引用，其强度更弱于软引用，被弱引用的对象会在下次垃圾回收时直接被回收，无论内存是否足够。<br>　　虚引用：java用PhantomReference类来实现虚引用。这个是最弱的一种引用，甚至无法通过虚引用来获取对象。</p>
-<h1 id="判断对象是否被引用"><a href="#判断对象是否被引用" class="headerlink" title="判断对象是否被引用"></a>判断对象是否被引用</h1><h2 id="引用计数算法"><a href="#引用计数算法" class="headerlink" title="引用计数算法"></a>引用计数算法</h2><p>　　给对象加一个引用计数器，每当一个地方引用它时，计数器就加一，当引用失效时，计数器就减一，任何时刻计数器为０时的对象就是不可能再被使用的。但是有ｂｕｇ，２个对象相互引用，那么这个对象就永远无法被回收。</p>
-<h2 id="可达性分析算法"><a href="#可达性分析算法" class="headerlink" title="可达性分析算法"></a>可达性分析算法</h2><p>　　这个算法是通过一个叫”GC Roots”的对象作为起始点，从这个节点开始向下搜索，搜索的路径叫做引用链，如果可以通过引用链找到这个对象，那么这个对象时有效的，否则，无效，解决了上面2个对象相互引用但是没有别的对象可达的问题，可以作为”GC Roots”的对象有方法区常量引用的对象，虚拟机栈引用的对象，等。目前java就是这种判断模式。</p>
-<h1 id="gc垃圾回收算法"><a href="#gc垃圾回收算法" class="headerlink" title="gc垃圾回收算法"></a>gc垃圾回收算法</h1><h2 id="标记-清除算法"><a href="#标记-清除算法" class="headerlink" title="标记-清除算法"></a>标记-清除算法</h2><p>　　最基础的算法，就是把要回收的对象标记后进行回收，缺点是容易产生大量不连续的内存碎片，如果产生一个大的对象时，由于全是内存碎片，没有整个的内存，因此内存不够就会提前触发垃圾回收，效率很低。</p>
-<h2 id="复制算法"><a href="#复制算法" class="headerlink" title="复制算法"></a>复制算法</h2><p>　　目前主流虚拟机的收集算法之一主要针对新生态对象，初始化时是一比一的算法，就是把内存分为2部分一样大的部分，平时只使用其中一个部分也就是其一半，当发生垃圾回收时，就会把这个部分存活的对象放到另一个部分，这样子就避免了内存碎片，但是要只使用一半的内存，亏损太大划不来，目前主流虚拟机都是用这个算法来回收新生代。IBM研究发现，９８％的新生态对象生存周期很短的，于是一个新的算法出来了，就是把内存分为3部分，8：1：1，每次使用其中的0.9部分，当发生垃圾回收的时候那就把剩余的对象就放到剩余的0.1那里，当然剩余的0.1可能不够那就可以把一部分对象转化为老年态暂时存到老年态里面，这样子就只浪费0.1的内存了，性价比可以。</p>
-<h2 id="标记-整理算法"><a href="#标记-整理算法" class="headerlink" title="标记-整理算法"></a>标记-整理算法</h2><p>　　主要针对老年态对象，由于生存周期较长，不适合复制算法，该算法就是和标记-清除算法的加强版，就是多了一个移动的算法，就是把存活的对象都向一端移动，并且把端边缘的字段干掉</p>
-<h2 id="分代收集算法"><a href="#分代收集算法" class="headerlink" title="分代收集算法"></a>分代收集算法</h2><p>　　就是把对象划分为新生态和老年态，不同态使用不同不同的收集算法，新生代采用复制算法，老年态使用标记－整理算法或者标记－清除算法，这个也就是主流虚拟机所采用的。</p>
-<h1 id="垃圾回收器"><a href="#垃圾回收器" class="headerlink" title="垃圾回收器"></a>垃圾回收器</h1><p>　　垃圾回收器就是垃圾回收算法的具体实现，我们看看都有哪些垃圾回收器。</p>
-<h2 id="serial收集器"><a href="#serial收集器" class="headerlink" title="serial收集器"></a>serial收集器</h2><p>　　一个单线程的垃圾回收器，它在进行垃圾回收时，会让其他所有线程都暂停，直到他垃圾回收完毕，很显然，问题很大。采用的是复制算法。回收新生代对象。</p>
-<h2 id="parnew收集器"><a href="#parnew收集器" class="headerlink" title="parnew收集器"></a>parnew收集器</h2><p>　　是serial收集器的多线程版本，没有其他本质的区别</p>
-<h2 id="parallel-sacvenge收集器"><a href="#parallel-sacvenge收集器" class="headerlink" title="parallel sacvenge收集器"></a>parallel sacvenge收集器</h2><p>　　这是个新生带收集器，采用的是复制算法。</p>
-<h2 id="serial-old收集器"><a href="#serial-old收集器" class="headerlink" title="serial old收集器"></a>serial old收集器</h2><p>　　采用标记－整理算法。单线程。主要配合serial收集器</p>
-<h2 id="parnew-old收集器"><a href="#parnew-old收集器" class="headerlink" title="parnew　old收集器"></a>parnew　old收集器</h2><p>　　主要是配合parallel sacvenge收集器这个新生代垃圾回收器使用。</p>
-<h2 id="cms收集器"><a href="#cms收集器" class="headerlink" title="cms收集器"></a>cms收集器</h2><p>　　也是老年态收集器，采用标记整理算法。</p>
-<h2 id="G1收集器"><a href="#G1收集器" class="headerlink" title="G1收集器"></a>G1收集器</h2><p>　　上述收集器都要相互配合才可以使用，一个负责收集新生代对象，一个负责收集老年态对象。<br>　　但是这个G1不一样，这是个面向服务端的垃圾回收器。<br>　　以下优势：<br>　　１．能充分利用多核CPU来减少暂停时间。<br>　　２．分代收集，自身就可以实现分代收集。<br>　　３．空间整合：整体是采用标记－整理算法实现的收集器，但是局部上也是基于复制算法实现的。<br>　　４.可预测的停顿：让使用者在一定时间内消耗的垃圾回收时间不超过ｎ毫秒。<br>　　其他垃圾回收器回收要么是新生代，要么是老年代，但是G1不一样，虽然依旧保留了新生代和老年代这个概念，但是实际上将这个java堆分成了多个大小相等的独立区域Region，新生代和老年代不再是物理隔离了。他们都是一部分Region的集合（不需要连续）。<br>　　G1使用了一个方法来进行可预测的停顿，G1会跟踪每一个Region堆的垃圾回收价值（回收可用空间和对应时间）,并且维护一个优先列表，当需要进行垃圾回收时就按照这个优先列表来处理。</p>
-<h2 id="GC"><a href="#GC" class="headerlink" title="GC"></a>GC</h2><p>　　1.这个Minor GC是针对年轻代的回收，当虚拟机无法为一个新生对象分配空间时。就会发生这个GC操作。<br>　　2.Major GC 是清理老年代。Full GC 是清理整个堆空间—包括年轻代和老年代<br>　　3.每一次GC都会使得整个程序暂停几毫秒，这对用户程序几乎没有反应。</p>
-<p>　　</p>
-
-          
-        
-      
-    </div>
-    
-    
-    
-
-    
-
-    
-
-    
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </div>
-  
-  
-  
-  </article>
-
-
-    
   </section>
 
   
   <nav class="pagination">
-    <a class="extend prev" rel="prev" href="/page/5/"><i class="fa fa-angle-left"></i></a><a class="page-number" href="/">1</a><span class="space">&hellip;</span><a class="page-number" href="/page/5/">5</a><span class="page-number current">6</span><a class="page-number" href="/page/7/">7</a><span class="space">&hellip;</span><a class="page-number" href="/page/10/">10</a><a class="extend next" rel="next" href="/page/7/"><i class="fa fa-angle-right"></i></a>
+    <a class="extend prev" rel="prev" href="/page/5/"><i class="fa fa-angle-left"></i></a><a class="page-number" href="/">1</a><span class="space">&hellip;</span><a class="page-number" href="/page/5/">5</a><span class="page-number current">6</span><a class="page-number" href="/page/7/">7</a><span class="space">&hellip;</span><a class="page-number" href="/page/11/">11</a><a class="extend next" rel="next" href="/page/7/"><i class="fa fa-angle-right"></i></a>
   </nav>
 
 
@@ -1533,7 +1554,7 @@ public void test(B b){...} ...2
               
                 <a href="/archives/">
               
-                  <span class="site-state-item-count">100</span>
+                  <span class="site-state-item-count">102</span>
                   <span class="site-state-item-name">日志</span>
                 </a>
               </div>

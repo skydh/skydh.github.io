@@ -232,6 +232,258 @@
   
   
   <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="https://skydh.github.io/2018/11/26/仿写简易rpc/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="董航">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="why are you so happy">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                <a class="post-title-link" href="/2018/11/26/仿写简易rpc/" itemprop="url">仿写rpc</a></h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2018-11-26T09:57:32+08:00">
+                2018-11-26
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            <h2 id="原因"><a href="#原因" class="headerlink" title="原因"></a>原因</h2><p>　　为了了解rpc的原理，以及为何使用netty做为通信框架。</p>
+<h2 id="简介"><a href="#简介" class="headerlink" title="简介"></a>简介</h2><p>　　生产者：写好对外api接口以及实现类，然后在启动一个netty对外服务。<br>　　消费者：根据发过来的api接口，创建一个代理类，在代理类里面启动一个netty客户端，远程访问其服务，得到结果再返回。</p>
+<h2 id="项目地址"><a href="#项目地址" class="headerlink" title="项目地址"></a>项目地址</h2><p>　　我也简单实现了一个仿写的rpc,demo如下：<br>　　<a href="https://github.com/skydh/rpc-try.git" target="_blank" rel="noopener">点我一下就到了</a><br>　　极其粗糙的实现了一次，如有时间，继续优化。</p>
+
+          
+        
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="https://skydh.github.io/2018/11/16/mysql入门之redolog binlog undolog/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="董航">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="why are you so happy">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                <a class="post-title-link" href="/2018/11/16/mysql入门之redolog binlog undolog/" itemprop="url">mysql 入门redolo binlog undolog</a></h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2018-11-16T10:19:48+08:00">
+                2018-11-16
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            <h2 id="redolog"><a href="#redolog" class="headerlink" title="redolog"></a>redolog</h2><p>　　MySQL 里经常说到的 WAL 技术，意思就是数据先写日志，再写磁盘。这里面的日志就是innodb里面的redolog.当有一条记录需要更新的时候，InnoDB 引擎就会先把记录写redo log里面，并更新内存，这个时候更新就算完了，然后innodb引擎会在适当的时候将数据跟新到磁盘里面，这个跟新会在系统空闲的时候进行。<br>　　这个可以加速的原因是不用去索引磁盘里面的数据，直接添加到日志里面，等到最后清算，如此可以有效提高效率。<br>　　redolog是个循环日志，其大小固定为4g，存在2个指正来定位其是否已经满了。一个指正是当前读，一个指针是当前写，很类似java里面的bytebuffer。redolog本质上就是为了崩溃恢复用的。当内存的数据页要持久化到磁盘，这个脏页的操作和redolog无关。只有当崩溃恢复的时候才用，把数据修复为脏页数据。因为redolog记录的是数据页的变换信息。  redolog只是个保险。数据页只存在2个情况。内存中，那就一定是正确的结果，直接返回，另一种是数据文件上的，那就一定正确，读入内存后返回。</p>
+<h2 id="binlog"><a href="#binlog" class="headerlink" title="binlog"></a>binlog</h2><p>　　这个是mysql自身的日志，叫做归档日志。和redolog大致3个不同点。<br>　　１．其为mysql自带的，redolog是innodb里面的。<br>　　２．redolog是物理日志，binlog是逻辑日志。<br>　　３．redolog是循环日志，binlog是增量日志。<br>　　对于我们来说，redolog主要针对系统崩溃，而binlog主要是针对系统恢复归档，因为redolog是循环的，无法持久太多。</p>
+<h2 id="undolog"><a href="#undolog" class="headerlink" title="undolog"></a>undolog</h2><p>　　这个日志主要用来处理事务的隔离级别的<br>　　详细信息请看我的另一篇文章，关于mysql innodb的隔离级别的实现。因此我在这里说下长事务对其的影响，我们知道我那篇文章说了，innodb是基于mvcc的控制，undolog将会非常的大，因为这个日志的大小和最早事务相关，因此长事务会使其的undolog非常大。<br>　　大家也不想使用长事务，但是以下情况可能出现长事务。就是你<br>　　set autocommit=0那就是不自动提交，即使是一个select语句那也不会提交，因此我们要注意。<br>　　我们用这条语句来判断事务是否为长事务。<br>　　select * from information_schema.innodb_trx where TIME_TO_SEC(timediff(now(),trx_started))&gt;60</p>
+<h2 id="change-buffer"><a href="#change-buffer" class="headerlink" title="change buffer"></a>change buffer</h2><p>　　这个东西主要是更新插入数据时用的哈，首先判断要更新的数据是否在内存，若在，直接更新内存，如不在，则是将其修改加入到change buffer里面，等到要查询这个数据的时候，再将其同步过去。或者等到一定时间通过定时器刷新过去。但是要用到这个东西不能加唯一索引，因为你加了唯一索引，那么就必须从磁盘读取到这个数据页来进行判断这个数据是否满足规范，因此要想用到这个change buffer就不能用唯一索引，只能用普通索引。那么这个change buffer和redo log的区别呢？在数据库的操作流程是这样的。假设这个数据不在内存里面，我们的操作流程是先写到change buffer里面，在写到redolog里面，当我们要读取这个数据的时候，我们从数据库里面读取到这个数据页，然后取出对应数据加上change buffer的东西。<br>　　<br>　　因此相对于redolog,change buffer主要是减少了随机读取的性能消耗，因为我们不用读取这个数据页，插入更新的时候，只有当我们真正需要读取数据的时候才进行读取数据。而redolog则是有效减少了随机写磁盘的消耗，我们只用顺序写到redolog里面，当到一定时间后则刷新到数据库磁盘里面。完美。ps:这都是针对2级索引，而主键索引是判断数据所在数据页的在哪的，因此考虑了其唯一性。</p>
+<p>　　这么说吧，redolog 考虑的主要是大量的写的到来，直接顺序的写到redolog里面速度快且持久化过，有保证，其实这个数据页如果在内存里面，以后查询直接读取，如果不在且上面的写没有唯一索引时（没有唯一索引，那就把数据修改加到changbuff里面，在写入redolog，减少读取数据到内存的麻烦）那就把数据页读取出来，和changgbuffer来个merge。当内存不够时，需要把一部分磁盘页刷新到磁盘。完成持久化哦。同时当redolog满了时，也会把一部分内存数据页刷新到磁盘。而刷数据页到磁盘，会导致mysql系统卡顿。</p>
+<h2 id="2阶段提交"><a href="#2阶段提交" class="headerlink" title="2阶段提交"></a>2阶段提交</h2><p>　　redolog,binlog保持强一致性。一起成功，或者一起失败。不然可能导致数据出现问题。</p>
+<h2 id="一个更新语句的执行过程"><a href="#一个更新语句的执行过程" class="headerlink" title="一个更新语句的执行过程"></a>一个更新语句的执行过程</h2><p>　　１．先判断该数据对应的数据页是否在内存里面，如是在，则取出对应数据，若是不在，则从磁盘取出该数据页放入内存，并取出该数据。<br>　　<br>　　２．修改该数据，且将其更新到内存。</p>
+<p>　　３．将其修改更新到redolog里面。且置状态为prepare。</p>
+<p>　　４．写入binlog,且将状态改为commit.</p>
+<h2 id="mysql-系统抖动"><a href="#mysql-系统抖动" class="headerlink" title="mysql 系统抖动"></a>mysql 系统抖动</h2><p>　　１．对于mysql来说，有时候你更新数据很快，有时候会很慢，很慢的时候就是发生了redolog写入磁盘的过程，对于mysql来说，我们的数据要么在内存，要么在磁盘，如果不在磁盘的数据，那么内存的数据是最新的，如果不在内存，那么磁盘的数据是最新的。为什么呢？因为，在redolog写磁盘的一个场景中。当读取量很大的时候，内存不够了，那么我们必须在内存里面淘汰一些数据页。当淘汰的数据页里面，存在脏页（内存和磁盘不匹配）在这种情况下，我们要淘汰磁盘页的同时，把redolog的数据页怼进磁盘里面。以下情况也会使得redolog写数据到磁盘里面。１redolog满了。2系统空闲。3.系统正常关闭。主要分析下，内存不够的情况。对于获取新的数据页，淘汰旧的数据页，我们如果淘汰的全部是脏页，那么性能消耗会大很多，因此我们要保证数据库脏页的比例。<br>　　innodb_io_capacity，我们通过这个参数去设定。我们通过你的磁盘读写能力来设定这个值的大小。如果设定很低，那么mysql就会默认你的系统很差，如果很高，反之。。。我们系统默认的脏页比例是0.75，我们要控制器脏页比例不能太高。mysql还有一个连坐机制，当发现刷的脏页，旁边也是脏页，那么也会连带清除掉。这对于机械硬盘来说是很大的优化，但是对于ssd来说确实非必要的。</p>
+<p>ps：因此当读取数据时，要么从内存里面读取，要么从磁盘读取。</p>
+
+          
+        
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
     <link itemprop="mainEntityOfPage" href="https://skydh.github.io/2018/11/15/mysql 入门一条查询sql如何运行的/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -1340,268 +1592,11 @@ int&lt;var&gt; length;//本元素大小
 
 
     
-      
-
-  
-
-  
-  
-  
-
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-  
-  
-  
-  <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="https://skydh.github.io/2018/09/17/mysql 数据库分表分库/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="董航">
-      <meta itemprop="description" content="">
-      <meta itemprop="image" content="/images/avatar.gif">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="why are you so happy">
-    </span>
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-                
-                <a class="post-title-link" href="/2018/09/17/mysql 数据库分表分库/" itemprop="url">mysql 分库分表</a></h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">发表于</span>
-              
-              <time title="创建于" itemprop="dateCreated datePublished" datetime="2018-09-17T17:48:33+08:00">
-                2018-09-17
-              </time>
-            
-
-            
-
-            
-          </span>
-
-          
-
-          
-            
-          
-
-          
-          
-
-          
-
-          
-
-          
-
-        </div>
-      </header>
-    
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          
-            <h2 id="垂直切分"><a href="#垂直切分" class="headerlink" title="垂直切分"></a>垂直切分</h2><p>　　将表按照功能模块、关系密切程度划分出来，部署到不同的库上。也就是分库。适用于表多的情况。</p>
-<h2 id="水平切分"><a href="#水平切分" class="headerlink" title="水平切分"></a>水平切分</h2><p>　　当一个表中的数据量过大时，我们可以把该表的数据按照某种规则，例如userID散列，进行划分，然后存储到多个结构相同的表，这就是分表。</p>
-<h2 id="切分的选择"><a href="#切分的选择" class="headerlink" title="切分的选择"></a>切分的选择</h2><p>　　应该使用哪一种方式来实施数据库分库分表，这要看数据库中数据量的瓶颈所在，并综合项目的业务类型进行考虑。</p>
-<p>　　如果数据库是因为表太多而造成海量数据，并且项目的各项业务逻辑划分清晰、低耦合，那么规则简单明了、容易实施的垂直切分必是首选。而如果数据库中的表并不多，但单表的数据量很大、或数据热度很高，这种情况之下就应该选择水平切分，水平切分比垂直切分要复杂一些，它将原本逻辑上属于一体的数据进行了物理分割，除了在分割时要对分割的粒度做好评估，考虑数据平均和负载平均，后期也将对项目人员及应用程序产生额外的数据管理负担。</p>
-<p>　　在现实项目中，往往是这两种情况兼而有之，这就需要做出权衡，甚至既需要垂直切分，又需要水平切分。我们的游戏项目便综合使用了垂直与水平切分，我们首先对数据库进行垂直切分，然后，再针对一部分表，通常是用户数据表，进行水平切分。</p>
-<h2 id="问题挑战"><a href="#问题挑战" class="headerlink" title="问题挑战"></a>问题挑战</h2><p>　　在分片之后的数据库中并不一定能够正确运行。<br>　　跨库事务也是分布式的数据库集群要面对的棘手事情。 合理采用分表，可以在降低单表数据量的情况下，尽量使用本地事务，善于使用同库不同表可有效避免分布式事务带来的麻烦。 在不能避免跨库事务的场景，有些业务仍然需要保持事务的一致性。 而基于XA的分布式事务由于在并发度高的场景中性能无法满足需要，并未被互联网巨头大规模使用，他们大多采用最终一致性的柔性事务代替强一致事务。</p>
-<h2 id="分表的2个方式"><a href="#分表的2个方式" class="headerlink" title="分表的2个方式"></a>分表的2个方式</h2><p>　　１．事先预估好了，直接根据一定规则把表划分为多个。比如用户表。事先建ｎ个这样的表，user1,user2,user3。然后根据用户的ID来判断这个用户的聊天信息放到哪张表里面，你可以用hash的方式来获得，可以用求余的方式来获得，方法很多。<br>　　２.使用merge的方式建立映射。但是要求很多不能是innodb存储引擎。一般不使用。</p>
-<h2 id="实践使用sharing-jdbc"><a href="#实践使用sharing-jdbc" class="headerlink" title="实践使用sharing-jdbc"></a>实践使用sharing-jdbc</h2>
-          
-        
-      
-    </div>
-    
-    
-    
-
-    
-
-    
-
-    
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </div>
-  
-  
-  
-  </article>
-
-
-    
-      
-
-  
-
-  
-  
-  
-
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-  
-  
-  
-  <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="https://skydh.github.io/2018/09/17/redis 主从同步/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="董航">
-      <meta itemprop="description" content="">
-      <meta itemprop="image" content="/images/avatar.gif">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="why are you so happy">
-    </span>
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-                
-                <a class="post-title-link" href="/2018/09/17/redis 主从同步/" itemprop="url">redis主从同步和集群</a></h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">发表于</span>
-              
-              <time title="创建于" itemprop="dateCreated datePublished" datetime="2018-09-17T17:48:05+08:00">
-                2018-09-17
-              </time>
-            
-
-            
-
-            
-          </span>
-
-          
-
-          
-            
-          
-
-          
-          
-
-          
-
-          
-
-          
-
-        </div>
-      </header>
-    
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          
-            <h2 id="什么是主从同步"><a href="#什么是主从同步" class="headerlink" title="什么是主从同步"></a>什么是主从同步</h2><p>　　主从分布是部署多个redis实例，一主多从，当主实例挂了，那么我们就可以用从实例替换上去，增加了系统的稳定性。</p>
-<h2 id="CAP理论"><a href="#CAP理论" class="headerlink" title="CAP理论"></a>CAP理论</h2><p>　　Ｃ：一致性：分布式的系统中同一时刻有一样的值。<br>　　Ａ：可用性：集群故障之后依旧可以相应客户端的读写请求。<br>　　Ｐ：分区容错性：系统如果不能在时限内达成数据一致性，就意味着发生了分区的情况，必须就当前操作在C和A之间做出选择。<br>　　而分布式系统往往分布在不同的机器上面。这意味着必然有网络断开的风险，这个网络断开的场景的专业词汇叫网络分区。<br>　　当网络之间无法通信时，节点数据不在统一，那么一致性不满足了，或者我们暂停服务，那么可用性不满足了。<br>　　也就是说当网络分区时，一致性和可用性无法２全。</p>
-<h2 id="redis的最终一致性"><a href="#redis的最终一致性" class="headerlink" title="redis的最终一致性"></a>redis的最终一致性</h2><p>　　redis的主从数据是异步同步的，所以redis系统不满足一致性要求。redis的主节点修改数据后，立即返回，因此就算主从网络断开，主节点依旧可以提供服务。满足可用性，当网络恢复了，从节点会尽可能的同步数据。</p>
-<h2 id="增量同步"><a href="#增量同步" class="headerlink" title="增量同步"></a>增量同步</h2><p>　　这个同步方式是主节点会把对自己状态修改的指令记录在内存buffer中，redis的复制内存buffer是一个定长的环形数组，如果数组满了，将会覆盖这个数组。因此如果长时间无法同步，那么指令可能会被覆盖。</p>
-<h2 id="快照同步"><a href="#快照同步" class="headerlink" title="快照同步"></a>快照同步</h2><p>　　需要将主库的数据全部快照到磁盘文件，然后将快照文件传给子节点。从节点立即进行一次全量加载，加载之前需要将数据清空，加载后，在进行增量同步。（个人理解是和持久化一样的策略，进行快照时，新的操作用增量），但是存在一种情况，就是在快照和同步的时候，增量缓存已经被覆盖，那么只增在进行快照，然后buffer又被覆盖，进入了死循环。因此buffer大小必须设置好。</p>
-<h2 id="无盘复制"><a href="#无盘复制" class="headerlink" title="无盘复制"></a>无盘复制</h2><p>　　快照时会很严重的io操作，对系统很大的影响，我们可以通过服务器直接将套接字将快照内容发到从节点，生成快照是一个遍历的过程，主节点一遍遍历内存一遍序列化内容发送到从节点，从节点接受后也是先缓存到磁盘，然后加载到从节点里面。<br>　　我们可以用wait指令强行同步复制。wait 1 1,1就是一个从库，0就是最多等待时间。如果时间=0，那么将将无限制一致等待。</p>
-<h2 id="sentinel-自动化切换"><a href="#sentinel-自动化切换" class="headerlink" title="sentinel 自动化切换"></a>sentinel 自动化切换</h2><p>　　前面介绍了主从同步的策略实现以及原理。但是主节点出现故障，还是要手动去切换到从节点，为了避免这个问题，redis官方提供了一个方案-redis sentinel 来处理。可以在主节点挂了之后自动切换到从节点。<br>　　我们一般用3~5个sentinel作为集群，来监察redis的集群。客户端访问redis集群的时候，一般先去访问sentinel,从其中获取主节点地址，然后再去访问redis，当redis主节点挂了之后，客户端访问失败后，再次访问sentinel,他会选一个最优的从节点作为主节点，并把地址返回给客户端。而sentinel会持续监控这个坏掉的主节点，等其回复了之后将其作为从节点。<br>　　主节点断掉了，那么以为消息的丢失，因为redis的消息同和和zookeeper不一样是异步，如果延迟过大，可能造成很大的影响。</p>
-<pre><code>min-slaves-to-write 1
-min-slaves-max-lag 10
-</code></pre><p>　　Sentinel 采用上面的命令来尽量减少丢失，第一个参数是，起码必须有1个正在正常复制中，第二个参数是如果超过10秒没有复制，那么就是不正常复制了。</p>
-<h2 id="codis-方案"><a href="#codis-方案" class="headerlink" title="codis 方案"></a>codis 方案</h2><p>　　大数据量下单个redis实例是明显不够的，原因如下：<br>　　１．导致内存过大，这样主从复制的时候全量同步时间过长，其次持久化时间也太长，重启消耗大量时间资源。<br>　　２．云环境下，单个实例内存是收到限制的。<br>　　３．redis是基于多路io复用的单线程，对cpu利用率不高。<br>　　因此redis集群应运而生，多个redis实例可以有效提高cpu使用率，而codis是一个非常好的方案，它是一个代理中间件和redis一样使用redis的协议来对外提供服务。当客户端向codis发送指令时，codis负责将指令转发到后面的redis实例完成，起到一个负载均衡，代理的作用。codis上连接的所有redis实例构成了一个集群。codis对客户端是透明的，客户端就像直接使用redis实例一样。codis是无状态的，我们可以同时启动多个实例，来增加其容错性，以及提高并发量。<br>　　那么问题来了，一个key到底对应哪个redis实例呢？<br>　　codis这样玩的，他对每个key做一个运算，然后对1024取模得到一个值，codis在内存维护的一个映射关系。就是redis实例和1024的对应关系，然后这个值通过这个映射关系，找打对应的redis实例。<br>　　那么问题又来了，我们如何对codis同步数据，同步映射关系，这边采用的是使用zookeeper来持久化映射关系，同时codis提供了一个dashboard来观察修改槽位关系，当槽位关系变化时,codis会监听到变化，从而同步其关系。<br>　　缺点：key分布式了，所以不再支持事务，其次是动态扩容时，key的迁移消耗资源太大。</p>
-<h2 id="cluster-亲儿子"><a href="#cluster-亲儿子" class="headerlink" title="cluster(亲儿子)"></a>cluster(亲儿子)</h2><p>　　cluster是redis官方推出的方案，采用去中心化的方案来集群，多个节点通过一个二进制协议交换集群信息。redis将数据的key分为16384 的 slots，其槽点的信息存在每一个节点里面，当客户端获取数据时，先获取到整个槽点的信息，且将其缓存下来。RedisCluster 的每个节点会将集群的配置信息持久化到配置文件中，所以必须确保配置文件是可写的，而且尽量不要依靠人工修改配置文件。具体配置看详细即可。欧了</p>
-
-          
-        
-      
-    </div>
-    
-    
-    
-
-    
-
-    
-
-    
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </div>
-  
-  
-  
-  </article>
-
-
-    
   </section>
 
   
   <nav class="pagination">
-    <a class="extend prev" rel="prev" href="/page/2/"><i class="fa fa-angle-left"></i></a><a class="page-number" href="/">1</a><a class="page-number" href="/page/2/">2</a><span class="page-number current">3</span><a class="page-number" href="/page/4/">4</a><span class="space">&hellip;</span><a class="page-number" href="/page/10/">10</a><a class="extend next" rel="next" href="/page/4/"><i class="fa fa-angle-right"></i></a>
+    <a class="extend prev" rel="prev" href="/page/2/"><i class="fa fa-angle-left"></i></a><a class="page-number" href="/">1</a><a class="page-number" href="/page/2/">2</a><span class="page-number current">3</span><a class="page-number" href="/page/4/">4</a><span class="space">&hellip;</span><a class="page-number" href="/page/11/">11</a><a class="extend next" rel="next" href="/page/4/"><i class="fa fa-angle-right"></i></a>
   </nav>
 
 
@@ -1647,7 +1642,7 @@ min-slaves-max-lag 10
               
                 <a href="/archives/">
               
-                  <span class="site-state-item-count">100</span>
+                  <span class="site-state-item-count">102</span>
                   <span class="site-state-item-name">日志</span>
                 </a>
               </div>

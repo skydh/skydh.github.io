@@ -86,7 +86,7 @@
 <meta property="og:site_name" content="why are you so happy">
 <meta property="og:description" content="读mysql文档有感　　看了mysql关于索引的文档，网上有一些错误的博客文档，这里我自己记一下。 几个重要的概念　　１．对于mysql来说，一条sql中，一个表无论其蕴含的索引有多少，但是有且只用一条。　　２．对于多列索引来说（a,b,c）其相当于3个索引（a），（a,b），（a,b,c）3个索引，又由于mysql的索引优化器，其where条件后的语句是可以乱序的，比如（b,c,a）也是可以用到">
 <meta property="og:locale" content="zh-Hans">
-<meta property="og:updated_time" content="2018-06-27T06:54:31.653Z">
+<meta property="og:updated_time" content="2019-05-21T01:56:21.745Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="mysql 联合索引匹配原则">
 <meta name="twitter:description" content="读mysql文档有感　　看了mysql关于索引的文档，网上有一些错误的博客文档，这里我自己记一下。 几个重要的概念　　１．对于mysql来说，一条sql中，一个表无论其蕴含的索引有多少，但是有且只用一条。　　２．对于多列索引来说（a,b,c）其相当于3个索引（a），（a,b），（a,b,c）3个索引，又由于mysql的索引优化器，其where条件后的语句是可以乱序的，比如（b,c,a）也是可以用到">
@@ -324,17 +324,13 @@ select * from left_table where a=1 and b=1 and c=1
 <pre><code>select * from left_table where a&lt;1
 select * from left_table where a&lt;1 and b&lt;1
 select * from left_table where a&lt;1 and b&lt;1 and c&lt;1
-</code></pre><p>　　对于现在mysql5.7中，只有小于等于和小于才会触发索引。而大于则是无法触发索引，且小于可以乱序（mysql优化器优化了），但是按照最左匹配原则。比如条件(b)，(c),(b,c)组合就不行。</p>
+</code></pre><p>　　对于现在mysql5.7中，小于可以乱序（mysql优化器优化了），但是按照最左匹配原则。比如条件(b)，(c),(b,c)组合就不行。</p>
 <pre><code>select * from left_table where b&lt;1
 select * from left_table where b&lt;1 and c&lt;1
 select * from left_table where c&lt;1 
 </code></pre><p>　　这个组合就用不到索引，因为不符合最左匹配原则。</p>
-<pre><code>select * from left_table where a&gt;1
-select * from left_table where a&gt;1 and b&gt;1
-select * from left_table where a&gt;1 and b&gt;1 and c&gt;1
-</code></pre><p>　　在mysql5.7这个版本，大于是不参与索引匹配的因此这些sql都没参与索引匹配。</p>
 <pre><code>select * from left_table where a=1 and id=2
-</code></pre><p>　　这里面id是聚簇索引列，而a是个二级索引列，那么这个是用聚集索引列，不用（a,b,c）这个索引，因为对于mysql 5.7 innodb 这个版本一条sql里面索引只能用一条。至于用那个，则是mysql自身的算法选择了。经过大量测试实验，规则如下，如果索引列数据数据一模一样，那么是谁先创建就选谁，如不一样，那么谁占用的列越多，或者列的数据越复杂则选它。</p>
+</code></pre><p>　　这里面id是聚簇索引列，而a是个二级索引列，那么这个是用聚集索引列，不用（a,b,c）这个索引，因为对于mysql 5.7 innodb 这个版本一条sql里面索引只能用一条。至于用那个，则是mysql自身的算法选择了。经过大量测试实验，规则如下，如果索引列数据数据一模一样，那么是谁先创建就选谁，如不一样，那么谁占用的列越多，或者列的数据越复杂则选它。当然最好手动指定。</p>
 
       
     </div>
@@ -448,7 +444,7 @@ select * from left_table where a&gt;1 and b&gt;1 and c&gt;1
               
                 <a href="/archives/">
               
-                  <span class="site-state-item-count">100</span>
+                  <span class="site-state-item-count">102</span>
                   <span class="site-state-item-name">日志</span>
                 </a>
               </div>

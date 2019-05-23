@@ -232,6 +232,263 @@
   
   
   <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="https://skydh.github.io/2018/09/17/mysql 数据库分表分库/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="董航">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="why are you so happy">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                <a class="post-title-link" href="/2018/09/17/mysql 数据库分表分库/" itemprop="url">mysql 分库分表</a></h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2018-09-17T17:48:33+08:00">
+                2018-09-17
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            <h2 id="垂直切分"><a href="#垂直切分" class="headerlink" title="垂直切分"></a>垂直切分</h2><p>　　将表按照功能模块、关系密切程度划分出来，部署到不同的库上。也就是分库。适用于表多的情况。</p>
+<h2 id="水平切分"><a href="#水平切分" class="headerlink" title="水平切分"></a>水平切分</h2><p>　　当一个表中的数据量过大时，我们可以把该表的数据按照某种规则，例如userID散列，进行划分，然后存储到多个结构相同的表，这就是分表。</p>
+<h2 id="切分的选择"><a href="#切分的选择" class="headerlink" title="切分的选择"></a>切分的选择</h2><p>　　应该使用哪一种方式来实施数据库分库分表，这要看数据库中数据量的瓶颈所在，并综合项目的业务类型进行考虑。</p>
+<p>　　如果数据库是因为表太多而造成海量数据，并且项目的各项业务逻辑划分清晰、低耦合，那么规则简单明了、容易实施的垂直切分必是首选。而如果数据库中的表并不多，但单表的数据量很大、或数据热度很高，这种情况之下就应该选择水平切分，水平切分比垂直切分要复杂一些，它将原本逻辑上属于一体的数据进行了物理分割，除了在分割时要对分割的粒度做好评估，考虑数据平均和负载平均，后期也将对项目人员及应用程序产生额外的数据管理负担。</p>
+<p>　　在现实项目中，往往是这两种情况兼而有之，这就需要做出权衡，甚至既需要垂直切分，又需要水平切分。我们的游戏项目便综合使用了垂直与水平切分，我们首先对数据库进行垂直切分，然后，再针对一部分表，通常是用户数据表，进行水平切分。</p>
+<h2 id="问题挑战"><a href="#问题挑战" class="headerlink" title="问题挑战"></a>问题挑战</h2><p>　　在分片之后的数据库中并不一定能够正确运行。<br>　　跨库事务也是分布式的数据库集群要面对的棘手事情。 合理采用分表，可以在降低单表数据量的情况下，尽量使用本地事务，善于使用同库不同表可有效避免分布式事务带来的麻烦。 在不能避免跨库事务的场景，有些业务仍然需要保持事务的一致性。 而基于XA的分布式事务由于在并发度高的场景中性能无法满足需要，并未被互联网巨头大规模使用，他们大多采用最终一致性的柔性事务代替强一致事务。</p>
+<h2 id="分表的2个方式"><a href="#分表的2个方式" class="headerlink" title="分表的2个方式"></a>分表的2个方式</h2><p>　　１．事先预估好了，直接根据一定规则把表划分为多个。比如用户表。事先建ｎ个这样的表，user1,user2,user3。然后根据用户的ID来判断这个用户的聊天信息放到哪张表里面，你可以用hash的方式来获得，可以用求余的方式来获得，方法很多。<br>　　２.使用merge的方式建立映射。但是要求很多不能是innodb存储引擎。一般不使用。</p>
+<h2 id="实践使用sharing-jdbc"><a href="#实践使用sharing-jdbc" class="headerlink" title="实践使用sharing-jdbc"></a>实践使用sharing-jdbc</h2>
+          
+        
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="https://skydh.github.io/2018/09/17/redis 主从同步/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="董航">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="why are you so happy">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                <a class="post-title-link" href="/2018/09/17/redis 主从同步/" itemprop="url">redis主从同步和集群</a></h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2018-09-17T17:48:05+08:00">
+                2018-09-17
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            <h2 id="什么是主从同步"><a href="#什么是主从同步" class="headerlink" title="什么是主从同步"></a>什么是主从同步</h2><p>　　主从分布是部署多个redis实例，一主多从，当主实例挂了，那么我们就可以用从实例替换上去，增加了系统的稳定性。</p>
+<h2 id="CAP理论"><a href="#CAP理论" class="headerlink" title="CAP理论"></a>CAP理论</h2><p>　　Ｃ：一致性：分布式的系统中同一时刻有一样的值。<br>　　Ａ：可用性：集群故障之后依旧可以相应客户端的读写请求。<br>　　Ｐ：分区容错性：系统如果不能在时限内达成数据一致性，就意味着发生了分区的情况，必须就当前操作在C和A之间做出选择。<br>　　而分布式系统往往分布在不同的机器上面。这意味着必然有网络断开的风险，这个网络断开的场景的专业词汇叫网络分区。<br>　　当网络之间无法通信时，节点数据不在统一，那么一致性不满足了，或者我们暂停服务，那么可用性不满足了。<br>　　也就是说当网络分区时，一致性和可用性无法２全。</p>
+<h2 id="redis的最终一致性"><a href="#redis的最终一致性" class="headerlink" title="redis的最终一致性"></a>redis的最终一致性</h2><p>　　redis的主从数据是异步同步的，所以redis系统不满足一致性要求。redis的主节点修改数据后，立即返回，因此就算主从网络断开，主节点依旧可以提供服务。满足可用性，当网络恢复了，从节点会尽可能的同步数据。</p>
+<h2 id="增量同步"><a href="#增量同步" class="headerlink" title="增量同步"></a>增量同步</h2><p>　　这个同步方式是主节点会把对自己状态修改的指令记录在内存buffer中，redis的复制内存buffer是一个定长的环形数组，如果数组满了，将会覆盖这个数组。因此如果长时间无法同步，那么指令可能会被覆盖。</p>
+<h2 id="快照同步"><a href="#快照同步" class="headerlink" title="快照同步"></a>快照同步</h2><p>　　需要将主库的数据全部快照到磁盘文件，然后将快照文件传给子节点。从节点立即进行一次全量加载，加载之前需要将数据清空，加载后，在进行增量同步。（个人理解是和持久化一样的策略，进行快照时，新的操作用增量），但是存在一种情况，就是在快照和同步的时候，增量缓存已经被覆盖，那么只增在进行快照，然后buffer又被覆盖，进入了死循环。因此buffer大小必须设置好。</p>
+<h2 id="无盘复制"><a href="#无盘复制" class="headerlink" title="无盘复制"></a>无盘复制</h2><p>　　快照时会很严重的io操作，对系统很大的影响，我们可以通过服务器直接将套接字将快照内容发到从节点，生成快照是一个遍历的过程，主节点一遍遍历内存一遍序列化内容发送到从节点，从节点接受后也是先缓存到磁盘，然后加载到从节点里面。<br>　　我们可以用wait指令强行同步复制。wait 1 1,1就是一个从库，0就是最多等待时间。如果时间=0，那么将将无限制一致等待。</p>
+<h2 id="sentinel-自动化切换"><a href="#sentinel-自动化切换" class="headerlink" title="sentinel 自动化切换"></a>sentinel 自动化切换</h2><p>　　前面介绍了主从同步的策略实现以及原理。但是主节点出现故障，还是要手动去切换到从节点，为了避免这个问题，redis官方提供了一个方案-redis sentinel 来处理。可以在主节点挂了之后自动切换到从节点。<br>　　我们一般用3~5个sentinel作为集群，来监察redis的集群。客户端访问redis集群的时候，一般先去访问sentinel,从其中获取主节点地址，然后再去访问redis，当redis主节点挂了之后，客户端访问失败后，再次访问sentinel,他会选一个最优的从节点作为主节点，并把地址返回给客户端。而sentinel会持续监控这个坏掉的主节点，等其回复了之后将其作为从节点。<br>　　主节点断掉了，那么以为消息的丢失，因为redis的消息同和和zookeeper不一样是异步，如果延迟过大，可能造成很大的影响。</p>
+<pre><code>min-slaves-to-write 1
+min-slaves-max-lag 10
+</code></pre><p>　　Sentinel 采用上面的命令来尽量减少丢失，第一个参数是，起码必须有1个正在正常复制中，第二个参数是如果超过10秒没有复制，那么就是不正常复制了。</p>
+<h2 id="codis-方案"><a href="#codis-方案" class="headerlink" title="codis 方案"></a>codis 方案</h2><p>　　大数据量下单个redis实例是明显不够的，原因如下：<br>　　１．导致内存过大，这样主从复制的时候全量同步时间过长，其次持久化时间也太长，重启消耗大量时间资源。<br>　　２．云环境下，单个实例内存是收到限制的。<br>　　３．redis是基于多路io复用的单线程，对cpu利用率不高。<br>　　因此redis集群应运而生，多个redis实例可以有效提高cpu使用率，而codis是一个非常好的方案，它是一个代理中间件和redis一样使用redis的协议来对外提供服务。当客户端向codis发送指令时，codis负责将指令转发到后面的redis实例完成，起到一个负载均衡，代理的作用。codis上连接的所有redis实例构成了一个集群。codis对客户端是透明的，客户端就像直接使用redis实例一样。codis是无状态的，我们可以同时启动多个实例，来增加其容错性，以及提高并发量。<br>　　那么问题来了，一个key到底对应哪个redis实例呢？<br>　　codis这样玩的，他对每个key做一个运算，然后对1024取模得到一个值，codis在内存维护的一个映射关系。就是redis实例和1024的对应关系，然后这个值通过这个映射关系，找打对应的redis实例。<br>　　那么问题又来了，我们如何对codis同步数据，同步映射关系，这边采用的是使用zookeeper来持久化映射关系，同时codis提供了一个dashboard来观察修改槽位关系，当槽位关系变化时,codis会监听到变化，从而同步其关系。<br>　　缺点：key分布式了，所以不再支持事务，其次是动态扩容时，key的迁移消耗资源太大。</p>
+<h2 id="cluster-亲儿子"><a href="#cluster-亲儿子" class="headerlink" title="cluster(亲儿子)"></a>cluster(亲儿子)</h2><p>　　cluster是redis官方推出的方案，采用去中心化的方案来集群，多个节点通过一个二进制协议交换集群信息。redis将数据的key分为16384 的 slots，其槽点的信息存在每一个节点里面，当客户端获取数据时，先获取到整个槽点的信息，且将其缓存下来。RedisCluster 的每个节点会将集群的配置信息持久化到配置文件中，所以必须确保配置文件是可写的，而且尽量不要依靠人工修改配置文件。具体配置看详细即可。欧了</p>
+
+          
+        
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
     <link itemprop="mainEntityOfPage" href="https://skydh.github.io/2018/09/17/redi 小对象压缩/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -1347,261 +1604,11 @@ return funnel.watering(1); // 需要1个quota
 
 
     
-      
-
-  
-
-  
-  
-  
-
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-  
-  
-  
-  <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="https://skydh.github.io/2018/09/05/redis位图/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="董航">
-      <meta itemprop="description" content="">
-      <meta itemprop="image" content="/images/avatar.gif">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="why are you so happy">
-    </span>
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-                
-                <a class="post-title-link" href="/2018/09/05/redis位图/" itemprop="url">redis 位图</a></h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">发表于</span>
-              
-              <time title="创建于" itemprop="dateCreated datePublished" datetime="2018-09-05T09:09:13+08:00">
-                2018-09-05
-              </time>
-            
-
-            
-
-            
-          </span>
-
-          
-
-          
-            
-          
-
-          
-          
-
-          
-
-          
-
-          
-
-        </div>
-      </header>
-    
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          
-            <p>ps：读掘金小册笔记</p>
-<h2 id="位图的产生和作用"><a href="#位图的产生和作用" class="headerlink" title="位图的产生和作用"></a>位图的产生和作用</h2><p>　　开发时我们常常需要存储一些bool型数据类型，比如用户的签到记录，签了为1，没签为0，如果用普通的key/value，每个用户要记录365个，当用户多的时候，需要的存储太多，为了解决这个问题，redis提供了位图数据结构，每天的签到记录只占据一个位，365天就是365位，也就是46个字节，其内容也是普通的字符串，也就是byte数组，可以用get,set获取和设置整个数组，也可以用getbite/setbite来将其作为数组来操作。</p>
-<h2 id="操作"><a href="#操作" class="headerlink" title="操作"></a>操作</h2><p>　　setbit a 1 1;这个就是设置这个a这个数组第二位位1，getbite a 1,获取a这个byte数组的第二位的数字，如果直接用get a 则是获得到这个byte数组对应的Ascll值，用时我们也可以先set字符，然后getbite 其数组。总之，这2套操作是互通的。</p>
-<h2 id="统计查找"><a href="#统计查找" class="headerlink" title="统计查找"></a>统计查找</h2><p>　　redis提供了位图统计指令bitcount和位图查找指令bitpos,bitcount是统计指定位置范围内1的个数，bitpos用来查找指定范围内出现的第一个0或者1。后面的2个参数指的是字符索引。比如bitcount w 0 0,表示w字节数组第一个字符中1的位数。比如bitcount w 0 1,则是查询前2个字符中1的位数。bitpos w 0,表示查询w这个字节数组第一个出现0的位置，bitpop w 1 2 2,表示查询第三个字符中第一个1出现的位置。</p>
-<h2 id="批量处理"><a href="#批量处理" class="headerlink" title="批量处理"></a>批量处理</h2><p>　　１．前面getite都是单个单个执行的。如果想批量执行，就要用bitfield这个指令。<br>　　比如：bitfield w get u4 0,从第一个位置开始取4个数，结果是无符号数（u）,bitfield w get i3 2,从第三个数开始取3个数，结果是有符号数（i）.所谓有符号就是第一位是符号位，有符号数最多可以获取64位，无符号只能63位（redis协议中integer就是有符号数）<br>　　 bitfield w set u8 8 97 这个就是把第二个字符改成ａ，因为ａ的ASCII码的值是97.这就可以批量修改字节数组的值。</p>
-<p>　　bitfield w incrby u4 2 1  这个就是从第三个位开始，对接下来的无符号数＋１，既然是自增操作，那么就可能出现溢出如果增加了正数就会上溢，如果增加的负数就会下溢出，redis默认的方法时折返，如果出现了溢出，就将溢出的符号位丢了。关于溢出，默认是折返<br>　　还有其他策略，饱和截断超过了范围就停留在最大值最小值那里，失败报错不执行。</p>
-
-          
-        
-      
-    </div>
-    
-    
-    
-
-    
-
-    
-
-    
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </div>
-  
-  
-  
-  </article>
-
-
-    
-      
-
-  
-
-  
-  
-  
-
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-  
-  
-  
-  <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="https://skydh.github.io/2018/09/04/redis消息队列/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="董航">
-      <meta itemprop="description" content="">
-      <meta itemprop="image" content="/images/avatar.gif">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="why are you so happy">
-    </span>
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-                
-                <a class="post-title-link" href="/2018/09/04/redis消息队列/" itemprop="url">redis消息队列</a></h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">发表于</span>
-              
-              <time title="创建于" itemprop="dateCreated datePublished" datetime="2018-09-04T16:53:36+08:00">
-                2018-09-04
-              </time>
-            
-
-            
-
-            
-          </span>
-
-          
-
-          
-            
-          
-
-          
-          
-
-          
-
-          
-
-          
-
-        </div>
-      </header>
-    
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          
-            <p>ps：读掘金小册笔记</p>
-<h2 id="简单的异步消息队列"><a href="#简单的异步消息队列" class="headerlink" title="简单的异步消息队列"></a>简单的异步消息队列</h2><p>　　对于一些只有一组消费者的消息队列，使用redis可以轻松解决，redis的list结构可以很好的处理，这个list的基本操作rpush，lpush,rpop,lpop即可处理队列。</p>
-<h2 id="队列为空怎么破"><a href="#队列为空怎么破" class="headerlink" title="队列为空怎么破"></a>队列为空怎么破</h2><p>　　客户端通过pop操作来获取消息，从而消费，如果队列空了，客户端就会进入pop的死循环，由于没数据，不停的pop，这种空循环不但对客户端影响很大，对redis的qps也有影响，我们则是通过sleep来解决这个问题，让线程睡一下即可，也就是暂停一秒左右。</p>
-<h2 id="队列延迟"><a href="#队列延迟" class="headerlink" title="队列延迟"></a>队列延迟</h2><p>　　这个让线程休眠会导致消息延迟变高，有个办法可以避免这个问题，不用让线程睡眠，那就是用blpop/brpop阻塞读，阻塞读在队列没有数据的时候，会进入到休眠状态，一旦数据到来，就会立刻醒过来。</p>
-<h2 id="空闲连接自动断开"><a href="#空闲连接自动断开" class="headerlink" title="空闲连接自动断开"></a>空闲连接自动断开</h2><p>　　如果这个线程一直阻塞在哪里，redis的客户端连接就会变成限制连接，服务器会主动断开，减少资源占用，这个时候blpop/brpop就会抛出异常。，因此编写客户端的时候要注意捕捉异常。</p>
-<h2 id="锁冲突处理"><a href="#锁冲突处理" class="headerlink" title="锁冲突处理"></a>锁冲突处理</h2><p>　　请求加锁失败时：<br>　　１．直接抛出异常。２．sleep一会再试。3.将请求移动到延时队列，过一会再试试。实现如下：<br>　　通过zset来实现延时队列，我们将消息序列化为value,到期时间作为score，然后多个线程轮训获取到期任务处理。</p>
-
-          
-        
-      
-    </div>
-    
-    
-    
-
-    
-
-    
-
-    
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </div>
-  
-  
-  
-  </article>
-
-
-    
   </section>
 
   
   <nav class="pagination">
-    <a class="extend prev" rel="prev" href="/page/3/"><i class="fa fa-angle-left"></i></a><a class="page-number" href="/">1</a><span class="space">&hellip;</span><a class="page-number" href="/page/3/">3</a><span class="page-number current">4</span><a class="page-number" href="/page/5/">5</a><span class="space">&hellip;</span><a class="page-number" href="/page/10/">10</a><a class="extend next" rel="next" href="/page/5/"><i class="fa fa-angle-right"></i></a>
+    <a class="extend prev" rel="prev" href="/page/3/"><i class="fa fa-angle-left"></i></a><a class="page-number" href="/">1</a><span class="space">&hellip;</span><a class="page-number" href="/page/3/">3</a><span class="page-number current">4</span><a class="page-number" href="/page/5/">5</a><span class="space">&hellip;</span><a class="page-number" href="/page/11/">11</a><a class="extend next" rel="next" href="/page/5/"><i class="fa fa-angle-right"></i></a>
   </nav>
 
 
@@ -1647,7 +1654,7 @@ return funnel.watering(1); // 需要1个quota
               
                 <a href="/archives/">
               
-                  <span class="site-state-item-count">100</span>
+                  <span class="site-state-item-count">102</span>
                   <span class="site-state-item-name">日志</span>
                 </a>
               </div>

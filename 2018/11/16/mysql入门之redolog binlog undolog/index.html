@@ -86,7 +86,7 @@
 <meta property="og:site_name" content="why are you so happy">
 <meta property="og:description" content="redolog　　MySQL 里经常说到的 WAL 技术，意思就是数据先写日志，再写磁盘。这里面的日志就是innodb里面的redolog.当有一条记录需要更新的时候，InnoDB 引擎就会先把记录写redo log里面，并更新内存，这个时候更新就算完了，然后innodb引擎会在适当的时候将数据跟新到磁盘里面，这个跟新会在系统空闲的时候进行。　　这个可以加速的原因是不用去索引磁盘里面的数据，直接添">
 <meta property="og:locale" content="zh-Hans">
-<meta property="og:updated_time" content="2019-04-16T12:31:47.530Z">
+<meta property="og:updated_time" content="2019-05-16T06:43:50.134Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="mysql 入门redolo binlog undolog">
 <meta name="twitter:description" content="redolog　　MySQL 里经常说到的 WAL 技术，意思就是数据先写日志，再写磁盘。这里面的日志就是innodb里面的redolog.当有一条记录需要更新的时候，InnoDB 引擎就会先把记录写redo log里面，并更新内存，这个时候更新就算完了，然后innodb引擎会在适当的时候将数据跟新到磁盘里面，这个跟新会在系统空闲的时候进行。　　这个可以加速的原因是不用去索引磁盘里面的数据，直接添">
@@ -299,7 +299,7 @@
       
 
       
-        <h2 id="redolog"><a href="#redolog" class="headerlink" title="redolog"></a>redolog</h2><p>　　MySQL 里经常说到的 WAL 技术，意思就是数据先写日志，再写磁盘。这里面的日志就是innodb里面的redolog.当有一条记录需要更新的时候，InnoDB 引擎就会先把记录写redo log里面，并更新内存，这个时候更新就算完了，然后innodb引擎会在适当的时候将数据跟新到磁盘里面，这个跟新会在系统空闲的时候进行。<br>　　这个可以加速的原因是不用去索引磁盘里面的数据，直接添加到日志里面，等到最后清算，如此可以有效提高效率。<br>　　redolog是个循环日志，其大小固定为4g，存在2个指正来定位其是否已经满了。一个指正是当前读，一个指针是当前写，很类似java里面的bytebuffer。redolog本质上就是为了崩溃恢复用的。当内存的数据页要持久化到磁盘，这个脏页的操作和redolog无关。只有当崩溃恢复的时候才用，把数据修复为脏页数据。  redolog只是个保险。数据页只存在2个情况。内存中，那就一定是正确的结果，直接返回，另一种是数据文件上的，那就一定正确，读入内存后返回。</p>
+        <h2 id="redolog"><a href="#redolog" class="headerlink" title="redolog"></a>redolog</h2><p>　　MySQL 里经常说到的 WAL 技术，意思就是数据先写日志，再写磁盘。这里面的日志就是innodb里面的redolog.当有一条记录需要更新的时候，InnoDB 引擎就会先把记录写redo log里面，并更新内存，这个时候更新就算完了，然后innodb引擎会在适当的时候将数据跟新到磁盘里面，这个跟新会在系统空闲的时候进行。<br>　　这个可以加速的原因是不用去索引磁盘里面的数据，直接添加到日志里面，等到最后清算，如此可以有效提高效率。<br>　　redolog是个循环日志，其大小固定为4g，存在2个指正来定位其是否已经满了。一个指正是当前读，一个指针是当前写，很类似java里面的bytebuffer。redolog本质上就是为了崩溃恢复用的。当内存的数据页要持久化到磁盘，这个脏页的操作和redolog无关。只有当崩溃恢复的时候才用，把数据修复为脏页数据。因为redolog记录的是数据页的变换信息。  redolog只是个保险。数据页只存在2个情况。内存中，那就一定是正确的结果，直接返回，另一种是数据文件上的，那就一定正确，读入内存后返回。</p>
 <h2 id="binlog"><a href="#binlog" class="headerlink" title="binlog"></a>binlog</h2><p>　　这个是mysql自身的日志，叫做归档日志。和redolog大致3个不同点。<br>　　１．其为mysql自带的，redolog是innodb里面的。<br>　　２．redolog是物理日志，binlog是逻辑日志。<br>　　３．redolog是循环日志，binlog是增量日志。<br>　　对于我们来说，redolog主要针对系统崩溃，而binlog主要是针对系统恢复归档，因为redolog是循环的，无法持久太多。</p>
 <h2 id="undolog"><a href="#undolog" class="headerlink" title="undolog"></a>undolog</h2><p>　　这个日志主要用来处理事务的隔离级别的<br>　　详细信息请看我的另一篇文章，关于mysql innodb的隔离级别的实现。因此我在这里说下长事务对其的影响，我们知道我那篇文章说了，innodb是基于mvcc的控制，undolog将会非常的大，因为这个日志的大小和最早事务相关，因此长事务会使其的undolog非常大。<br>　　大家也不想使用长事务，但是以下情况可能出现长事务。就是你<br>　　set autocommit=0那就是不自动提交，即使是一个select语句那也不会提交，因此我们要注意。<br>　　我们用这条语句来判断事务是否为长事务。<br>　　select * from information_schema.innodb_trx where TIME_TO_SEC(timediff(now(),trx_started))&gt;60</p>
 <h2 id="change-buffer"><a href="#change-buffer" class="headerlink" title="change buffer"></a>change buffer</h2><p>　　这个东西主要是更新插入数据时用的哈，首先判断要更新的数据是否在内存，若在，直接更新内存，如不在，则是将其修改加入到change buffer里面，等到要查询这个数据的时候，再将其同步过去。或者等到一定时间通过定时器刷新过去。但是要用到这个东西不能加唯一索引，因为你加了唯一索引，那么就必须从磁盘读取到这个数据页来进行判断这个数据是否满足规范，因此要想用到这个change buffer就不能用唯一索引，只能用普通索引。那么这个change buffer和redo log的区别呢？在数据库的操作流程是这样的。假设这个数据不在内存里面，我们的操作流程是先写到change buffer里面，在写到redolog里面，当我们要读取这个数据的时候，我们从数据库里面读取到这个数据页，然后取出对应数据加上change buffer的东西。<br>　　<br>　　因此相对于redolog,change buffer主要是减少了随机读取的性能消耗，因为我们不用读取这个数据页，插入更新的时候，只有当我们真正需要读取数据的时候才进行读取数据。而redolog则是有效减少了随机写磁盘的消耗，我们只用顺序写到redolog里面，当到一定时间后则刷新到数据库磁盘里面。完美。ps:这都是针对2级索引，而主键索引是判断数据所在数据页的在哪的，因此考虑了其唯一性。</p>
@@ -423,7 +423,7 @@
               
                 <a href="/archives/">
               
-                  <span class="site-state-item-count">100</span>
+                  <span class="site-state-item-count">102</span>
                   <span class="site-state-item-name">日志</span>
                 </a>
               </div>

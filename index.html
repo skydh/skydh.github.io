@@ -232,6 +232,254 @@
   
   
   <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="https://skydh.github.io/2019/05/20/大表的全表扫描/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="董航">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="why are you so happy">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                <a class="post-title-link" href="/2019/05/20/大表的全表扫描/" itemprop="url">大表的全表扫描</a></h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2019-05-20T20:11:31+08:00">
+                2019-05-20
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            <h2 id="问题"><a href="#问题" class="headerlink" title="问题"></a>问题</h2><p>　　你的服务器内存2G,你全表查询一个10g的表，内存会不会炸了。</p>
+<h2 id="答案"><a href="#答案" class="headerlink" title="答案"></a>答案</h2><p>　　不会。逻辑如下，语句，select * from t；服务端不会存放完整的结果集，其流程和流很类似。<br>　　１.获取一行，写到net_buffer中。这个值由参数net_buffer_length决定，默认16k。<br>　　２.重复获取行，直到，写满net_buffer<br>　　３.若发送成功，就清空net_buffer,然后取下一行，写入搭配net_buffer。<br>　　４.如果发送函数返回EAGAIN,或者WSAEWOULDBLOCK。就表示本地网络栈满了，进入等待，直到可以重写，再继续发送。</p>
+<h2 id="参数"><a href="#参数" class="headerlink" title="参数"></a>参数</h2><p>　　-quick：mysql_use_result方法，这个方法是读一行，处理一行。默认的话mysql_store_result这个接口。这个是把结果保存到本地内存。</p>
+
+          
+        
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="https://skydh.github.io/2019/05/15/上传jar到私服命令模式/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="董航">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="why are you so happy">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                <a class="post-title-link" href="/2019/05/15/上传jar到私服命令模式/" itemprop="url">上传jar到私服命令模式</a></h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2019-05-15T10:41:37+08:00">
+                2019-05-15
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            <h2 id="命令如下"><a href="#命令如下" class="headerlink" title="命令如下"></a>命令如下</h2><p>　　mvn deploy:deploy-file -DgroupId=net.sf.squirrel-sql.plugins -DartifactId=greenplum -Dversion=3.5.0 -Dpackaging=jar -Dfile=C:\Users\Lenovo.m2\repository\net\sf\squirrel-sql\plugins\greenplum\3.5.0\greenplum-3.5.0.jar -Durl=<a href="http://maven.×××.com/nexus/content/repositories/thirdparty/" target="_blank" rel="noopener">http://maven.×××.com/nexus/content/repositories/thirdparty/</a> -DrepositoryId=3rd.nexus –settings  D:\maven\apache-maven-3.5.0\conf\settings.xml</p>
+<p>　　其中-DgroupId 为上传的jar的groupId</p>
+<p>　　-DartifactId 为上传的jar的artifactId</p>
+<p>　　-Dversion 为上传的jar的需要被依赖的时候的版本号</p>
+<p>　　然后是-Dpackaging为jar，-Dfile为jar包路径 </p>
+<p>　　-Durl 为要上传的路径，可以通过以下方式获取到</p>
+<p>　　-DrepositoryId 为repository的唯一标示，和setting.xml里面server相同<br>　　　<br>　　–settings 指定配置文件</p>
+
+          
+        
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
     <link itemprop="mainEntityOfPage" href="https://skydh.github.io/2019/04/24/mysql 主从/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -551,6 +799,8 @@
         
           
             <h2 id="2种通信方式"><a href="#2种通信方式" class="headerlink" title="2种通信方式"></a>2种通信方式</h2><p>　　我们有２个方式和服务端集群交互，第一个是通过9300端口并使用Elasticsearch原生传输协议和集群交互，同时集群的节点也是通过这个端口彼此通信的。这个只能通过java实现，同时maven依赖版本必须和es版本保持一致，不然可能连不上去。第二个方式就是其他语言包括java都可以使用的，就是通过restful api 9200端口和Elasticsearch交互。  </p>
+<h2 id="查询性能"><a href="#查询性能" class="headerlink" title="查询性能"></a>查询性能</h2><p>　　１．ES的搜索引擎严重依赖于底层的filesystem cache，你如果给filesystem cache更多的内存，尽量让内存可以容纳所有的idx segment file索引数据文件，那么你搜索的时候就基本都是走内存的，性能会非常高。一般来说，内存空间要达到磁盘数据量的一般，使用es性能才好。<br>　　２.在es中，如果内存留给filesystem cache的空间是1g，那么你的索引数据就要控制在1g以内，那么你的数据几乎都是走内存来搜索，性能极高。比如你只需要根据id，name,age3个字段来搜索，但是你把一行数据30多个字段都丢进去了，那么有大量的数据不是用来搜索的，占了filesystem cache的空间，浪费了。因此我们建议将id+name,age,其余的数据存在mysql里面，然后通过索引再mysql里面查询。<br>　　３．数据预热，可以搞个子系统，手动访问某些数据，将数据加热，提前刷到filesystem cache里面。<br>　　４．es深度分页性能很差，方案，去除深度分页。
+　</p>
 
           
         
@@ -1214,262 +1464,11 @@ public class RbapiProperties {
 
 
     
-      
-
-  
-
-  
-  
-  
-
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-  
-  
-  
-  <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="https://skydh.github.io/2019/01/07/cookie/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="董航">
-      <meta itemprop="description" content="">
-      <meta itemprop="image" content="/images/avatar.gif">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="why are you so happy">
-    </span>
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-                
-                <a class="post-title-link" href="/2019/01/07/cookie/" itemprop="url">cookie</a></h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">发表于</span>
-              
-              <time title="创建于" itemprop="dateCreated datePublished" datetime="2019-01-07T15:36:40+08:00">
-                2019-01-07
-              </time>
-            
-
-            
-
-            
-          </span>
-
-          
-
-          
-            
-          
-
-          
-          
-
-          
-
-          
-
-          
-
-        </div>
-      </header>
-    
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          
-            <h2 id="介绍"><a href="#介绍" class="headerlink" title="介绍"></a>介绍</h2><p>　　　　Cookie不仅仅有名字和值两个属性，还有域（domain）、路径（path）等属性。其中，不同的域、不同的路径下可以存在同样名字的cookie。一般我们设置cookie的方法是用一个同样名字、一个值。这时就一定要搞清楚你要设置的cookie的域和路径，否则就会产生问题中的情况</p>
-<h2 id="属性"><a href="#属性" class="headerlink" title="属性"></a>属性</h2><p>　　１．name    Cookie的名称，Cookie一旦创建，名称便不可更改</p>
-<p>　　２．value    Cookie的值。如果值为Unicode字符，需要为字符编码。如果值为二进制数据，则需要使用BASE64编码</p>
-<p>　　３．maxAge    Cookie失效的时间，单位秒。如果为正数，则该Cookie在maxAge秒之后失效。如果为负数，该Cookie为临时Cookie，关闭浏览器即失效，浏览器也不会以任何形式保存该Cookie。如果为0，表示删除该Cookie。默认为-1。</p>
-<p>　　４．secure    该Cookie是否仅被使用安全协议传输。安全协议。安全协议有HTTPS，SSL等，在网络上传输数据之前先将数据加密。默认为false。</p>
-<p>　　５．path    Cookie的使用路径。如果设置为“/sessionWeb/”，则只有contextPath为“/sessionWeb”的程序可以访问该Cookie。如果设置为“/”，则本域名下contextPath都可以访问该Cookie。注意最后一个字符必须为“/”。</p>
-<p>　　６．domain    可以访问该Cookie的域名。如果设置为“.google.com”，则所有以“google.com”结尾的域名都可以访问该Cookie。注意第一个字符必须为“.”。<br>     domain表示的是cookie所在的域，默认为请求的地址，如网址为www.test.com/test/test.aspx，那么domain默认为www.test.com。而跨域访问，如域A为t1.test.com，域B为t2.test.com，那么在域A生产一个令域A和域B都能访问的cookie就要将该cookie的domain设置为.test.com；如果要在域A生产一个令域A不能访问而域B能访问的cookie就要将该cookie的domain设置为t2.test.com
-　　</p>
-
-          
-        
-      
-    </div>
-    
-    
-    
-
-    
-
-    
-
-    
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </div>
-  
-  
-  
-  </article>
-
-
-    
-      
-
-  
-
-  
-  
-  
-
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-  
-  
-  
-  <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="https://skydh.github.io/2018/12/28/大数据入坑001/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="董航">
-      <meta itemprop="description" content="">
-      <meta itemprop="image" content="/images/avatar.gif">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="why are you so happy">
-    </span>
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-                
-                <a class="post-title-link" href="/2018/12/28/大数据入坑001/" itemprop="url">大数据入坑001</a></h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">发表于</span>
-              
-              <time title="创建于" itemprop="dateCreated datePublished" datetime="2018-12-28T11:26:26+08:00">
-                2018-12-28
-              </time>
-            
-
-            
-
-            
-          </span>
-
-          
-
-          
-            
-          
-
-          
-          
-
-          
-
-          
-
-          
-
-        </div>
-      </header>
-    
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          
-            <h2 id="计算"><a href="#计算" class="headerlink" title="计算"></a>计算</h2><p>　　Hadoop，spark等计算是以一天的大量的数据进行计算的，需要花费大量的时间，我们称之为大数据离线计算，批处理计算。<br>　　而同时也有实时计算的，比如storm,flink等在线计算出数据的，我们称之为大数据实时计算，流式计算。<br>　　业界的方案是批处理技术处理全量数据，而流式计算处理新增数据，而像Flink这样的计算引擎，是可以同时支持流式计算和批处理计算。我觉得这个很类似redis的主从同步策略。</p>
-<h2 id="存储"><a href="#存储" class="headerlink" title="存储"></a>存储</h2><p>　　NOsql系统处理海量数据的存储和访问。比如HBAse,这个基于HDFS的NoSQL系统。</p>
-<h2 id="场景"><a href="#场景" class="headerlink" title="场景"></a>场景</h2><p>　　数据分析（Hive,Spark SQL等sql引擎），数据挖掘，机器学习。</p>
-<h2 id="移动计算"><a href="#移动计算" class="headerlink" title="移动计算"></a>移动计算</h2><p>　　移动计算比移动数据更加划算。巨大的数据使得网络带宽无法满足。因此我们将数据采取HDFS分布式文件存储系统，将文件分为很多块。然后大数据引擎根据服务器的计算能力，在每台服务器上启动若干分布式任务进程，这些进程会等待给他们分配执行任务。第三步，使用该大数据引擎支持的编程模型编程，编程好后打包，用其引擎执行该程序包，首先解析程序要处理的数据输入路径，根据数据量大小，将数据分成若干片，每一个数据片分配一个任务去执行。第四步。任务执行进程接受到分配的任务后，检查自己是否有任务对应的程序包，没有就去下载，然后反射执行。</p>
-<h2 id="RAID"><a href="#RAID" class="headerlink" title="RAID"></a>RAID</h2><p>　　RAID技术是将多个普通磁盘组成一个阵列，共同对外提供服务。</p>
-
-          
-        
-      
-    </div>
-    
-    
-    
-
-    
-
-    
-
-    
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </div>
-  
-  
-  
-  </article>
-
-
-    
   </section>
 
   
   <nav class="pagination">
-    <span class="page-number current">1</span><a class="page-number" href="/page/2/">2</a><span class="space">&hellip;</span><a class="page-number" href="/page/10/">10</a><a class="extend next" rel="next" href="/page/2/"><i class="fa fa-angle-right"></i></a>
+    <span class="page-number current">1</span><a class="page-number" href="/page/2/">2</a><span class="space">&hellip;</span><a class="page-number" href="/page/11/">11</a><a class="extend next" rel="next" href="/page/2/"><i class="fa fa-angle-right"></i></a>
   </nav>
 
 
@@ -1515,7 +1514,7 @@ public class RbapiProperties {
               
                 <a href="/archives/">
               
-                  <span class="site-state-item-count">100</span>
+                  <span class="site-state-item-count">102</span>
                   <span class="site-state-item-name">日志</span>
                 </a>
               </div>

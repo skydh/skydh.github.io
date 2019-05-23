@@ -84,12 +84,12 @@
 <meta property="og:title" content="es 入门2.0">
 <meta property="og:url" content="https://skydh.github.io/2019/01/28/es 入门2.0/index.html">
 <meta property="og:site_name" content="why are you so happy">
-<meta property="og:description" content="2种通信方式　　我们有２个方式和服务端集群交互，第一个是通过9300端口并使用Elasticsearch原生传输协议和集群交互，同时集群的节点也是通过这个端口彼此通信的。这个只能通过java实现，同时maven依赖版本必须和es版本保持一致，不然可能连不上去。第二个方式就是其他语言包括java都可以使用的，就是通过restful api 9200端口和Elasticsearch交互。">
+<meta property="og:description" content="2种通信方式　　我们有２个方式和服务端集群交互，第一个是通过9300端口并使用Elasticsearch原生传输协议和集群交互，同时集群的节点也是通过这个端口彼此通信的。这个只能通过java实现，同时maven依赖版本必须和es版本保持一致，不然可能连不上去。第二个方式就是其他语言包括java都可以使用的，就是通过restful api 9200端口和Elasticsearch交互。   查询性能">
 <meta property="og:locale" content="zh-Hans">
-<meta property="og:updated_time" content="2019-01-28T02:30:52.271Z">
+<meta property="og:updated_time" content="2019-05-23T07:18:33.445Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="es 入门2.0">
-<meta name="twitter:description" content="2种通信方式　　我们有２个方式和服务端集群交互，第一个是通过9300端口并使用Elasticsearch原生传输协议和集群交互，同时集群的节点也是通过这个端口彼此通信的。这个只能通过java实现，同时maven依赖版本必须和es版本保持一致，不然可能连不上去。第二个方式就是其他语言包括java都可以使用的，就是通过restful api 9200端口和Elasticsearch交互。">
+<meta name="twitter:description" content="2种通信方式　　我们有２个方式和服务端集群交互，第一个是通过9300端口并使用Elasticsearch原生传输协议和集群交互，同时集群的节点也是通过这个端口彼此通信的。这个只能通过java实现，同时maven依赖版本必须和es版本保持一致，不然可能连不上去。第二个方式就是其他语言包括java都可以使用的，就是通过restful api 9200端口和Elasticsearch交互。   查询性能">
 
 
 
@@ -300,6 +300,8 @@
 
       
         <h2 id="2种通信方式"><a href="#2种通信方式" class="headerlink" title="2种通信方式"></a>2种通信方式</h2><p>　　我们有２个方式和服务端集群交互，第一个是通过9300端口并使用Elasticsearch原生传输协议和集群交互，同时集群的节点也是通过这个端口彼此通信的。这个只能通过java实现，同时maven依赖版本必须和es版本保持一致，不然可能连不上去。第二个方式就是其他语言包括java都可以使用的，就是通过restful api 9200端口和Elasticsearch交互。  </p>
+<h2 id="查询性能"><a href="#查询性能" class="headerlink" title="查询性能"></a>查询性能</h2><p>　　１．ES的搜索引擎严重依赖于底层的filesystem cache，你如果给filesystem cache更多的内存，尽量让内存可以容纳所有的idx segment file索引数据文件，那么你搜索的时候就基本都是走内存的，性能会非常高。一般来说，内存空间要达到磁盘数据量的一般，使用es性能才好。<br>　　２.在es中，如果内存留给filesystem cache的空间是1g，那么你的索引数据就要控制在1g以内，那么你的数据几乎都是走内存来搜索，性能极高。比如你只需要根据id，name,age3个字段来搜索，但是你把一行数据30多个字段都丢进去了，那么有大量的数据不是用来搜索的，占了filesystem cache的空间，浪费了。因此我们建议将id+name,age,其余的数据存在mysql里面，然后通过索引再mysql里面查询。<br>　　３．数据预热，可以搞个子系统，手动访问某些数据，将数据加热，提前刷到filesystem cache里面。<br>　　４．es深度分页性能很差，方案，去除深度分页。
+　</p>
 
       
     </div>
@@ -413,7 +415,7 @@
               
                 <a href="/archives/">
               
-                  <span class="site-state-item-count">100</span>
+                  <span class="site-state-item-count">102</span>
                   <span class="site-state-item-name">日志</span>
                 </a>
               </div>
@@ -452,7 +454,7 @@
             
 
             
-              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#2种通信方式"><span class="nav-number">1.</span> <span class="nav-text">2种通信方式</span></a></li></ol></div>
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#2种通信方式"><span class="nav-number">1.</span> <span class="nav-text">2种通信方式</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#查询性能"><span class="nav-number">2.</span> <span class="nav-text">查询性能</span></a></li></ol></div>
             
 
           </div>

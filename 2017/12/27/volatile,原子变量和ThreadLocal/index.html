@@ -86,7 +86,7 @@
 <meta property="og:site_name" content="why are you so happy">
 <meta property="og:description" content="概念多线程中的变量　　首先我介绍的是volatile关键字，其次是原子变量，最后则是ThreadLocal线程本地变量 java基本内存模型　　用到volatile这个关键字以及后面的原子变量之前，我们必须先了解一下什么是java基本内存模型。　　先明确几个概念：　　主内存：主内存就是所有线程共享的内存，对于一个共享变量来说，主内存存放其真实数据（本尊数据）　　线程工作内存：线程对数据操作时，都会">
 <meta property="og:locale" content="zh-Hans">
-<meta property="og:updated_time" content="2019-02-27T08:14:56.551Z">
+<meta property="og:updated_time" content="2019-05-13T12:13:42.403Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="volatile,原子变量和ThreadLocal">
 <meta name="twitter:description" content="概念多线程中的变量　　首先我介绍的是volatile关键字，其次是原子变量，最后则是ThreadLocal线程本地变量 java基本内存模型　　用到volatile这个关键字以及后面的原子变量之前，我们必须先了解一下什么是java基本内存模型。　　先明确几个概念：　　主内存：主内存就是所有线程共享的内存，对于一个共享变量来说，主内存存放其真实数据（本尊数据）　　线程工作内存：线程对数据操作时，都会">
@@ -390,7 +390,21 @@
        if (!cleanSomeSlots(i, sz) &amp;&amp; sz &gt;= threshold)
            rehash();
    }
-</code></pre><p>　　从什么这些我们可以看出来，具体的值是存在Thread对象里面的，因此不同线程之间相互没有影响。</p>
+</code></pre><p>　　从什么这些我们可以看出来，具体的值是存在Thread对象里面的，因此不同线程之间相互没有影响。具体一点。每个Thread类里面有个属性： ThreadLocal.ThreadLocalMap threadLocals = null。显然这个属性类是ThreadLocal的内部类。我们看看ThreadLocal的get方法：</p>
+<pre><code>public T get() {
+    Thread t = Thread.currentThread();
+    ThreadLocalMap map = getMap(t);
+    if (map != null) {
+        ThreadLocalMap.Entry e = map.getEntry(this);
+        if (e != null) {
+            @SuppressWarnings(&quot;unchecked&quot;)
+            T result = (T)e.value;
+            return result;
+        }
+    }
+    return setInitialValue();
+}
+</code></pre><p>　　我们先获取到当前Thread类，然后的到其ThreadLocalMap类属性，我们的值就存在里面。这个类的属性如下：Entry[]数组，这个key和value分别是ThreadLocal，value。完美解释。</p>
 <p>　　内存泄漏的问题,我们看2段代码即可明白。</p>
 <pre><code>static class Entry extends WeakReference&lt;ThreadLocal&lt;?&gt;&gt; {
        /** The value associated with this ThreadLocal. */
@@ -518,7 +532,7 @@
               
                 <a href="/archives/">
               
-                  <span class="site-state-item-count">100</span>
+                  <span class="site-state-item-count">102</span>
                   <span class="site-state-item-name">日志</span>
                 </a>
               </div>
