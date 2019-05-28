@@ -86,7 +86,7 @@
 <meta property="og:site_name" content="why are you so happy">
 <meta property="og:description" content="迅速短暂的提高性能　　１．处理掉占着的但是不工作的连接。首先使用show processlist，但是不知道那些sleep的连接是否是事务外的，我们继续查询 information_schema库的innodb_trx表。select * from information_schema.innodb_trx\G,查看那些连接是在事务内的。　　当我们断掉连接后，客户端不会立马知道，而是在第二个请求时">
 <meta property="og:locale" content="zh-Hans">
-<meta property="og:updated_time" content="2019-04-23T11:26:31.611Z">
+<meta property="og:updated_time" content="2019-05-28T12:23:43.359Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="mysql 知识杂点">
 <meta name="twitter:description" content="迅速短暂的提高性能　　１．处理掉占着的但是不工作的连接。首先使用show processlist，但是不知道那些sleep的连接是否是事务外的，我们继续查询 information_schema库的innodb_trx表。select * from information_schema.innodb_trx\G,查看那些连接是在事务内的。　　当我们断掉连接后，客户端不会立马知道，而是在第二个请求时">
@@ -301,6 +301,9 @@
       
         <h2 id="迅速短暂的提高性能"><a href="#迅速短暂的提高性能" class="headerlink" title="迅速短暂的提高性能"></a>迅速短暂的提高性能</h2><p>　　１．处理掉占着的但是不工作的连接。首先使用show processlist，但是不知道那些sleep的连接是否是事务外的，我们继续查询 information_schema库的innodb_trx表。select * from information_schema.innodb_trx\G,查看那些连接是在事务内的。<br>　　当我们断掉连接后，客户端不会立马知道，而是在第二个请求时才发现，连接断了。<br>　　２．减少连接过程的消耗，比如去掉安全校验。<br>　　３．索引没设计好，当要修改表结构时。可以采用如下方案。１，从库执行　set sql_log_bin=off,也就是不开启binlog,然后执行alter语句，主备切换，主库和上述从库一样的方案。</p>
 <h2 id="为何mysql用了函数就无法使用索引了"><a href="#为何mysql用了函数就无法使用索引了" class="headerlink" title="为何mysql用了函数就无法使用索引了"></a>为何mysql用了函数就无法使用索引了</h2><p>　　B+树的快速定位能力，来源于同一层兄弟节点的有序性。当你使用函数时，在b+树的第一层就不知道如何是好了。对索引字段做函数操作，会破坏其有序性。<br>　　既然这样，对mysql来说，字符串和数字比较是将字符串转换为数字，因此你一个字符串索引，当你的查询条件是数字时，会自动加上函数，导致其，破坏其有序性，导致进行全索引扫描。</p>
+<h2 id="为何临时表可以重名。"><a href="#为何临时表可以重名。" class="headerlink" title="为何临时表可以重名。"></a>为何临时表可以重名。</h2><p>　　１.临时表和内存表不一样的，临时表不全是内存表。但是临时表可以是内存表。<br>　　特点：<br>　　１．临时表可以和普通表同名。<br>　　２．创表语法为create temporaty table.　<br>　　３．临时表只能被创建他的session访问，对其他线程不可见。<br>　　４．在一个session里面遇到同名的临时表和普通表时，优先访问临时表。<br>　　原因：mysql创建一个frm文件保存表结构，这个文件的后缀是.frm，前缀是#sql{进程id}<em>{线程id}</em>序列号。因此对于mysql来说，其真实存储的文件名是不一样的。<br>　　在mysql内存里面，每个表对应一个key,这个key是唯一的，普通表和数据库+表名相关，临时表则多了一个线程id。因此对于mysql来说，每个session创建的临时表的内存key和物理表名都不一样。<br>　　在实现上，每个线程维护了一个临时表链表，每次session内操作表的时候，先遍历链表，检查是否存在这个名字的临时表，有，则优先执行。session结束，则删除这个临时表。<br>　　主从：<br>　　如果binlog的格式是statment/mixed,是会把临binlog里面。时表记录到binlog里面，但是如果是row则不会记录到里面。</p>
+<h2 id="内存表"><a href="#内存表" class="headerlink" title="内存表"></a>内存表</h2><p>　　内存表的索引结构是hash结构，查询很快，但是加锁时表锁。在高可用也就是主从的情况下可能导致数据丢失，报错。
+　　</p>
 
       
     </div>
@@ -414,7 +417,7 @@
               
                 <a href="/archives/">
               
-                  <span class="site-state-item-count">102</span>
+                  <span class="site-state-item-count">105</span>
                   <span class="site-state-item-name">日志</span>
                 </a>
               </div>
@@ -453,7 +456,7 @@
             
 
             
-              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#迅速短暂的提高性能"><span class="nav-number">1.</span> <span class="nav-text">迅速短暂的提高性能</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#为何mysql用了函数就无法使用索引了"><span class="nav-number">2.</span> <span class="nav-text">为何mysql用了函数就无法使用索引了</span></a></li></ol></div>
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#迅速短暂的提高性能"><span class="nav-number">1.</span> <span class="nav-text">迅速短暂的提高性能</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#为何mysql用了函数就无法使用索引了"><span class="nav-number">2.</span> <span class="nav-text">为何mysql用了函数就无法使用索引了</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#为何临时表可以重名。"><span class="nav-number">3.</span> <span class="nav-text">为何临时表可以重名。</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#内存表"><span class="nav-number">4.</span> <span class="nav-text">内存表</span></a></li></ol></div>
             
 
           </div>

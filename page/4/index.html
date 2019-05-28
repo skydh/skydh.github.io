@@ -232,6 +232,394 @@
   
   
   <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="https://skydh.github.io/2018/09/26/redis 内存策略 /">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="董航">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="why are you so happy">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                <a class="post-title-link" href="/2018/09/26/redis 内存策略 /" itemprop="url">redis内存策略 LRU,LFU以及安全问题</a></h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2018-09-26T10:52:46+08:00">
+                2018-09-26
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            <h2 id="内存策略"><a href="#内存策略" class="headerlink" title="内存策略"></a>内存策略</h2><p>　　大家知道现代计算机都有虚拟内存这个概念，当redis内存超出物理内存限制的时候，内存数据就会和磁盘发生频繁交换。严重影响性能。我们一般通过配置参数maxmemory来限定内存大小。当内存要超出maxmemory时以下策略来使用。</p>
+<p>　　noeviction 不会继续服务写请求 (DEL 请求可以继续服务)，读请求可以继续进行。这样可以保证不会丢失数据，但是会让线上的业务不能持续进行。这是默认的淘汰策略。</p>
+<p>　　volatile-lru 尝试淘汰设置了过期时间的 key，最少使用的 key 优先被淘汰。没有设置过期时间的 key 不会被淘汰，这样可以保证需要持久化的数据不会突然丢失。</p>
+<p>　　volatile-ttl 跟上面一样，除了淘汰的策略不是 LRU，而是 key 的剩余寿命 ttl 的值，ttl 越小越优先被淘汰。</p>
+<p>　　volatile-random 跟上面一样，不过淘汰的 key 是过期 key 集合中随机的 key。</p>
+<p>　　allkeys-lru 区别于 volatile-lru，这个策略要淘汰的 key 对象是全体的 key 集合，而不只是过期的 key 集合。这意味着没有设置过期时间的 key 也会被淘汰。</p>
+<p>　　allkeys-random 跟上面一样，不过淘汰的策略是随机的 key。</p>
+<p>　　实现 LRU 算法除了需要 key/value 字典外，还需要附加一个链表，链表中的元素按照一定的顺序进行排列。当空间满的时候，会踢掉链表尾部的元素。当字典的某个元素被访问时，它在链表中的位置会被移动到表头。所以链表的元素排列顺序就是元素最近被访问的时间顺序。<br>　　redis为了实现类lru算法，采用了它给每个 key 增加了一个额外的小字段，这个字段的长度是 24 个 bit，也就是最后一次被访问的时间戳。Redis 执行写操作时，发现内存超出 maxmemory，就会执行一次 LRU 淘汰算法。这个算法也很简单，就是随机采样出 5(可以配置) 个 key，然后淘汰掉最旧的 key，如果淘汰后内存还是超出 maxmemory，那就继续随机采样淘汰，直到内存低于 maxmemory 为止。<br>　　在 LRU 模式下，lru 字段存储的是 Redis 时钟server.lruclock，Redis 时钟是一个 24bit 的整数，默认是 Unix 时间戳对 2^24 取模的结果，大约 97 天清零一次。当某个 key 被访问一次，它的对象头的 lru 字段值就会被更新为server.lruclock。</p>
+<p>　　默认 Redis 时钟值每毫秒更新一次，在定时任务serverCron里主动设置。Redis 的很多定时任务都是在serverCron里面完成的，比如大型 hash 表的渐进式迁移、过期 key 的主动淘汰、触发 bgsave、bgaofrewrite 等等。</p>
+<p>　　如果server.lruclock没有折返 (对 2^24 取模)，它就是一直递增的，这意味着对象的 LRU 字段不会超过server.lruclock的值。如果超过了，说明server.lruclock折返了。通过这个逻辑就可以精准计算出对象多长时间没有被访问——对象的空闲时间。</p>
+<p>　　LFU策略：表示按最近的访问频率进行淘汰，它比 LRU 更加精准地表示了一个 key 被访问的热度。redis4.0后出来的。<br>　　在 LFU 模式下，lru 字段 24 个 bit 用来存储两个值，分别是ldt(last decrement time)和logc(logistic counter)。<br>　　idt:16bit存储上次idt的跟新时间。内存回收时，自己被随机取到的话，自己更新的时间。<br>　　logc:对象调用次数，存储的是对数次。每次访问更新。<br>　　dt 更新的同时也会一同衰减 logc 的值，衰减也有特定的算法。它将现有的 logc 值减去对象的空闲时间 (分钟数) 除以一个衰减系数，默认这个衰减系数lfu_decay_time是 1。如果这个值大于 1，那么就会衰减的比较慢。如果它等于零，那就表示不衰减，它是可以通过配置参数lfu-decay-time进行配置。</p>
+<p>　　为何不从系统里面取时间？<br>　　一次系统调用太耗时了。太多更耗时。</p>
+<h2 id="安全"><a href="#安全" class="headerlink" title="安全"></a>安全</h2><p>　　redis有些指令是很危险的，比如flushdb 和 flushall 会让 Redis 的所有数据全部清空。Redis 在配置文件中提供了 rename-command 指令用于将某些危险的指令修改成特别的名称，用来避免人为误操作。比如在配置文件的 security 块增加下面的内容:</p>
+<pre><code>rename-command keys abckeysabc
+</code></pre><p>　　如果还想执行 keys 方法，那就不能直接敲 keys 命令了，而需要键入abckeysabc。 如果想完全封杀某条指令，可以将指令 rename 成空串，就无法通过任何字符串指令来执行这条指令了。<br>　　我们可以修改端口号，不用默认端口，避免被入侵。<br>　　客户端和服务器的访问时直接暴露在公网上传输，为了安全，我们可以使用ssl代理对通信通道进行加密。</p>
+<h2 id="spiped原理"><a href="#spiped原理" class="headerlink" title="spiped原理"></a>spiped原理</h2><p>　　程序通过公网访问redis时，数据暴露在外面，我们可以用ssl对数据加密。使其安全传输，spiped就是其中一个代理，其原理是在2端各起一个进程，来对消息进行加密和解密。</p>
+
+          
+        
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="https://skydh.github.io/2018/09/25/redis 删除策略/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="董航">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="why are you so happy">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                <a class="post-title-link" href="/2018/09/25/redis 删除策略/" itemprop="url">redis过期删除策略</a></h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2018-09-25T18:41:04+08:00">
+                2018-09-25
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            <h2 id="惰性删除"><a href="#惰性删除" class="headerlink" title="惰性删除"></a>惰性删除</h2><p>　　redis将设置了过期时间的key放到一个独立的字典里面，以后定时遍历这个字典来删除到期的key，同时采用惰性原则，当客户端访问这个key的时候，redis会对其进行检查，如果过期了，那么立即删除。</p>
+<h2 id="定时策略"><a href="#定时策略" class="headerlink" title="定时策略"></a>定时策略</h2><p>　　redis默认每秒10次扫描过期字典的key,不是遍历，而是一种贪心策略。<br>　　１．从过期字典随机20个key。<br>　　２．删除这２０个ｋｅｙ里面过期的key。<br>　　３．如果过期的key&gt;1/4,那就重复1.<br>　　同时为了避免循环过度，造成线程卡死，算法还设置了一个时间上限，默认不超过25ms。<br>　　<br>　　不要用大量key同一时间过期，会导致系统卡顿。因为卡顿是很多小卡顿积累出来的。</p>
+<h2 id="从库的删除策略"><a href="#从库的删除策略" class="headerlink" title="从库的删除策略"></a>从库的删除策略</h2><p>　　从库不会进行过期扫描，从库的处理是被动的。主库key到期后，会在aof文件里面增加一个del指令，同步到所以的从库。</p>
+<h2 id="真删除-del"><a href="#真删除-del" class="headerlink" title="真删除 del"></a>真删除 del</h2><p>　　redis的单线程是指接受客户端请求的时候是单线程，基于多路io复用，但是redis里面还是有多个异步子线程来进行一些耗时操作的。<br>　　比如：del删除指令会直接释放对象的内存，对于小对象来说，无所谓，秒删，但是对于大的数据，hash，那么就会造成单线程卡顿，redis提供了一个叫unlink的指令，对删除进行懒操作处理。对给后台线程异步回收内存。同时使用这个指令后，主线程就无法访问到了。<br>　　主线程执行这个指令后，就会将这个key的内存回收操作包装为一个任务，塞进异步任务队列，后台线程就会从这个异步队列里面取任务，然后执行。<br>　　Aof sync 操作中一秒一次增量同步，需要频繁磁盘io,耗时，于是也有一个子线程来异步后台处理</p>
+
+          
+        
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="https://skydh.github.io/2018/09/20/redis-stream/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="董航">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="why are you so happy">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                <a class="post-title-link" href="/2018/09/20/redis-stream/" itemprop="url">redis -stream</a></h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2018-09-20T11:48:31+08:00">
+                2018-09-20
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            <h2 id="诞生"><a href="#诞生" class="headerlink" title="诞生"></a>诞生</h2><p>　　Redis5.0出来的，新的数据结构 Stream 支持多播的可持久化的消息队列。其设计借鉴了kafka的设计。<br>　　这个存储类型是一个数据链表，将所有加入的消息都串起来。每个消息都有唯一的id和对应的内容，消息是持久化的，redis重启后，内容还在，其持久化方式，类似于rdb+aof。<br>　　每个stream都有唯一的一个名称就是其key,我们首次使用xadd指令追加消息时，自动创建，同时每个strean可以同时挂多个消费组，每个消费组都有游标last_delivered_id在Stream数组之上向前移动，表示当前消费组已经消费到哪条消息了，每个消费组都有一个stream内唯一的名称，消费组不会自动创建，需要单独的指令xgroup create进行创建，需要制定从这个stream的某个消息id,表示从这个stream开始消费，这个id用来初始化last_delivered_id变量。<br>　　每个消费组的状态都是独立的。相互不影响，也就是说同一个stream内部的消息会被每个消费组消费到。<br>　　每个消费组可以挂起多个消费者，这些消费者是竞争关系的，一个消息被一个消费者消化了，那就无法被另一个消化。每个消费者组内是唯一的。<br>　　消费者内部有个状态变量pending_ids,它记录了客户端读取的消息，但是没有ack的，如果客户端发了ack,那么这个消息id就会被去掉，它来表示消息是否被至少消费一次。<br>　　消息id是timestampInMillis-sequence，当前时间戳，的第几条消息，同时也可以客户端自己指定，但是形式必须是整数-整数，消息内容是键值对。</p>
+<h2 id="操作"><a href="#操作" class="headerlink" title="操作"></a>操作</h2><p>　　xadd:追加消息。<br>　　xadd codehole * name laoqian age 30<br>　　xdel:删除消息这里的删除仅仅是设置了标志位，不影响消息总长度。<br>　　xrange:获取消息队列，自动过滤被删除消息。<br>　　xrange codehole - +<br>　　xlen:消息长度。<br>　　xlen codehole<br>　　del：删除stream。</p>
+<h2 id="独立消费"><a href="#独立消费" class="headerlink" title="独立消费"></a>独立消费</h2><p>　　我们可以不建立消费组的情况下对stream独立消费，其有一个指令叫做xread,可以将stream当做普通的消息队列（list）来使用，使用xread的时候我们可以忽略消费组的存在，好比stream就是一个普通的列表（list）。xread count 2 streams codehole 0-0表示从头读2个数据，没有数据就一直阻塞。但是我们可以用block来设置阻塞时间，0表示永久阻塞。1000表示1秒。 xread block 1000 count 1 streams codehole $。</p>
+<h2 id="创建消费组"><a href="#创建消费组" class="headerlink" title="创建消费组"></a>创建消费组</h2><p>　　Stream通过xgroup createn 创建消费组。需要传递起始消息id作为参数来初始化last_delivered_id。<br>　　xgroup create codehole cg1 0-0：从头开始消费。<br>　　xgroup create codehole cg2 $：从尾部开始消费，只接受新消息。<br>　　 xinfo stream codehole：获取stream信息。</p>
+<h2 id="消费"><a href="#消费" class="headerlink" title="消费"></a>消费</h2><p>　　Stream指令xreadgroup可以进行消费组的组内消费，需要消费组名称，消费者名称，起始消息id,读取到新消息后，对应的消息id就会进入消费者的PEL结构里面，等待ack,来删除。</p>
+<p>　　 xreadgroup GROUP cg1 c1 count 1 streams codehole   &gt;<br>     命令           消费组 消费者  读几个    那个stream 表示从这个之后读取</p>
+<h2 id="限制长度"><a href="#限制长度" class="headerlink" title="限制长度"></a>限制长度</h2><p>　　stream消息要是太多怎么办，一个链表太长了，会导致性能下降很多，而且，删除也是逻辑删除，这边我们可以在创建这个stream的时候设置默认长度，新的覆盖旧的。<br>　　xadd codehole maxlen 3 * name xiaorui age 1　长度为３</p>
+<h2 id="pel如何避免消息丢失"><a href="#pel如何避免消息丢失" class="headerlink" title="pel如何避免消息丢失"></a>pel如何避免消息丢失</h2><p>　　当客户端突然断掉了来自服务端的消息，消息丢失了，但是pel里面已经保存了发消息的id,待客户端连上了，我们可以读取pel里面的消息列表，来保证消息不丢失。不过此时 xreadgroup 的起始消息 ID 不能为参数&gt;，而必须是任意有效的消息 ID，一般将参数设为 0-0，表示读取所有的 PEL 消息以及自last_delivered_id之后的新消息。</p>
+<h2 id="stream的高可用"><a href="#stream的高可用" class="headerlink" title="stream的高可用"></a>stream的高可用</h2><p>　　这个的高可用是建立在主从复制的基础上的，他和其他数据的复制机制没区别。</p>
+<h2 id="分区-Partition"><a href="#分区-Partition" class="headerlink" title="分区 Partition"></a>分区 Partition</h2><p>　　Redis不支持分区功能，如果要分区，那就配置多个stream,然后客户端根据一定策略生成消息到不同stream。
+　　</p>
+
+          
+        
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
     <link itemprop="mainEntityOfPage" href="https://skydh.github.io/2018/09/17/mysql 数据库分表分库/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -1171,439 +1559,6 @@ public void getUser() {
 
 
     
-      
-
-  
-
-  
-  
-  
-
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-  
-  
-  
-  <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="https://skydh.github.io/2018/09/10/redis限流/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="董航">
-      <meta itemprop="description" content="">
-      <meta itemprop="image" content="/images/avatar.gif">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="why are you so happy">
-    </span>
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-                
-                <a class="post-title-link" href="/2018/09/10/redis限流/" itemprop="url">redis之简单限流</a></h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">发表于</span>
-              
-              <time title="创建于" itemprop="dateCreated datePublished" datetime="2018-09-10T09:31:48+08:00">
-                2018-09-10
-              </time>
-            
-
-            
-
-            
-          </span>
-
-          
-
-          
-            
-          
-
-          
-          
-
-          
-
-          
-
-          
-
-        </div>
-      </header>
-    
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          
-            <h2 id="什么是接口限流"><a href="#什么是接口限流" class="headerlink" title="什么是接口限流"></a>什么是接口限流</h2><p>　　为什么要有接口限流？场景如下：１．接口限流，比如我们对外一个接口，我们要限制一个用户单位时间访问次数？２．系统要限定用户的某个行为在指定的时间A里只能允许发生 N 次。</p>
-<h2 id="实现方式"><a href="#实现方式" class="headerlink" title="实现方式"></a>实现方式</h2><p>　　我们用zset来实现这个方案。我们将用户id和事件id生成这个zset的容器id,当发生一次时，我们将当前时间作为score,同时也作为value,放到集合里面。然后删除这个元素加入前限定时间A之外的数据。然后将集合的所有数据设置为过了A时间就过期.然后取出这个集合有多少数据，判断是否超标。</p>
-<pre><code>public boolean isActionAllowed(String userId, String     actionKey, int period, int maxCount) {
-    String key = String.format(&quot;hist:%s:%s&quot;, userId, actionKey);
-    long nowTs = System.currentTimeMillis();
-    Pipeline pipe = jedis.pipelined();
-    pipe.multi();
-    pipe.zadd(key, nowTs, &quot;&quot; + nowTs);
-    pipe.zremrangeByScore(key, 0, nowTs - period * 1000);
-    Response&lt;Long&gt; count = pipe.zcard(key);
-    pipe.expire(key, period + 1);
-    pipe.exec();
-    pipe.close();
-    return count.get() &lt;= maxCount;
-</code></pre><p>  }</p>
-<h2 id="漏斗限流策略"><a href="#漏斗限流策略" class="headerlink" title="漏斗限流策略"></a>漏斗限流策略</h2><pre><code>public class FunnelRateLimiter {
-static class Funnel {
-int capacity;//容量
-float leakingRate;//漏水速度
-int leftQuota;//剩余容量
-long leakingTs;//上次漏水时间
-
-public Funnel(int capacity, float leakingRate) {
-  this.capacity = capacity;
-  this.leakingRate = leakingRate;
-  this.leftQuota = capacity;
-  this.leakingTs = System.currentTimeMillis();
-}
-
-void makeSpace() {
-  long nowTs = System.currentTimeMillis();
-  long deltaTs = nowTs - leakingTs;
-  int deltaQuota = (int) (deltaTs * leakingRate);
-  if (deltaQuota &lt; 0) { // 间隔时间太长，整数数字过大溢出
-    this.leftQuota = capacity;
-    this.leakingTs = nowTs;
-    return;
-  }
-  if (deltaQuota &lt; 1) { // 腾出空间太小，最小单位是1
-    return;
-  }
-  this.leftQuota += deltaQuota;
-  this.leakingTs = nowTs;
-  if (this.leftQuota &gt; this.capacity) {
-    this.leftQuota = this.capacity;
-  }
-}
-boolean watering(int quota) {
-  makeSpace();
-  if (this.leftQuota &gt;= quota) {
-    this.leftQuota -= quota;
-    return true;
-  }
-  return false;
-}
-}
-private Map&lt;String, Funnel&gt; funnels = new HashMap&lt;&gt;();
-public boolean isActionAllowed(String userId, String actionKey, int capacity, float leakingRate) {
-String key = String.format(&quot;%s:%s&quot;, userId, actionKey);
-Funnel funnel = funnels.get(key);
-if (funnel == null) {
-  funnel = new Funnel(capacity, leakingRate);
-  funnels.put(key, funnel);
-}
-return funnel.watering(1); // 需要1个quota
-}
-}
-</code></pre><p>　　<br>　　Funnel 对象的 make_space 方法是漏斗算法的核心，其在每次灌水前都会被调用以触发漏水，给漏斗腾出空间来。能腾出多少空间取决于过去了多久以及流水的速率。Funnel 对象占据的空间大小不再和行为的频率成正比，它的空间占用是一个常量。<br>　　我们观察 Funnel 对象的几个字段，我们发现可以将 Funnel 对象的内容按字段存储到一个 hash 结构中，灌水的时候将 hash 结构的字段取出来进行逻辑运算后，再将新值回填到 hash 结构中就完成了一次行为频度的检测。</p>
-<h2 id="新方案"><a href="#新方案" class="headerlink" title="新方案"></a>新方案</h2><p>　　redis4.0出了一个新的模块。叫redis-cell。该模块也使用了漏斗算法，且提供了限流指令。<br>　　cl.throttle sd:sd 15 30 60<br>　　意思是15的容量，每60秒就丢弃30个元素。</p>
-
-          
-        
-      
-    </div>
-    
-    
-    
-
-    
-
-    
-
-    
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </div>
-  
-  
-  
-  </article>
-
-
-    
-      
-
-  
-
-  
-  
-  
-
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-  
-  
-  
-  <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="https://skydh.github.io/2018/09/06/redis布隆过滤器/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="董航">
-      <meta itemprop="description" content="">
-      <meta itemprop="image" content="/images/avatar.gif">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="why are you so happy">
-    </span>
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-                
-                <a class="post-title-link" href="/2018/09/06/redis布隆过滤器/" itemprop="url">redis之布隆过滤器</a></h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">发表于</span>
-              
-              <time title="创建于" itemprop="dateCreated datePublished" datetime="2018-09-06T11:06:22+08:00">
-                2018-09-06
-              </time>
-            
-
-            
-
-            
-          </span>
-
-          
-
-          
-            
-          
-
-          
-          
-
-          
-
-          
-
-          
-
-        </div>
-      </header>
-    
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          
-            <h2 id="由来"><a href="#由来" class="headerlink" title="由来"></a>由来</h2><p>　　情景：当我们使用新闻客户端看新闻时，他会不断推送新的内容，他每次推荐时都要去重，那么问题来了，客户端如何实现推送去重呢？<br>　　当然不会采用记录用户看过的内容，第一数据量大，第二不断exists消耗性能太多。缓存也不行，时间久了数据量太大。<br>　　这个时候布隆过滤器出现了。</p>
-<h2 id="什么是布隆过滤器"><a href="#什么是布隆过滤器" class="headerlink" title="什么是布隆过滤器"></a>什么是布隆过滤器</h2><p>　　这是一个不怎么精确地set结构，当你使用它的contains方法判断某个数据是否存在时，他可能误判，布隆过滤器是不精确的。只要参数设置合理，那么其精确度是可控的。其判断一个值存在时，其可能不存在，判断一个值不存在时，那么一定不存在。</p>
-<h2 id="用法"><a href="#用法" class="headerlink" title="用法"></a>用法</h2><p>　　bf.add 添加元素，bf.exists,查询元素是否存在，其用法和set集合差不多，批量命令是bf.madd指令，批量查询则是bf.mexists指令。我们创建的布隆过滤器都是默认的过滤器，在我们第一次add的时候自动创建。，但是为了提供高精确率。我们可以用bf.reserve指令来修改其参数即可。第一个为其名字，第二个为<br>     client.createFilter(“codehole”, 50000, 0.001);第二个参数为预计存放数据量，第三个为误差率。误差率越低，需要空间越大。</p>
-<h2 id="实现原理"><a href="#实现原理" class="headerlink" title="实现原理"></a>实现原理</h2><p>　　底层是一个大型的位数组，和几个无偏的hash函数（无偏就是让hash值分布均匀）。添加值的时候，会用多个hash函数对key进行hash运算，然后对应数组上不同点，再把这些点全部置为1。询问key是否存在时，和add一样，也是用hash算法吧这些位置都计算出来，看看是否都为1，只要有一个为0，那么这个值不存在。当然如果都是1，也不一定都存在，可能是其他计算的点正好都覆盖了。</p>
-
-          
-        
-      
-    </div>
-    
-    
-    
-
-    
-
-    
-
-    
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </div>
-  
-  
-  
-  </article>
-
-
-    
-      
-
-  
-
-  
-  
-  
-
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-  
-  
-  
-  <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="https://skydh.github.io/2018/09/05/HypeLogLog/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="董航">
-      <meta itemprop="description" content="">
-      <meta itemprop="image" content="/images/avatar.gif">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="why are you so happy">
-    </span>
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-                
-                <a class="post-title-link" href="/2018/09/05/HypeLogLog/" itemprop="url">redis之HyperLogLog</a></h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">发表于</span>
-              
-              <time title="创建于" itemprop="dateCreated datePublished" datetime="2018-09-05T11:53:10+08:00">
-                2018-09-05
-              </time>
-            
-
-            
-
-            
-          </span>
-
-          
-
-          
-            
-          
-
-          
-          
-
-          
-
-          
-
-          
-
-        </div>
-      </header>
-    
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          
-            <h2 id="由来"><a href="#由来" class="headerlink" title="由来"></a>由来</h2><p>　　PV和UV,统计pv很简单，对每个网页加一个独立的redis计数器即可，这个计数器+当天的日期，每来一个请求，就incrby一次即可。但是UV不一样要求一个用户只能算一次，或许你想到了可以用set,把每一个页面放到set里面，当一个请求来了，就将其sadd进去，也可以通过scard取出这个集合的大小，但是有个问题，那就是访问量很大的时候，这个set集合就会很大。而这个redis提供的HyperLogLog数据结构来解决该问题。该数据结构提供一个不精确去重计数方案。</p>
-<h2 id="使用方法"><a href="#使用方法" class="headerlink" title="使用方法"></a>使用方法</h2><p>　　HyperLogLog提供了2个指令pfadd,pfcount 根据字面意思很好理解，一个是增加计数，一个是获取计数，pfadd的用法和set集合的asdd一样的，pfcount和scard用法一样的，直接获取计数值。pfmerge将２个HyperLogLog合并。<br>　　pfadd codehole user1<br>　　其底层实现是稠密矩阵。一个我也不懂的数据结构
-　　</p>
-
-          
-        
-      
-    </div>
-    
-    
-    
-
-    
-
-    
-
-    
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </div>
-  
-  
-  
-  </article>
-
-
-    
   </section>
 
   
@@ -1654,7 +1609,7 @@ return funnel.watering(1); // 需要1个quota
               
                 <a href="/archives/">
               
-                  <span class="site-state-item-count">102</span>
+                  <span class="site-state-item-count">105</span>
                   <span class="site-state-item-name">日志</span>
                 </a>
               </div>

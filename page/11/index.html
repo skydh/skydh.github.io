@@ -232,6 +232,583 @@
   
   
   <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="https://skydh.github.io/2017/11/29/java线程的常用方法和属性介绍/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="董航">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="why are you so happy">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                <a class="post-title-link" href="/2017/11/29/java线程的常用方法和属性介绍/" itemprop="url">java线程的常用方法和属性介绍</a></h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2017-11-29T20:59:07+08:00">
+                2017-11-29
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            <h2 id="start"><a href="#start" class="headerlink" title="start()"></a>start()</h2><p>　　start方法是Thread 类的方法，在这个方法中会调用native方法（start0()）来启动线程，为该线程分配资源。</p>
+<h2 id="sleep"><a href="#sleep" class="headerlink" title="sleep()"></a>sleep()</h2><p>　　sleep方法有2个方法。</p>
+<p><pre>   public static native void sleep(long millis) </pre></p>
+<p><pre><br>throws InterruptedException;<br>  public static void sleep(long millis, int nanos)<br>    throws InterruptedException {<br>        if (millis &lt; 0) {<br>            throw new IllegalArgumentException(“timeout value is negative”);<br>        }</pre></p>
+<pre><code>    if (nanos &lt; 0 || nanos &gt; 999999) {
+        throw new IllegalArgumentException(
+                            &quot;nanosecond timeout value out of range&quot;);
+    }
+
+    if (nanos &gt;= 500000 || (nanos != 0 &amp;&amp; millis == 0)) {
+        millis++;
+    }
+
+    sleep(millis);
+}
+</code></pre><p><br>　　看了源码，发现第二个纳秒级别的没什么用，实际上还是毫秒级别。<br>　　sleep方法在进入阻塞队列时不会释放当前线程所持有的锁。</p>
+<h2 id="yield"><a href="#yield" class="headerlink" title="yield()"></a>yield()</h2><p>　　该方法会让当前线程交出cpu权限，但是不能确定具体时间，和sleep方法一样不会释放当前线程所持有的锁，该方法会让线程直接进入就绪状态，很好理解。目的是为了让同等优先级的线程获得cpu执行的机会。</p>
+<h2 id="join"><a href="#join" class="headerlink" title="join()"></a>join()</h2><p>　　该方法是让当前线程阻塞，直到调用该方法的线程执行完毕。源码分析</p>
+<p><pre> public final synchronized void join(long millis)<br>    throws InterruptedException {<br>        long base = System.currentTimeMillis();<br>        long now = 0;</pre></p>
+<pre><code>    if (millis &lt; 0) {
+        throw new IllegalArgumentException(&quot;timeout value is negative&quot;);
+    }
+
+    if (millis == 0) {
+        while (isAlive()) {
+            wait(0);
+        }
+    } else {
+        while (isAlive()) {
+            long delay = millis - now;
+            if (delay &lt;= 0) {
+                break;
+            }
+            wait(delay);
+            now = System.currentTimeMillis() - base;
+        }
+    }
+} 
+</code></pre><p> <br>　　这个是join的源码，代码很清晰，如果调用该方法的对象线程已启动，那么当前线程释放该对象锁，并进入条件等待队列里面，等待改线程执行完（线程如果在同步代码块中结束会自动调用notifyAll()方法来唤醒等待队列里面的线程）</p>
+<h2 id="wait-notifyAll-notify"><a href="#wait-notifyAll-notify" class="headerlink" title="wait() ,notifyAll(),notify()"></a>wait() ,notifyAll(),notify()</h2><p>　　这3个方法一般一同出现。且都是Object类的方法，用来辅助操作线程类。<br>　　这3个方法都必须在同步代码块中，不然就会报错。<br>　　wait()方法会让当前线程释放锁，并进入到条件等待队列。<br>　　notify()方法会随机唤醒条件等待队列的任意一个线程，并将其放到锁池里面。<br>　　notifyAll()方法则是唤醒条件等待队列的所有线程，并将其都放到锁池里面。<br>　　而锁池里面的线程来竞争所需要的对象锁，成功获取到锁的线程将加入到就绪队列里面。</p>
+<h2 id="interrupt-isInterrupted-interrupted"><a href="#interrupt-isInterrupted-interrupted" class="headerlink" title="interrupt(),isInterrupted(),interrupted()"></a>interrupt(),isInterrupted(),interrupted()</h2><p>　　这3个方法表示线程的中断，这个很有意思，分多钟情况讨论。（在java中，中断不是强制停止改线程，而是给线程一个信号，让其自行处理何时退出）<br>　　isInterrupted：就是返回对应线程的中断标志位是否为true。<br>　　interrupted：返回当前线程的中断标志位是否为true，但它还有一个重要的副作用，就是清空中断标志位，也就是说，连续两次调用<br>　　interrupted()，第一次返回的结果为true，第二次一般就是false 。<br>　　interrupt：表示中断对应的线程。</p>
+<p>　　中断线程分情况讨论：<br>　　1.还没start，或者已经结束，无效果<br>　　2.运行中，中断无效，直到只能设置个中断位，直到线程走完或者进入阻塞。<br>　　3.锁池，中断无效。<br>　　4.阻塞，等待，会抛出异常，可以中断。<br>　　ps(io等待大多都是可以中断的，但是inputStream的read不会相应中断。)<br>　　中断不好使，因此最好自己在线程类里面提供关闭方法。比如</p>
+<p><pre> class MyThread extends Thread{<br>        private volatile boolean isStop = false;<br>        @Override<br>        public void run() {<br>            int i = 0;<br>            while(!isStop){<br>                i++;<br>            }<br>        }</pre></p>
+<pre><code>    public void setStop(boolean stop){
+        this.isStop = stop;
+    }
+}
+</code></pre><p> </p>
+<h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><p>　　在这里我没有写具体的例子，因为例子大家可以自己写测试下，太占篇幅了，这里只举出一些源码。</p>
+
+          
+        
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="https://skydh.github.io/2017/11/23/java线程的3种创建方式及优缺点/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="董航">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="why are you so happy">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                <a class="post-title-link" href="/2017/11/23/java线程的3种创建方式及优缺点/" itemprop="url">java线程的3种创建方式及优缺点</a></h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2017-11-23T22:09:25+08:00">
+                2017-11-23
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            <h2 id="线程创建简介"><a href="#线程创建简介" class="headerlink" title="线程创建简介"></a>线程创建简介</h2><p>　　1.在java中表示线程的是Thread类。无论是那种方式创建线程，本质上都是创建Thread类的对象。<br><img src="https://raw.githubusercontent.com/skydh/picture/master/thread_003.png" alt="aaa"><br>　　２.Thread类继承Runnable接口，且也有以Runnable作为参数的构造方法。<br><img src="https://raw.githubusercontent.com/skydh/picture/master/thread_002.png" alt="aaa"><br>　　３．FutureTask这个类也实现了Runnable接口，故也可以作为参数传进Thread 里面来创建线程。</p>
+<h2 id="线程的创建"><a href="#线程的创建" class="headerlink" title="线程的创建"></a>线程的创建</h2><h3 id="继承Thread类"><a href="#继承Thread类" class="headerlink" title="继承Thread类"></a>继承Thread类</h3><pre>package thread;
+
+/**
+ * 继承thread类来创建线程
+ * 
+ * @author dh
+ *
+ */
+public class ExtendsThread extends Thread {
+
+    public void run() {
+        for (int i = 0; i < 10; i++) {
+            System.out.println(Thread.currentThread().getName() + "    _"+i);
+        }
+    }
+
+}
+</pre>
+### 实现Runnable接口
+ <pre>package thread;
+
+/**
+ * 实现 Runnable接口
+ * 
+ * @author dh
+ *
+ */
+public class ImplementRunnable implements Runnable {
+    private int i;
+
+    public ImplementRunnable(int i) {
+        this.i = i;
+    }
+
+    @Override
+    public void run() {
+
+        for (; i < 20; i++) {
+            System.out.println(Thread.currentThread().getName() + "   _" + i);
+        }
+    }
+
+}
+</pre>
+### 实现Callable接口
+ <pre>package thread;
+
+import java.util.concurrent.Callable;
+
+/**
+ * 
+ * @author dh
+ *
+ */
+public class ImplementCallable implements Callable<string> {
+
+    private int i;
+
+    public ImplementCallable(int i) {
+        this.i = i;
+    }
+
+    @Override
+    public String call() throws Exception {
+        for (; i < 20; i++) {
+            System.out.println(Thread.currentThread().getName() + "   _" + i);
+
+        }
+        return "1";
+    }
+
+}
+</string></pre>
+### 创建线程
+<pre>package thread;
+
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.FutureTask;
+/**
+ * 
+ * @author dh
+ *
+ */
+public class TestD {
+
+    public static void main(String[] args) throws InterruptedException, ExecutionException {
+        ExtendsThread et = new ExtendsThread();
+        et.run();
+
+
+
+        ImplementRunnable imr = new ImplementRunnable(0);
+        Thread thread = new Thread(imr);
+        thread.start();
+        Thread thread1 = new Thread(imr);
+        thread1.start();
+
+
+        ImplementCallable implCallable = new ImplementCallable(1);
+        FutureTask<string> ft = new FutureTask<string>(implCallable);
+        Thread thread2 = new Thread(ft);
+        thread2.start();
+        System.out.println(ft.get());
+
+    }
+
+}
+}
+</string></string></pre>
+
+<p>结果如下：</p>
+<pre>main    _0
+main    _1
+main    _2
+main    _3
+main    _4
+main    _5
+main    _6
+main    _7
+main    _8
+main    _9
+Thread-1   _0
+Thread-2   _0
+Thread-1   _1
+Thread-2   _2
+Thread-1   _3
+Thread-2   _4
+Thread-1   _5
+Thread-2   _6
+Thread-1   _7
+Thread-2   _8
+Thread-1   _9
+Thread-2   _10
+Thread-1   _11
+Thread-2   _12
+Thread-1   _13
+Thread-2   _14
+Thread-1   _15
+Thread-2   _16
+Thread-1   _17
+Thread-2   _18
+Thread-1   _19
+Thread-3   _1
+Thread-3   _2
+Thread-3   _3
+Thread-3   _4
+Thread-3   _5
+Thread-3   _6
+Thread-3   _7
+Thread-3   _8
+Thread-3   _9
+Thread-3   _10
+Thread-3   _11
+Thread-3   _12
+Thread-3   _13
+Thread-3   _14
+Thread-3   _15
+Thread-3   _16
+Thread-3   _17
+Thread-3   _18
+Thread-3   _19
+1
+</pre>
+
+<h2 id="3种方式创建的优缺点"><a href="#3种方式创建的优缺点" class="headerlink" title="3种方式创建的优缺点"></a>3种方式创建的优缺点</h2><p>1.继承Thread显然有个很大的缺点，java是单继承了，如果继承了Thread那么就无法继承其他类。但是继承Thread编写简单，实现方便。<br><br></p>
+<p>2.实现Runnable接口和Callable接口。大致一样，区别就是Callable接口的实现可以有返回值，且可以抛出显示异常。其余大致一样。<br>他们的优势是实现接口，那么实现类可以有其他父类，避免的Thread的问题，其次可以用一个实现了该接口的对象来创建多个线程，从而方便一些基本的资源共享，因为是同一个对象。</p>
+
+          
+        
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="https://skydh.github.io/2017/11/23/java线程的基本概念/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="董航">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="why are you so happy">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                <a class="post-title-link" href="/2017/11/23/java线程的基本概念/" itemprop="url">java线程的基本概念</a></h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2017-11-23T11:32:08+08:00">
+                2017-11-23
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            <h2 id="进程和线程"><a href="#进程和线程" class="headerlink" title="进程和线程"></a>进程和线程</h2><h3 id="进程的诞生"><a href="#进程的诞生" class="headerlink" title="进程的诞生"></a>进程的诞生</h3><p>　　操作系统中有2个任务A,B,任务A先执行，执行到一半需要io,因此要大量时间，在这个时间段内cpu是空闲的，浪费了资源，于是就有进程，当A暂时无法利用cpu,但是又不能销毁时，就把它暂存起来，让B来执行。B执行完或者需要A执行时，根据暂存的信息回复过来。<br><br><br>　　每个进程都对应一定的内存空间，并且只能使用自己的内存空间，并且保留程序的运行状态，这个也为进程切换提供了基础。</p>
+<h3 id="线程的诞生"><a href="#线程的诞生" class="headerlink" title="线程的诞生"></a>线程的诞生</h3><p>　　第一，多核处理器的出现，为了更好的利用多核处理器，避免资源的浪费。第二程序的需要，人们需要在一个程序中并发执行任务。比如播放器边播放视频，我们还要可以边品论，显然要并发执行。第三。一个程序中出现了阻塞（io）而导致程序不能继续进行，这个很影响体验和操作，因此我们需要多线程，把这些耗时的操作都丢到子线程里面去，这样程序就可以继续走下去了。<br><br></p>
+<h3 id="线程的基本概念和注意点"><a href="#线程的基本概念和注意点" class="headerlink" title="线程的基本概念和注意点"></a>线程的基本概念和注意点</h3><p>　　1.对操作系统来说，资源分配的基本单位是进程，而调度的基本单位是线程。<br><br><br>　　2.对于一个程序来说，不一定多线程的效率就高，不能盲目的使用，多线程的使用和具体业务场景（交互之类的），以及机器的特性，比如是多核还是单核的机器等<br><br><br>    3.每个线程表示一条单独的执行流，有自己的程序计数器，有自己的栈，但线程之间可以共享内存，它们可以访问和操作相同的对象。<br><br><br>　　4.java是单线程编程语言，你要是不主动创建线程，那么就默认只有主线程，当然jvm还是会有其他很多后台精灵线程存在的，比如垃圾回收<br>（Erlang就是一种并发编程语言，每一个函数都可以当做独立的任务来驱动）</p>
+<h3 id="java线程的状态"><a href="#java线程的状态" class="headerlink" title="java线程的状态"></a>java线程的状态</h3><p><img src="https://raw.githubusercontent.com/skydh/picture/master/thread_001.png" alt="aaa"><br>　　１．新建：创建一个线程对象<br><br><br>　　２．可运行：线程调用了start方法，存在于可运行线程池中。<br><br><br>　　３．运行态：线程获取到了cpu使用权。<br><br><br>　　４．阻塞态：第一：运行的线程调用对象的wait()方法（该方法只存在于同步加锁代码块中），让出锁，进入等待队列。只用同样调用该对象的线程使用notify()方法才会进入到锁池中。　第二：运行的线程获取一个加锁的资源时，若该资源被占用，进入锁队列中，只用当锁队列中的线程获取到了加锁的对象资源时，才会进入到可运行状态中。第三：运行的线程执行sleep()或者join()方法，或者io,该线程会阻塞队列，等时间到，或者io完成，会自动进入可运行状态。<br><br><br>　　５．死亡：线程执行完，或者异常中断退出。</p>
+
+          
+        
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
     <link itemprop="mainEntityOfPage" href="https://skydh.github.io/2017/11/21/浅析https/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -520,7 +1097,7 @@
               
                 <a href="/archives/">
               
-                  <span class="site-state-item-count">102</span>
+                  <span class="site-state-item-count">105</span>
                   <span class="site-state-item-name">日志</span>
                 </a>
               </div>
