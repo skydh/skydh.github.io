@@ -232,6 +232,128 @@
   
   
   <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="https://skydh.github.io/2018/12/14/select count优化/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="董航">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="why are you so happy">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                <a class="post-title-link" href="/2018/12/14/select count优化/" itemprop="url">mysql select count(*)优化</a></h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2018-12-14T09:19:35+08:00">
+                2018-12-14
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            <h2 id="不同存储引擎"><a href="#不同存储引擎" class="headerlink" title="不同存储引擎"></a>不同存储引擎</h2><p>　　在Myisam这个里面，每个表的总数据数额外存了起来，每次读取，直接获取这个值，效率很高。但是在innodb里面，就需要一行行遍历，为什么呢，因为innodb采用mvcc多版本并发控制机制，不同事物下，读取的数目可能不一致。</p>
+<h2 id="解决方案"><a href="#解决方案" class="headerlink" title="解决方案"></a>解决方案</h2><p>　　1.使用redis来缓存总量，在并发不是很高的情况下，没插入一条语句，redis就加一，删除一个数据，redis就减一。但是，插入数据和redis加一这操作不是原子操作，当要获取最新100条数据，和数据总量，如果有另外一个线程，在其中间执行，那么总量和最新数据无法保持一致。　　　<br>　　２．将其放在mysql的一个表里面。如此即可，按照和redis一样的策略。但是不存在上面说的问题，因为mysql的rr隔离性，只要开启一个事务，这2个操作就是原子的。</p>
+<h2 id="效率"><a href="#效率" class="headerlink" title="效率"></a>效率</h2><p>   count(字段)&lt;count(主键 id)&lt;count(1)~count(*)</p>
+
+          
+        
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
     <link itemprop="mainEntityOfPage" href="https://skydh.github.io/2018/12/12/mysql 删除数据为何空间还是不大/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -1378,139 +1500,6 @@ output {
 
 
     
-      
-
-  
-
-  
-  
-  
-
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-  
-  
-  
-  <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="https://skydh.github.io/2018/10/24/微服务架构入门/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="董航">
-      <meta itemprop="description" content="">
-      <meta itemprop="image" content="/images/avatar.gif">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="why are you so happy">
-    </span>
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-                
-                <a class="post-title-link" href="/2018/10/24/微服务架构入门/" itemprop="url">OAuth 2.0</a></h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">发表于</span>
-              
-              <time title="创建于" itemprop="dateCreated datePublished" datetime="2018-10-24T11:33:23+08:00">
-                2018-10-24
-              </time>
-            
-
-            
-
-            
-          </span>
-
-          
-
-          
-            
-          
-
-          
-          
-
-          
-
-          
-
-          
-
-        </div>
-      </header>
-    
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          
-            <h2 id="什么是OAuth2-0"><a href="#什么是OAuth2-0" class="headerlink" title="什么是OAuth2.0"></a>什么是OAuth2.0</h2><p>　　１．用于rest/api的代理请求框架。<br>　　２．解耦认证和授权<br>　　３．基于令牌Token的授权，在无需暴露用户密码的情况下，让应用能获得对用户数据的访问权限。<br>　　４．事实上的标准安全框架，支持多种用例场景。适用于，服务端webapp,单页spa,原生app，服务器服务器之间。</p>
-<h2 id="OAuth2-0的优势"><a href="#OAuth2-0的优势" class="headerlink" title="OAuth2.0的优势"></a>OAuth2.0的优势</h2><p>　　１．易于实现。<br>　　２．更加安全，客户端不接触密码，服务端集中保护。本质上就是解决这个问题。<br>　　３．广泛传播并持续采用。<br>　　４．短寿命和封装的token。<br>　　５. 资源服务器和授权服务器解耦。一个负责授予token权限(客户端访问其，其返回页面给用户，判断是否同意授权，同意，则授予让其有资格访问我的数据)，一个负责判断请求是否具有token<br>　　６．集中授权<br>　　７．基于http/json，易于请求和传递token<br>　　８．考虑了多种客户端场景<br>　　９．客户端有多种信任级别。</p>
-<h2 id="OAuth2-0的不足"><a href="#OAuth2-0的不足" class="headerlink" title="OAuth2.0的不足"></a>OAuth2.0的不足</h2><p>　　１.协议太宽泛了，因此各个实现版本兼容性不好。<br>　　２．和Oauth1.0不兼容。<br>　　３．Oauth2.0不是一个认证协议，他是个授权框架，他本省不会告诉你任何用户信息。是个授权协议。</p>
-<h2 id="Oauth2-0主要角色术语"><a href="#Oauth2-0主要角色术语" class="headerlink" title="Oauth2.0主要角色术语"></a>Oauth2.0主要角色术语</h2><p>　　１．资源拥有者：资源的拥有者，用户。<br>　　２．客户应用：通常是一个web应用，想要访问收到保护的数据。比如微信用户数据等。<br>　　３．资源服务器：一个web站点或者service api,客户想要访问的数据在我这里。<br>　　４．授权服务器：客户想要访问受保护的数据，必须先到我这里来认证，来获取到access token。<br>　　５．客户凭证：在授权服务器上注册后获得的，客户的ClientId和密码用于认证客户。<br>　　６．令牌：授权服务器接受到客户端请求后，验证后颁发的访问令牌<br>　　７．作用域：客户请求访问令牌是，由资源额外指定的细分权限。</p>
-<h2 id="Oauth2-0-令牌类型"><a href="#Oauth2-0-令牌类型" class="headerlink" title="Oauth2.0 令牌类型"></a>Oauth2.0 令牌类型</h2><p>　　１．access token：访问令牌用来代表一个用户或者服务直接去访问受保护的资源。<br>　　２．refresh token:刷新令牌，勇于去授权服务器获取一个新的令牌。（有时候访问令牌过期了，有的流程会支持获取到一个refreshtoken,我可以通过这个换取一个新的令牌）<br>　　３．Bearer Token：不管谁拿到token,都可以访问资源。<br>　　４．pop token:可以校验client是否对token的用友权。<br>　　５．Authorization Code Token:授权码，仅用于授权码授权类型。用于交换获取访问令牌和刷新令牌。</p>
-<h2 id="Ouath2-0的误区"><a href="#Ouath2-0的误区" class="headerlink" title="Ouath2.0的误区"></a>Ouath2.0的误区</h2><p>　　１．该协议仅仅支持http协议。<br>　　２．Oauth 是个授权协议，不是认证协议。<br>　　３．oauth 没有定义token格式<br>　　４．没有定义加密算法<br>　　５．不是单个协议<br>　　６．没有定义授权处理机制<br>　　７．仅仅是个授权框架，用于授权代理
-　　</p>
-<h2 id="授权模式"><a href="#授权模式" class="headerlink" title="授权模式"></a>授权模式</h2><h3 id="授权码模式"><a href="#授权码模式" class="headerlink" title="授权码模式"></a>授权码模式</h3><p>  用下面转载自码农翻身的一张图来解释下</p>
-<p><img src="https://raw.githubusercontent.com/skydh/picture/master/token_001.png" alt="aaa"></p>
-<p>　　１．用户访问客户端，客户端将用户重定向到授权服务器。同时附上客户端凭证和处理完后要重定向的url。<br>　　２．用户选择是否给予客户端授权。<br>　　３．用户给予授权，授权服务器将用户导向客户端事先指定的”重定向URI”（redirection URI），同时附上一个授权码。<br>　　４．客户端收到授权码，附上早先的”重定向URI”，向认证服务器申请令牌。这一步是在客户端的后台的服务器上完成的，对用户不可见。<br>　　５．认证服务器核对了授权码和重定向URI，确认无误后，向客户端发送访问令牌（access token）和更新令牌（refresh token）。</p>
-<h3 id="简化模式"><a href="#简化模式" class="headerlink" title="简化模式"></a>简化模式</h3><p>　　（A）客户端将用户导向认证服务器。<br>　　（B）用户决定是否给于客户端授权。<br>　　（C）假设用户给予授权，认证服务器将用户导向客户端指定的”重定向URI”，并在URI的Hash部分包含了访问令牌。<br>　　（D）浏览器向资源服务器发出请求，其中不包括上一步收到的Hash值。<br>　　（E）资源服务器返回一个网页，其中包含的代码可以获取Hash值中的令牌。<br>　　（F）浏览器执行上一步获得的脚本，提取出令牌。<br>　　（G）浏览器将令牌发给客户端。</p>
-<h3 id="密码模式"><a href="#密码模式" class="headerlink" title="密码模式"></a>密码模式</h3><p>　　这个通常需要客户端是操作系统的一部分，或者是一个著名公司出品，而认证服务器无法授权处理才使用。<br>　　（A）用户向客户端提供用户名和密码。<br>　　（B）客户端将用户名和密码发给认证服务器，向后者请求令牌。<br>　　（C）认证服务器确认无误后，向客户端提供访问令牌。</p>
-<h3 id="客户端模式"><a href="#客户端模式" class="headerlink" title="客户端模式"></a>客户端模式</h3><p>　　其实不存在授权问题，客户端自己向授权服务器拿令牌。<br>　　（A）客户端向认证服务器进行身份认证，并要求一个访问令牌。<br>　　（B）认证服务器确认无误后，向客户端提供访问令牌。</p>
-<p>为何要加个授权码呢？<br>   为了避免把token透露给浏览器，最好是透明的，我们不希望处理到这个token暴露在浏览器里面，每次重定向都会经过浏览器的。因此如果直接返回token的话就会产生问题。因此我们一般使用授权码的方式。</p>
-
-          
-        
-      
-    </div>
-    
-    
-    
-
-    
-
-    
-
-    
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </div>
-  
-  
-  
-  </article>
-
-
-    
   </section>
 
   
@@ -1561,7 +1550,7 @@ output {
               
                 <a href="/archives/">
               
-                  <span class="site-state-item-count">107</span>
+                  <span class="site-state-item-count">108</span>
                   <span class="site-state-item-name">日志</span>
                 </a>
               </div>

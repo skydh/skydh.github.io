@@ -232,6 +232,137 @@
   
   
   <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="https://skydh.github.io/2018/05/04/java虚拟机运行时数据区域/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="董航">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="why are you so happy">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                <a class="post-title-link" href="/2018/05/04/java虚拟机运行时数据区域/" itemprop="url">java虚拟机运行时数据区域</a></h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2018-05-04T11:05:35+08:00">
+                2018-05-04
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            <h1 id="进程和线程"><a href="#进程和线程" class="headerlink" title="进程和线程"></a>进程和线程</h1><p>　　这里必须先提一下操作系统的进程和线程。</p>
+<h2 id="什么是进程？"><a href="#什么是进程？" class="headerlink" title="什么是进程？"></a>什么是进程？</h2><p>　　在操作系统中每一个独立的程序单元就是一个进程。每个进程都有相互隔离的内存空间（显然，不然一些流氓进程就可以访问网上银行账号密码等之类的敏感数据了），因此进程之间通信极其不容易。</p>
+<h2 id="什么是线程？"><a href="#什么是线程？" class="headerlink" title="什么是线程？"></a>什么是线程？</h2><p>　　线程是进程里面的执行流，每个线程都有自己的程序栈，也有自己TLS,独立的线程私有空间，由于线程是进程里面的一部分，那么线程也可以访问公有内存，线程也有自己私有的空间。因此线程之间的信息交流会非常方便。</p>
+<h2 id="线程与进程的关系。"><a href="#线程与进程的关系。" class="headerlink" title="线程与进程的关系。"></a>线程与进程的关系。</h2><p>　　线程是真正的程序执行流，每个程序由一个主线程和多个子线程一起运行工作完成的，因此线程才是真正的程序运行的东东，而进程相当于一个容器，这个容器给线程提供了相对隔离的内存空间，和一个相对安全的访问条件。</p>
+<h1 id="jvm-的运行数据分布"><a href="#jvm-的运行数据分布" class="headerlink" title="jvm 的运行数据分布"></a>jvm 的运行数据分布</h1><p>　　了解了一下进程和线程后。我们看看虚拟机的内存分布。</p>
+<h2 id="程序计数器"><a href="#程序计数器" class="headerlink" title="程序计数器"></a>程序计数器</h2><p>　　程序计数器：是jvm中一小块内存空间，可以当做当前线程的字节码文件的行号，字节码解释器通过改变这个值来获取下一个指令。Java多线程通过线程轮流切换处理器的执行时间来执行的，大家知道现代处理器的原理，每次一个核上只能一个线程进行运转，由于中断，因此每个程序计数器都是独立的，这些程序计数器的所在的内存称为线程私有的内存。如果线程执行的是java方法，那么程序计数器指代的是当前字节码指令的地址，如果是native方法，程序计数器的值为空，这处区域是jvm没有定义OutOfMemoryError错误。就是放代码的地方，通过操作这个栈，来执行这个代码。</p>
+<h2 id="虚拟机栈"><a href="#虚拟机栈" class="headerlink" title="虚拟机栈"></a>虚拟机栈</h2><p>　　打个比方，一般吧java内存粗略分为堆栈，这个虚拟机栈中的局部变量表就是传说中的栈，线程私有的，描述java方法执行的内存模型：每个方法在执行的时候都会建立一个这个;用于存储局部变量表，操作数栈，动态链接，方法出口等，每一个方法从调用到执行完，就代表一个栈帧在虚拟机栈中从入栈到出栈的过程，其中局部变量表存放了编译器可知的基本变量（boolean,int,double,float,char）,还有引用类型（），renturnAddress类型（指向了一个字节码的地址）局部变量表的大小信息在编译期间就确定好了，运行期间不会改变其大小，该虚拟机栈回报2个错误，第一个就是请求的栈帧大于虚拟机栈的深度回报StackOverflowError错误第二个错误就是虚拟机栈动态扩张，扩张到无法申请到内存时报OutOfMemoryError错误。</p>
+<h1 id="本地方法栈"><a href="#本地方法栈" class="headerlink" title="本地方法栈"></a>本地方法栈</h1><p>　　和虚拟机栈差不多，不过不是java方法是native方法，java规范对native方法的语言和数据格式没有强制要求虚拟机可以自由的去实现它，报的错误也是StackOverflowError错误和OutOfMemoryError错误．</p>
+<h2 id="Java堆："><a href="#Java堆：" class="headerlink" title="Java堆："></a>Java堆：</h2><p>　　第一它是所有线程共享的，虚拟机启动创建堆，主要用于存储对象实例和数组，Java垃圾处理器主要处理的就是java堆，因此java堆也被称为gc堆，从内存回收的角度上讲可以划分为新生代和老生代，从内存分配角度讲，可以划分出多个线程私有的内存区域等，java堆有多种划分方式，但是无论怎么划分都是存储对象实例，多重划分是为了更好的划分内存和回收内存，java堆可以位于内存上不连续的空间上，只要逻辑上连续即可，java堆可以实现为固定大小的，也可以实现为可扩展大小的，要是java堆上无法为实例对象分配内存，那么就会报这个OutOfMemoryError．<br>　　堆划分为新生代，老年代，默认比例为１:２，新生代划分为３个区域，eden,From survivor,to survivor,比例为8:1:1。为何呢。参照下面：IBM研究发现，９８％的新生态对象生存周期很短的，于是一个新的算法出来了，就是把内存分为3部分，8：1：1，每次使用其中的0.9部分，当发生垃圾回收的时候那就把剩余的对象就放到剩余的0.1那里，当然剩余的0.1可能不够那就可以把一部分对象转化为老年态暂时存到老年态里面，这样子就只浪费0.1的内存了，性价比可以。<br>　　参数设定：新生代和老年代的比例–XX:NewRatio. 新生代中，eden,from,to的参数为–XX:SurvivorRatio。</p>
+<h2 id="方法区"><a href="#方法区" class="headerlink" title="方法区:"></a>方法区:</h2><p>　　各个线程共享的区域，主要存储被虚拟机加载的类信息，常量，静态变量，编译器编译后的代码，和java堆一样逻辑上内存，可扩展的实现大小，这个区域的垃圾回收主要针对常量池的回收和类型的卸载，其中类型的卸载要求比较高，但是必要的垃圾回收是必要的，以前低版本的就出现过严重的内存泄漏。</p>
+<h2 id="运行期常量池"><a href="#运行期常量池" class="headerlink" title="运行期常量池:"></a>运行期常量池:</h2><p>　　这个区域也是方法区的一部分，编译后的Class文件中的类名啊，方法名啊，常量啊被加载到虚拟机后就会放到方法去的运行常量池来保存，当然常量不止可以只是在编译期间放到常量池中，还可以用string.intern()方法（如果常量池中存在当前字符串, 就会直接返回当前字符串. 如果常量池中没有此字符串, 会将此字符串放入常量池中后, 再返回）来在运行期间放到常量池中，当然要是常量池中无法申请到内存时就会报出OutOfMemoryError这个经典错误。</p>
+<h2 id="直接内存"><a href="#直接内存" class="headerlink" title="直接内存"></a>直接内存</h2><p>　　直接内存是一个重要的问题，首先它不是运行数据区的部分也不是java虚拟机规范的一部分，这个的出现主要和java1.4后出现的NIO相关，一个基于通道和缓冲区的io方式，它可以使用Native函数库来直接分配堆外内存，然后通过一个存在java堆中的DirectByteBuffer这个对象来对这个java堆外的内存的引用来进行操作，可以提高相关性能，因为避免了java堆和native堆中的来回复制数据。<br>　　那个那么重点来了，既然这个直接内存不归java堆管理，但是也会受到总内存的限制，如果管理员设置课动态扩展的javajvm时，如果忽略了这个直接内存的，最后实际内存总和大于实际内存，当jvm要动态扩展内存时，就会出现这个outofmemoryerror错误。</p>
+
+          
+        
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
     <link itemprop="mainEntityOfPage" href="https://skydh.github.io/2018/04/22/java String +操作导致的问题/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -1631,147 +1762,6 @@ ctorInstance(memory);  //2：初始化对象
 
 
     
-      
-
-  
-
-  
-  
-  
-
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-  
-  
-  
-  <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="https://skydh.github.io/2018/03/19/mysql连接算法/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="董航">
-      <meta itemprop="description" content="">
-      <meta itemprop="image" content="/images/avatar.gif">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="why are you so happy">
-    </span>
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-                
-                <a class="post-title-link" href="/2018/03/19/mysql连接算法/" itemprop="url">mysql联接算法</a></h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">发表于</span>
-              
-              <time title="创建于" itemprop="dateCreated datePublished" datetime="2018-03-19T22:19:31+08:00">
-                2018-03-19
-              </time>
-            
-
-            
-
-            
-          </span>
-
-          
-
-          
-            
-          
-
-          
-          
-
-          
-
-          
-
-          
-
-        </div>
-      </header>
-    
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          
-            <p>　　联接算法是MySQL数据库处理联接的物理策略，目前支持Nested-Loops Join算法，时间复杂度为O(N)有索引，无的话为o(N2).<br>这个是没有索引的表联接</p>
-<pre>
-    For each row r in R do
-        For each row s in S do
-            If r and s satisfy the join condition
-                Then output the tuple <r, s="">
-</r,></pre>
-　　然而真实情况mysql没有采用这种算法。是这样的：
-　　把驱动表的要select的数据，丢到join_buffer中内存。再扫描被驱动表，取出一行行数据对比，满足条件的作为结果集返回。和上面的算法比较，比较次数，扫描次数一样，但是是内存，因此效率高很多。显然join_buffer可能不够大，默认是256k，join_buffer_size这个参数确定，    分段处理    ，放满了join_buffer，比较，然后清空join_buffer，再放入驱动表的数据。比较，直到走完。但是分段次数太多，可能导致扫描次数变多。因此，可以将join_buffer这个调大一点。
-
-　　时间复杂度为o(R*S)
-　　这个是有索引的
-<pre>
-    For each row r in R do
-        lookup r in S index
-            If find s == r
-               Then output the tuple <r, s="">
-</r,></pre>
-
-<p>　　对于对于联接的列含有索引的情况，外部表的每条记录不再需要扫描整张内部表，只需要扫描内部表上的索引即可得到联接的判断结果。<br>　　根据前面描述的Simple Nested-Loops Join算法，优化器在一般情况下总是选择将联接列含有索引的表作为内表。如果两张表R和S在联接列上都有索引，并且索引的高度相同，那么优化器会选择记录数少的表作为外部表，这是因为内部表的扫描次数总是索引的高度，与记录的数量无关。</p>
-<p>　　如果联接表没有索引时，Simple Nested-Loops Join算法扫描内部表很多次，执行效率会非常差。而Block Nested-Loops Join算法就是针对没有索引的联接情况设计的，其使用Join Buffer（联接缓存）来减少内部循环取表的次数。<br>　　对这个没有太大注意，反正效率不高就是了。最好还是加上索引用第一个最好了。<br>　　对于left join 那么一定是左边的表作为外部表，即使右边表没有索引而自身有索引。<br>　　对于　right join 那么一定是右边的表作为外部表，即使左侧表无索引，而右侧表有索引。</p>
-<p>　　为了效率：<br>　　１．我们一般左连接，那么希望２表连接的话，小数据量的放到左边。<br>　　２．左连接，左边表字段是否有索引不关心，右边表必须要有索引。<br>　　３．表连接最好加上索引，否则另外一个算法效率很低。<br>　　４.内连接比左右连接方便，是因为内连接可以自身优化左右表的顺序。原则如下：１，若都有索引，默认数据量小的表作为外部表。即时加了索引缩小范围。２，若只有一个表有索引，那么默认没有索引的表作为外部表。３，若都没有索引，那么默认Block Nested-Loops Join算法。<br>　　ps:这里的小表：是指按照各自的条件过滤后，这些判断是要走索引的，不然和全表扫描没区别了。计算参与join的各个字段的总数据量，这个总数据量小的，就是小表。</p>
-
-          
-        
-      
-    </div>
-    
-    
-    
-
-    
-
-    
-
-    
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </div>
-  
-  
-  
-  </article>
-
-
-    
   </section>
 
   
@@ -1822,7 +1812,7 @@ ctorInstance(memory);  //2：初始化对象
               
                 <a href="/archives/">
               
-                  <span class="site-state-item-count">107</span>
+                  <span class="site-state-item-count">108</span>
                   <span class="site-state-item-name">日志</span>
                 </a>
               </div>

@@ -232,6 +232,201 @@
   
   
   <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="https://skydh.github.io/2018/07/10/currentHashMap/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="董航">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="why are you so happy">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                <a class="post-title-link" href="/2018/07/10/currentHashMap/" itemprop="url">concurrenthashmap</a></h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2018-07-10T15:49:34+08:00">
+                2018-07-10
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            <h2 id="简介"><a href="#简介" class="headerlink" title="简介"></a>简介</h2><p>　　１.7的ConcurrentHashMap最重要的一点就是Segment这个概念，每一个Segment就是一个小的HashMap，可以将这个理解为2级哈希表，一个总的Segment数组，每个数组里面存放一个类似Hashmap的结构，而加锁则是对Segment进行加锁。<br>   Segment继承自ReentrantLock，所以我们可以很方便的对每一个Segment上锁<br>　　1.8的则抛弃其冗余的设计，采用Node + CAS + Synchronized来保证并发安全进行实现，分析下其如何实现的吧。<br>　　点到ConcurrentHashMap的put方法里面，分析下源码：</p>
+<pre><code>if (tab == null || (n = tab.length) == 0)
+            tab = initTable();
+</code></pre><p>　　当数组为空时，初始化数组。</p>
+<pre><code>private final Node&lt;K,V&gt;[] initTable() {
+    Node&lt;K,V&gt;[] tab; int sc;
+    while ((tab = table) == null || tab.length == 0) {
+        if ((sc = sizeCtl) &lt; 0)
+            Thread.yield(); // lost initialization race; just spin
+        else if (U.compareAndSwapInt(this, SIZECTL, sc, -1)) {
+            try {
+                if ((tab = table) == null || tab.length == 0) {
+                    int n = (sc &gt; 0) ? sc : DEFAULT_CAPACITY;
+                    @SuppressWarnings(&quot;unchecked&quot;)
+                    Node&lt;K,V&gt;[] nt = (Node&lt;K,V&gt;[])new Node&lt;?,?&gt;[n];
+                    table = tab = nt;
+                    sc = n - (n &gt;&gt;&gt; 2);
+                }
+            } finally {
+                sizeCtl = sc;
+            }
+            break;
+        }
+    }
+    return tab;
+}
+</code></pre><p>　　初始化部分全部使用了CAS来完成线程安全。</p>
+<pre><code>else if ((f = tabAt(tab, i = (n - 1) &amp; hash)) == null) {
+           if (casTabAt(tab, i, null,
+                        new Node&lt;K,V&gt;(hash, key, value, null)))
+               break;                   // no lock when adding to empty bin
+       }
+</code></pre><p>　　如果相应位置的Node还未初始化，则通过CAS插入相应的数据<br>　　然后判断其数组不为空，那么就对这个节点加锁，然后插入数据</p>
+<pre><code>synchronized (f) {
+               if (tabAt(tab, i) == f) {
+                   if (fh &gt;= 0) {
+                       binCount = 1;
+                       for (Node&lt;K,V&gt; e = f;; ++binCount) {
+                           K ek;
+                           if (e.hash == hash &amp;&amp;
+                               ((ek = e.key) == key ||
+                                (ek != null &amp;&amp; key.equals(ek)))) {
+                               oldVal = e.val;
+                               if (!onlyIfAbsent)
+                                   e.val = value;
+                               break;
+                           }
+                           Node&lt;K,V&gt; pred = e;
+                           if ((e = e.next) == null) {
+                               pred.next = new Node&lt;K,V&gt;(hash, key,
+                                                         value, null);
+                               break;
+                           }
+                       }
+                   }
+                   else if (f instanceof TreeBin) {
+                       Node&lt;K,V&gt; p;
+                       binCount = 2;
+                       if ((p = ((TreeBin&lt;K,V&gt;)f).putTreeVal(hash, key,
+                                                      value)) != null) {
+                           oldVal = p.val;
+                           if (!onlyIfAbsent)
+                               p.val = value;
+                       }
+                   }
+               }
+           }
+</code></pre><p>　　判断，链表就用链表的方式添加，红黑树就用红黑树的方式添加。</p>
+<pre><code>if (binCount != 0) {
+               if (binCount &gt;= TREEIFY_THRESHOLD)
+                   treeifyBin(tab, i);
+               if (oldVal != null)
+                   return oldVal;
+               break;
+           }
+</code></pre><p>如果大于了一个阈值，就将链表转换为数组。<br>嗯就这样，也就是说，1.8的HashMap和ConcurrentHashMap都是大致一样的数据结构，只是其中是否加锁。</p>
+
+          
+        
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
     <link itemprop="mainEntityOfPage" href="https://skydh.github.io/2018/07/10/hashmap/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -1600,134 +1795,6 @@ public JsonBackData queryDetail(@RequestParam String id) {
 
 
     
-      
-
-  
-
-  
-  
-  
-
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-  
-  
-  
-  <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="https://skydh.github.io/2018/05/16/线程安全和锁优化/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="董航">
-      <meta itemprop="description" content="">
-      <meta itemprop="image" content="/images/avatar.gif">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="why are you so happy">
-    </span>
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-                
-                <a class="post-title-link" href="/2018/05/16/线程安全和锁优化/" itemprop="url">线程安全和锁优化</a></h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">发表于</span>
-              
-              <time title="创建于" itemprop="dateCreated datePublished" datetime="2018-05-16T11:52:32+08:00">
-                2018-05-16
-              </time>
-            
-
-            
-
-            
-          </span>
-
-          
-
-          
-            
-          
-
-          
-          
-
-          
-
-          
-
-          
-
-        </div>
-      </header>
-    
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          
-            <h2 id="线程安全的实现方法"><a href="#线程安全的实现方法" class="headerlink" title="线程安全的实现方法"></a>线程安全的实现方法</h2><h3 id="互斥同步"><a href="#互斥同步" class="headerlink" title="互斥同步"></a>互斥同步</h3><p>　　这是个常见的并发正确性保障手段，同步是指多个线程并发访问数据时，该数据同一时刻只有一个线程使用，而互斥则是实现同步的方式之一，临界区，互斥量，信号量都是实现互斥的方式。互斥是方法，同步是目的。<br>　　在java中，实现同步的方式是synchronized关键字。这个关键字需要一个对象参数，来指明要锁住的对象，如果没有明确指定，那就根据synchronized修饰的实例方法或者类方法来取得相应的对象实例或者Class对象作为锁对象。获取到锁对象时，把锁的计数器加一，退出时把锁的计数器减一。前面说过java的线程是映射到操作系统的原生线程上的，如果阻塞和唤醒其他线程，都需要操作系统帮忙。需要从用户态转换到核心态，这种状态转换会很消耗时间，因此这个关键字是重量级操作。当然虚拟机自身也做了锁优化。<br>　　出了synchronized这个关键字，还可以使用java.util.concurrent包下的重入锁来实现同步。特性都一样，都具有线程重入性，但是代码上有些区别，一个是API曾变的互斥锁，lock(),unlock()配合try finally使用，一个是原生语法上的，但是相对于synchronized，多了些特性：<br>　　１．等待可中断：当持有锁的线程长期不释放锁的时候，正在等待的线程可以选择放弃，改为处理其他事情。<br>　　２．公平锁，指的是多个线程等待同一个锁时，必须按照申请锁的时间顺序来获取锁，但是非公平的不是按照时间申请顺序来的，他是随机的，synchronized是非公平的，ReentrantLock默认也是非公平的，但是可以通过构造函数来改变。<br>　　３．锁绑定多个条件：一个ReentrantLock对象可以绑定多个Condition对象，但是synchronized的wait和notify是一对一的<br>　　性能对比：<br>　　在jdk1.5，synchronized关键字效率比ReentrantLock要低，随之线程数目的增多，但是在1.6之后，2者就差不多了。</p>
-<h3 id="非阻塞同步"><a href="#非阻塞同步" class="headerlink" title="非阻塞同步"></a>非阻塞同步</h3><p>　　上面的都是阻塞同步，阻塞同步是悲观的并发策略，认为不加锁，一定会出现问题。而非阻塞则是乐观加锁，先操作。如果没有线程冲突，成功，有冲突，不断重试。但是这个需要硬件指令的原子操作才能完成。现代处理器出现了　CAS（比较并交换）这是一个原子操作。来帮助实现了非阻塞加锁。就是需要写入时，先比较这个值是否变化，若是没变化就写，有变化不写。<br>　　在jdk1.5之后，java才可以，比如原子类之类的，里面的加减操作都是原子操作。就是，对这个变脸不加锁，谁用都可以，但是你要写入的时候，就要对比，是不是你原来读取的旧值，是的话就写入，不是，就不写入，当然这是针对自身的值变化操作，比如自增之类的。当然这个还是有bug的，比如ABA问题。前面的文章写过了，这里就不多说了。但是JUC包加了一个带标记的原子引用类，来控制变量的版本来保证CAS的正确性，当然，如果可能发生ABA，那么还不如用互斥同步操作来的高效。</p>
-<h2 id="锁优化"><a href="#锁优化" class="headerlink" title="锁优化"></a>锁优化</h2><p>　　在JDK1.6有个重大改进，就是虚拟机实现了大量的锁优化技术，比如，适应性自旋，锁清楚，锁粗化，轻量级锁，偏向锁等。</p>
-<h3 id="自旋锁和自适应锁"><a href="#自旋锁和自适应锁" class="headerlink" title="自旋锁和自适应锁"></a>自旋锁和自适应锁</h3><p>　　我们在前面说到，同步互斥对性能最大的影响是阻塞的实现，因为阻塞需要将操作转到内核去完成，这些操作很耗时，也对系统的并发性能有压力。但是虚拟机开发团队发现，共享数据的锁只会持续很短的一段时间。为了这么短的时间去挂起和恢复线程划不来。自旋锁就是如果物理机器上有１个以上的处理器，能让２个以上的线程并行执行，我们可以让后面请求锁的线程稍等一下，但是不放弃处理器的执行时间，看看持有锁的线程是否释放锁，我们只需要让线程执行一个忙循环（自旋），这就是自旋锁。<br>　　自旋锁不能代替同步阻塞，１，处理器数量，２，占用处理器时间。但是如果锁占用时间极短，那么自旋效果就很好了，如果时间长，就不好了，因此要设置一个值，来判断自旋次数，如果在次数内，没话说，超过次数了，那么就只能按照传统的方式去挂起线程了，默认是１０次，可以通过参数修改。<br>　　在ＪＤＫ１．６之后引入了自适应自旋锁。自适应那就是说时间不固定了，由前一次同一个锁上的自旋时间以及锁的拥有者的状态决定的，如果同一个锁对象，自旋刚成功过，那么虚拟机认为这次自旋也可能成功，进而允许自旋锁自旋更长的时间。如果一个锁自旋很少成功，那么虚拟机可能自动忽略这个自旋过程。</p>
-<h3 id="锁清除"><a href="#锁清除" class="headerlink" title="锁清除"></a>锁清除</h3><p>　　就是对一些代码上要求同步，但是被检测到不可能存在共享数据存在数据竞争的锁进行消除。</p>
-<h3 id="锁粗化"><a href="#锁粗化" class="headerlink" title="锁粗化"></a>锁粗化</h3><p>　　原则上，建议同步块的作用范围越小越好，但是也有例外。就是对同一个对象反复加锁和解锁，甚至加锁操作是出现在循环体中。</p>
-<h3 id="轻量级锁"><a href="#轻量级锁" class="headerlink" title="轻量级锁"></a>轻量级锁</h3><p>　　传统的互斥锁就是重量级锁，轻量级锁不是来代替重量级锁的，他的本意是在没有多线程竞争的前提下，减少传统重量级锁使用操作系统互斥量产生的性能消耗。<br>　　这就涉及到对象头了，对象头分为２部分信息，第一部分是存储对象自身运行时数据，一部分是指向方法区对象类型的指针。第一部分有个锁标志位，当代码进入到同步块时，如果该对象没有被锁定，虚拟机将在当前线程的栈帧里面建立一个锁空间，用于存放目前对象的对象头的第一部分的ｃｏｐｙ称为Lock Record，然后将这个对象头的第一部分跟新为指向Lock Record的指针，且锁标志位跟新为00，,如果失败就是被其他线程抢占了，如果有2个以上的线程争取一个锁，那么轻量级锁无效。<br>　　其实就是在无竞争的情况下用ＣＡＳ来消除互斥量。</p>
-<h3 id="偏向锁"><a href="#偏向锁" class="headerlink" title="偏向锁"></a>偏向锁</h3><p> 　　意思就是如果该锁没有被其他线程获取，那持有偏向锁的线程永远不需要同步。</p>
-<h2 id="小结"><a href="#小结" class="headerlink" title="小结"></a>小结</h2><p>　　偏向锁、轻量级锁、用于不同的并发场景：<br>　　偏向锁：无实际竞争，且将来只有第一个申请锁的线程会使用锁。<br>　　轻量级锁：无实际竞争，多个线程交替使用锁；允许短时间的锁竞争</p>
-
-          
-        
-      
-    </div>
-    
-    
-    
-
-    
-
-    
-
-    
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </div>
-  
-  
-  
-  </article>
-
-
-    
   </section>
 
   
@@ -1778,7 +1845,7 @@ public JsonBackData queryDetail(@RequestParam String id) {
               
                 <a href="/archives/">
               
-                  <span class="site-state-item-count">107</span>
+                  <span class="site-state-item-count">108</span>
                   <span class="site-state-item-name">日志</span>
                 </a>
               </div>

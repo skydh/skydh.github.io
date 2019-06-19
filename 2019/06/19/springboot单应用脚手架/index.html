@@ -79,17 +79,17 @@
 
 
 
-<meta name="description" content="问题　　早上一来，打开工程，直接报错Missing artifact jdk.tools:jdk.tools:jar:1.8，但是显然其他同事没有报错，网上搜索，需要添加这个包的依赖，不采取。 方案　　tools.jar包是JDK自带的，pom.xml中以来的包隐式依赖tools.jar包，而tools.jar并未在库">
+<meta name="description" content="地址 　　脚手架地址 简介多数据源　　在configuration包里面，我们定义了2个数据源，一个是pgsql，一个是mysql。这边对mysql加了@Primary优先处理，因此mysql可以使用jpa进行操作，而pg由于业务只用其进行批量处理，因此只让其使用springjdbc即可。 　　由于jpa对批量处理以及">
 <meta property="og:type" content="article">
-<meta property="og:title" content="eclipse奇葩缺包异常">
-<meta property="og:url" content="https://skydh.github.io/2019/05/27/eclipce 奇葩缺包异常/index.html">
+<meta property="og:title" content="springboot单应用脚手架">
+<meta property="og:url" content="https://skydh.github.io/2019/06/19/springboot单应用脚手架/index.html">
 <meta property="og:site_name" content="why are you so happy">
-<meta property="og:description" content="问题　　早上一来，打开工程，直接报错Missing artifact jdk.tools:jdk.tools:jar:1.8，但是显然其他同事没有报错，网上搜索，需要添加这个包的依赖，不采取。 方案　　tools.jar包是JDK自带的，pom.xml中以来的包隐式依赖tools.jar包，而tools.jar并未在库中。找到答案。eclipse启动的jre不是开发用的jre，而你编译报错则是，在">
+<meta property="og:description" content="地址 　　脚手架地址 简介多数据源　　在configuration包里面，我们定义了2个数据源，一个是pgsql，一个是mysql。这边对mysql加了@Primary优先处理，因此mysql可以使用jpa进行操作，而pg由于业务只用其进行批量处理，因此只让其使用springjdbc即可。 　　由于jpa对批量处理以及复杂sql的不友好，因此这边建议，简单sql使用jpa，加快开发效率，复杂批量s">
 <meta property="og:locale" content="zh-Hans">
-<meta property="og:updated_time" content="2019-05-27T03:30:11.509Z">
+<meta property="og:updated_time" content="2019-06-19T09:17:02.933Z">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:title" content="eclipse奇葩缺包异常">
-<meta name="twitter:description" content="问题　　早上一来，打开工程，直接报错Missing artifact jdk.tools:jdk.tools:jar:1.8，但是显然其他同事没有报错，网上搜索，需要添加这个包的依赖，不采取。 方案　　tools.jar包是JDK自带的，pom.xml中以来的包隐式依赖tools.jar包，而tools.jar并未在库中。找到答案。eclipse启动的jre不是开发用的jre，而你编译报错则是，在">
+<meta name="twitter:title" content="springboot单应用脚手架">
+<meta name="twitter:description" content="地址 　　脚手架地址 简介多数据源　　在configuration包里面，我们定义了2个数据源，一个是pgsql，一个是mysql。这边对mysql加了@Primary优先处理，因此mysql可以使用jpa进行操作，而pg由于业务只用其进行批量处理，因此只让其使用springjdbc即可。 　　由于jpa对批量处理以及复杂sql的不友好，因此这边建议，简单sql使用jpa，加快开发效率，复杂批量s">
 
 
 
@@ -119,13 +119,13 @@
 
 
 
-  <link rel="canonical" href="https://skydh.github.io/2019/05/27/eclipce 奇葩缺包异常/"/>
+  <link rel="canonical" href="https://skydh.github.io/2019/06/19/springboot单应用脚手架/"/>
 
 
 
 
 
-  <title>eclipse奇葩缺包异常 | why are you so happy</title>
+  <title>springboot单应用脚手架 | why are you so happy</title>
   
 
 
@@ -232,7 +232,7 @@
   
   
   <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="https://skydh.github.io/2019/05/27/eclipce 奇葩缺包异常/">
+    <link itemprop="mainEntityOfPage" href="https://skydh.github.io/2019/06/19/springboot单应用脚手架/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="name" content="董航">
@@ -249,7 +249,7 @@
 
         
         
-          <h1 class="post-title" itemprop="name headline">eclipse奇葩缺包异常</h1>
+          <h1 class="post-title" itemprop="name headline">springboot单应用脚手架</h1>
         
 
         <div class="post-meta">
@@ -261,8 +261,8 @@
               
                 <span class="post-meta-item-text">发表于</span>
               
-              <time title="创建于" itemprop="dateCreated datePublished" datetime="2019-05-27T11:11:40+08:00">
-                2019-05-27
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2019-06-19T16:32:50+08:00">
+                2019-06-19
               </time>
             
 
@@ -304,8 +304,23 @@
       
 
       
-        <h2 id="问题"><a href="#问题" class="headerlink" title="问题"></a>问题</h2><p>　　早上一来，打开工程，直接报错Missing artifact jdk.tools:jdk.tools:jar:1.8，但是显然其他同事没有报错，网上搜索，需要添加这个包的依赖，不采取。</p>
-<h2 id="方案"><a href="#方案" class="headerlink" title="方案"></a>方案</h2><p>　　tools.jar包是JDK自带的，pom.xml中以来的包隐式依赖tools.jar包，而tools.jar并未在库中。找到答案。eclipse启动的jre不是开发用的jre，而你编译报错则是，在eclipse的jre里面没有找到这个包，我们切换eclipse依赖的jre即可。方法：找到eclipse.ini，在-vmargs这个参数前面添加：<br>　　-vm<br>　　C:\Program Files\Java\jdk1.8.0_172\jre\bin\server\jvm.dll<br>　　即可。重启eclipse，maven更新即可。</p>
+        <h2 id="地址"><a href="#地址" class="headerlink" title="地址"></a>地址</h2><p> 　　<a href="https://github.com/skydh/springboot-scaffold" target="_blank" rel="noopener">脚手架地址</a></p>
+<h2 id="简介"><a href="#简介" class="headerlink" title="简介"></a>简介</h2><h3 id="多数据源"><a href="#多数据源" class="headerlink" title="多数据源"></a>多数据源</h3><p>　　在configuration包里面，我们定义了2个数据源，一个是pgsql，一个是mysql。这边对mysql加了@Primary优先处理，因此mysql可以使用jpa进行操作，而pg由于业务只用其进行批量处理，因此只让其使用springjdbc即可。</p>
+<p>　　由于jpa对批量处理以及复杂sql的不友好，因此这边建议，简单sql使用jpa，加快开发效率，复杂批量sql使用springjdbc，开发简单高效。我们约定，jpa的dao命名为xxxJpaDao,springjdbc的dao命名为xxxDao。</p>
+<h3 id="aop动态代理"><a href="#aop动态代理" class="headerlink" title="aop动态代理"></a>aop动态代理</h3><p>　　1.非法字符过滤，这个功能主要是检查你的rest接口里面的vo是否存在非法字符，会递归检查到基本类型，但是要检验的vo必须实现一个空接口。支持list，vo,map这3个数据混搭的检查。</p>
+<p>　　2.任务调度加锁。这个功能主要是用于工程在集群部署的情况下。定时器多次调用做了加锁限制。使用的是redis分布式锁。</p>
+<p>　　3.数据字段校验，这个主要是使用spring的安全校验来检查表单字段。</p>
+<p>　　4.ip校验，控制这个游客接口最多访问次数。</p>
+<h3 id="上下文"><a href="#上下文" class="headerlink" title="上下文"></a>上下文</h3><p>　　上下文是用ThreadLocal实现的，默认实现了用户信息的缓存，同时开发也可以自定义往里面丢值进去，但是请记住，我们访问服务的线程是从线程池里面取出来的，因此这个线程里面可能存在旧的值，因此，你需要在代码里面控制，要么每次都覆盖，要么在这个线程或者这个请求结束前将其数据释放。默认使用覆盖策略。</p>
+<h3 id="枚举"><a href="#枚举" class="headerlink" title="枚举"></a>枚举</h3><p>　　常量一律使用枚举。</p>
+<h3 id="异常"><a href="#异常" class="headerlink" title="异常"></a>异常</h3><p>　　使用了全局异常捕捉。</p>
+<h2 id="http"><a href="#http" class="headerlink" title="http"></a>http</h2><p>　　由于是单应用，存在远程调用，为了方便，我们使用http方式调用，采用的是spring的RestTemplate作为接口，httpClient为实现的方式。</p>
+<h2 id="拦截器"><a href="#拦截器" class="headerlink" title="拦截器"></a>拦截器</h2><p>　　拦截器有２个，一个是登录校验的拦截器，一个是基本非法字符校验的拦截器。</p>
+<h2 id="国际化"><a href="#国际化" class="headerlink" title="国际化"></a>国际化</h2><p>　　返回信息需要国际化处理，因为可能是不同国家，需要不同的语言。</p>
+<h2 id="分页查询"><a href="#分页查询" class="headerlink" title="分页查询"></a>分页查询</h2><p>　　基于springjdbc封装了一个分页查询的工具类。ps:可以考虑封装更多的工具类来完全代替jpa。</p>
+<h2 id="事务"><a href="#事务" class="headerlink" title="事务"></a>事务</h2><p>　　定义了２个事务管理器，一个是pgsql的DataSourceTransactionManager，来管理pgsql的springjdbc的事务，一个是JpaTransactionManager的事务管理器，可以管理mysql的jpa和spring jdbc的事务管理。</p>
+<p>　　ps(This transaction manager also supports direct DataSource access within a transaction<br>(i.e. plain JDBC code working with the same DataSource).<br> This allows for mixing services which access JPA and services which use plain JDBC (without being aware of JPA)!<br> Application code needs to stick to the same simple Connection lookup pattern as with DataSourceTransactionManager<br> (i.e. DataSourceUtils.getConnection(javax.sql.DataSource) or going through a TransactionAwareDataSourceProxy).<br>  Note that this requires a vendor-specific JpaDialect to be configured.)</p>
+<h2 id="返回值"><a href="#返回值" class="headerlink" title="返回值"></a>返回值</h2><p>　　返回值信息有４个，分别是，是否成功，返回code,返回message,返回vo。</p>
 
       
     </div>
@@ -330,8 +345,8 @@
         <div class="post-nav">
           <div class="post-nav-next post-nav-item">
             
-              <a href="/2019/05/20/大表的全表扫描/" rel="next" title="大表的全表扫描">
-                <i class="fa fa-chevron-left"></i> 大表的全表扫描
+              <a href="/2019/06/18/HikariCP-1/" rel="next" title="HikariCP 笔记">
+                <i class="fa fa-chevron-left"></i> HikariCP 笔记
               </a>
             
           </div>
@@ -339,10 +354,6 @@
           <span class="post-nav-divider"></span>
 
           <div class="post-nav-prev post-nav-item">
-            
-              <a href="/2019/05/28/maven一更新jdk版本就变化/" rel="prev" title="maven一更新jdk版本就变化">
-                maven一更新jdk版本就变化 <i class="fa fa-chevron-right"></i>
-              </a>
             
           </div>
         </div>
@@ -458,7 +469,7 @@
             
 
             
-              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#问题"><span class="nav-number">1.</span> <span class="nav-text">问题</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#方案"><span class="nav-number">2.</span> <span class="nav-text">方案</span></a></li></ol></div>
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#地址"><span class="nav-number">1.</span> <span class="nav-text">地址</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#简介"><span class="nav-number">2.</span> <span class="nav-text">简介</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#多数据源"><span class="nav-number">2.1.</span> <span class="nav-text">多数据源</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#aop动态代理"><span class="nav-number">2.2.</span> <span class="nav-text">aop动态代理</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#上下文"><span class="nav-number">2.3.</span> <span class="nav-text">上下文</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#枚举"><span class="nav-number">2.4.</span> <span class="nav-text">枚举</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#异常"><span class="nav-number">2.5.</span> <span class="nav-text">异常</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#http"><span class="nav-number">3.</span> <span class="nav-text">http</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#拦截器"><span class="nav-number">4.</span> <span class="nav-text">拦截器</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#国际化"><span class="nav-number">5.</span> <span class="nav-text">国际化</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#分页查询"><span class="nav-number">6.</span> <span class="nav-text">分页查询</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#事务"><span class="nav-number">7.</span> <span class="nav-text">事务</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#返回值"><span class="nav-number">8.</span> <span class="nav-text">返回值</span></a></li></ol></div>
             
 
           </div>
