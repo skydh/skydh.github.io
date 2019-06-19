@@ -232,6 +232,289 @@
   
   
   <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="https://skydh.github.io/2018/12/12/mysql 删除数据为何空间还是不大/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="董航">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="why are you so happy">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                <a class="post-title-link" href="/2018/12/12/mysql 删除数据为何空间还是不大/" itemprop="url">mysql 删除数据，空间为何没有回收</a></h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2018-12-12T09:30:49+08:00">
+                2018-12-12
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            <h2 id="表结构数据和表数据"><a href="#表结构数据和表数据" class="headerlink" title="表结构数据和表数据"></a>表结构数据和表数据</h2><p>　　mysql1.8之前，表结构数据和表数据分开放，表结构放在.frm文件里面。在1.8后就放到一起了。</p>
+<h2 id="innodb-file-per-table"><a href="#innodb-file-per-table" class="headerlink" title="innodb_file_per_table"></a>innodb_file_per_table</h2><p>　　这个参数off是表数据放在共享表空间里面。和数据字典放在一起，on则是表数据单独存为一个后缀为。ibd的文件，当你drop的时候，系统也会删除这个文件，mysql5.6之后系统是默认开启这个这个参数的，也就是说，一个表文件会放在一个文件里面。通常是默认开启的。开启利于管理维护，当我们进行drop时就会直接删除这个文件。从而释放空间，否则放在共享表空间里面，即使删除了，也不会释放空间。</p>
+<h2 id="问题来了"><a href="#问题来了" class="headerlink" title="问题来了"></a>问题来了</h2><p>　　因此我们直接删除表的时候会直接删除这个文件，但是删除部分数据的时候，我们会发现表空间没有被回收。</p>
+<h2 id="innodb删除流程"><a href="#innodb删除流程" class="headerlink" title="innodb删除流程"></a>innodb删除流程</h2><p>　　我们知道mysql innodb存储引擎里面存数据的方式是基于b+树。当删除一个记录，找到这个数据的时候，我们是将其标记为删除状态，而不是真的删除。等到有相关数据的时候那就可以直接插入进去。但是删除了一个页，那就和数据不太一样了，数据的复用是有局限性的，但是整个页是没有问题的。换句话说，你删除了某个数据，你填充这个数据只能是相关的，比如，这个数据页里面是6,7,8，你删除了7，你可以插入6到8之间的数据.或者可以在这个数据页里面的，如果是数据页，那么哪里都可以。同时如果相邻2个数据页的数据利用率很低，那么就会触发合并操作。是的另外一个页数据可复用。当我们使用delete指令的时候，我们进行的是逻辑删除，具体的数据页没有被回收，只是将其置换为可用状态，同时插入也是同样的道理。当你插入的数据在一个已经满了的数据页中间的时候，就要进行分页操作，那样也会造成大量空间被置为可用状态，但是不回收。</p>
+<h2 id="重建表"><a href="#重建表" class="headerlink" title="重建表"></a>重建表</h2><p>　　因此我们可以重建表来获取更加紧凑的结构。使用alter table A engine=InnoDB来进行重建操作，在mysql 5.5之前，逻辑是这样的，先构建一个临时表，然后把数据复制进去，在交换表名，删除旧表。显然这样的逻辑是全表锁的。中间是不能插入删除更新数据的，但是在之后就可以了，就是在上面的操作的过程中，增加一个临时文件，用来存储在这中间的ddl操作，最后再将其同步过去。其过程是先加写锁，再加读锁。</p>
+
+          
+        
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="https://skydh.github.io/2018/11/28/elk 配置指南/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="董航">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="why are you so happy">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                <a class="post-title-link" href="/2018/11/28/elk 配置指南/" itemprop="url">elk配置指南</a></h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2018-11-28T17:24:30+08:00">
+                2018-11-28
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            <h2 id="简介"><a href="#简介" class="headerlink" title="简介"></a>简介</h2><p>　　本文的目的是搭建一个具备elk日志监控的springmvc程序，代码里面将日志输出到redis里面，然后logstash配置input和output,将日志信息从redis里面取出来，然后放入Elasticsearch，然后启动kinaba，配置索引对应关系即可。最终可以通过kinaba可以实时看到日志，利于分析查询。</p>
+<h2 id="搭建一个springmvc的程序"><a href="#搭建一个springmvc的程序" class="headerlink" title="搭建一个springmvc的程序"></a>搭建一个springmvc的程序</h2><p>　　这里我直接给出仓库地址：<br><a href="https://github.com/skydh/spring-elk" target="_blank" rel="noopener">点我一下就到了</a><br>　　这里要注意下。我们把日志输出到了对应的redis里面。</p>
+<pre><code>&lt;appender name=&quot;LOGSTASH&quot; class=&quot;com.cwbase.logback.RedisAppender&quot;&gt;
+    &lt;source&gt;SpringELK&lt;/source&gt;
+    &lt;type&gt;dev-type&lt;/type&gt;
+    &lt;tags&gt;dev&lt;/tags&gt;
+    &lt;host&gt;127.0.0.1&lt;/host&gt;
+    &lt;port&gt;6379&lt;/port&gt;
+    &lt;key&gt;logstash&lt;/key&gt;
+&lt;/appender&gt;
+</code></pre><h2 id="软件下载"><a href="#软件下载" class="headerlink" title="软件下载"></a>软件下载</h2><p>　　１，下载6.3.0版本的kinaba，Elasticsearch，logstash。<br>　　２，下载redis。</p>
+<h2 id="主要配置修改"><a href="#主要配置修改" class="headerlink" title="主要配置修改"></a>主要配置修改</h2><p>　　１．Elasticsearch 在其配置文件Elasticsearch.yml</p>
+<pre><code>http.cors.enabled: true
+http.cors.allow-origin: &quot;*&quot;
+</code></pre><p>　　２．logstash 新建配置文件。</p>
+<pre><code>
+
+input {
+    redis {
+        data_type => "list"
+        key => "logstash"
+        host => "127.0.0.1"  #redis-server
+        port => 6379
+        batch_count => "1"
+        threads => 5
+    }
+}
+
+output {
+  elasticsearch {
+    hosts => ["http://localhost:9200"]
+   index => "%{logstash}-%{+YYYY.MM.dd}"
+    #user => "elastic"
+    #password => "changeme"
+  }
+}
+
+</code></pre>
+
+<h2 id="启动顺序"><a href="#启动顺序" class="headerlink" title="启动顺序"></a>启动顺序</h2><p>　　１．启动redis。<br>　　２．在tomcat里面启动spring mvc代码<br>　　３．启动Elasticsearch。浏览器进入 <a href="http://localhost:9200/" target="_blank" rel="noopener">http://localhost:9200/</a><br>　　４．进入到logstash的bin 目录，输入logstash -f ..config/redis.conf来根据配置文件来启动logstash。浏览器进入<a href="http://localhost:9600/" target="_blank" rel="noopener">http://localhost:9600/</a><br>　　５.直接启动kinaba 浏览器进入<a href="http://localhost:5601，然后配置es的索引，最终在discover里面成功看到了我们的日志。" target="_blank" rel="noopener">http://localhost:5601，然后配置es的索引，最终在discover里面成功看到了我们的日志。</a></p>
+
+          
+        
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
     <link itemprop="mainEntityOfPage" href="https://skydh.github.io/2018/11/27/mysql 锁/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -1228,355 +1511,6 @@
 
 
     
-      
-
-  
-
-  
-  
-  
-
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-  
-  
-  
-  <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="https://skydh.github.io/2018/09/27/redis 数据类型实现机制/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="董航">
-      <meta itemprop="description" content="">
-      <meta itemprop="image" content="/images/avatar.gif">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="why are you so happy">
-    </span>
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-                
-                <a class="post-title-link" href="/2018/09/27/redis 数据类型实现机制/" itemprop="url">redis 数据类型实现机制</a></h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">发表于</span>
-              
-              <time title="创建于" itemprop="dateCreated datePublished" datetime="2018-09-27T09:34:36+08:00">
-                2018-09-27
-              </time>
-            
-
-            
-
-            
-          </span>
-
-          
-
-          
-            
-          
-
-          
-          
-
-          
-
-          
-
-          
-
-        </div>
-      </header>
-    
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          
-            <h2 id="redis-对象信息"><a href="#redis-对象信息" class="headerlink" title="redis 对象信息"></a>redis 对象信息</h2><pre><code>struct RedisObject {
-int4 type; // 4bits 什么数据类型，比如字符串，hash，set之类的
-int4 encoding; // 4bits 比如字符串用什么方式存储，比如emb,raw.
-int24 lru; // 24bits 前文说过关于内存不够是采用的lru算法，这个是保存的是上一次使用的时间戳。
-int32 refcount; // 4bytes 这个是对象的引用计数，当这个计数为0的时候，这个对象就要被回收。
-void *ptr; // 8bytes，64-bit system 这个保存的实际上对象的存储位置。
-} robj;
-</code></pre><h2 id="String"><a href="#String" class="headerlink" title="String"></a>String</h2><p>　　其实现是一个带长度信息的字节数组</p>
-<pre><code>struct SDS&lt;T&gt; {
-T capacity; // 数组容量
-T len; // 数组长度
-byte flags; // 特殊标识位，不理睬它
-byte[] content; // 数组内容
-}
-</code></pre><p>　　很类似于java里面ArrayList的实现，一个动态数组。<br>　　redis字符串有2种存储方式，一个是长度小于44时用emb方式存储，当长度大于44时采用raw方式存储。<br>　　为何？<br>　　前面说了，每个对象头的数据结构大约是16字节，字符串自身数据结构是&gt;=3字节，字符串以\0结尾，一个字节，因此长度为20字节，内存分配器分配内存都是2的幂次，为了存储redis字符串，起码要32，稍微长点就是64，而redis认为大于64字节就是大字符，而64-20=44，因此当数据量小的时候采用emb,方式，就是对象头和sds放在一起，分配一次内存即可，当大约44时就采用raw模式，对象头和sds分开，分配2次内存即可。</p>
-<h2 id="字典内部实现"><a href="#字典内部实现" class="headerlink" title="字典内部实现"></a>字典内部实现</h2><p>　　字典这个数据结构在redis里面用处很频繁，hash结构，所有的redis里面的key和value,带过期时间的key集合，zset里面value和score的集合</p>
-<pre><code>struct RedisDb {
-dict* dict; // all keys  key=&gt;value
-dict* expires; // all expired keys key=&gt;long(timestamp)
-
-}
-
-struct zset {
-    dict *dict; // all values  value=&gt;score
-    zskiplist *zsl;
-}
-</code></pre><p>　　dict书籍结构包含2个hashtable,因为redis的扩容时渐进的。因此同时存在2个hashtable,这个迁移主要来自客户端的hset/hdel指令等，当然还有定时任务来配合。</p>
-<h2 id="压缩列表"><a href="#压缩列表" class="headerlink" title="压缩列表"></a>压缩列表</h2><p>　　前面说过了，当hashmap,zset数据量小的时候回采用ziplist,这个压缩列表来存储，将2维变成一维。</p>
-<pre><code>struct ziplist&lt;T&gt; {
-int32 zlbytes; // 整个压缩列表占用字节数
-int32 zltail_offset; // 最后一个元素距离压缩列表起始位置的偏移量，用于快速定位到最后一个节点
-int16 zllength; // 元素个数
-T[] entries; // 元素内容列表，挨个挨个紧凑存储
-int8 zlend; // 标志压缩列表的结束，值恒为 0xFF
-}
-
-struct entry {
-int&lt;var&gt; prevlen; // 前一个 entry 的字节长度
-int&lt;var&gt; encoding; // 元素类型编码
-optional byte[] content; // 元素内容
-}
-</code></pre><p>　　压缩列表为了支持双向遍历，所以才会有 ztail_offset 这个字段，用来快速定位到最后一个元素，然后倒着遍历。</p>
-<p>　　当 set 集合容纳的元素都是整数并且元素个数较小时，Redis 会使用 intset 来存储结合元素。intset 是紧凑的数组结构，同时支持 16 位、32 位和 64 位整数</p>
-<pre><code>struct intset&lt;T&gt; {
-int32 encoding; // 决定整数位宽是 16 位、32 位还是 64 位
-int32 length; // 元素个数
-int&lt;T&gt; contents; // 整数数组，可以是 16 位、32 位和 64 位
-}
-</code></pre><h2 id="快速列表"><a href="#快速列表" class="headerlink" title="快速列表"></a>快速列表</h2><p>　　quicklist 是 ziplist 和 linkedlist 的混合体，它将 linkedlist 按段切分，每一段使用 ziplist 来紧凑存储，多个 ziplist 之间使用双向指针串接起来。</p>
-<pre><code>struct ziplist {
-...
-}
-struct ziplist_compressed {
-int32 size;
-byte[] compressed_data;
-}
-struct quicklistNode {
-quicklistNode* prev;
-quicklistNode* next;
-ziplist* zl; // 指向压缩列表
-int32 size; // ziplist 的字节总数
-int16 count; // ziplist 中的元素数量
-int2 encoding; // 存储形式 2bit，原生字节数组还是 LZF 压缩存储
-
-}
-struct quicklist {
-quicklistNode* head;
-quicklistNode* tail;
-long count; // 元素总数
-int nodes; // ziplist 节点的个数
-int compressDepth; // LZF 算法压缩深度
-...
-}
-</code></pre><p>　　quicklist 内部默认单个 ziplist 长度为 8k 字节，超出了这个字节数，就会新起一个 ziplist。ziplist 的长度由配置参数list-max-ziplist-size决定。</p>
-<h2 id="zset——跳跃表"><a href="#zset——跳跃表" class="headerlink" title="zset——跳跃表"></a>zset——跳跃表</h2><p>　　个人觉得跳跃表的查找方式类似于Ｂ＋树。</p>
-<pre><code>struct zslnode {
-    string value;
-    double score;
-    zslnode*[] forwards;  // 多层连接指针
-    zslnode* backward;  // 回溯指针
-}
-
-struct zsl {
-    zslnode* header; // 跳跃列表头指针
-    int maxLevel; // 跳跃列表当前的最高层
-    map&lt;string, zslnode*&gt; ht; // hash 结构的所有键值对
-}
-</code></pre><p>　　每个节点 之间使用指针串起来形成了双向链表结构，它们是 有序 排列的，从小到大。不同的 节点 层高可能不一样，层数越高的 节点 越少。同一层的 节点 会使用指针串起来。每一个层元素的遍历都是从 节点header 出发。</p>
-<h2 id="紧凑列表"><a href="#紧凑列表" class="headerlink" title="紧凑列表"></a>紧凑列表</h2><pre><code>struct listpack&lt;T&gt; {
-int32 total_bytes; // 占用的总字节数
-int16 size; // 元素个数
-T[] entries; // 紧凑排列的元素列表
-int8 end; // 同 zlend 一样，恒为 0xFF
-}
-
-
-struct lpentry {
-int&lt;var&gt; encoding;
-optional byte[] content;
-int&lt;var&gt; length;//本元素大小
-}
-</code></pre><p>　　首先这个 listpack 跟 ziplist 的结构几乎一摸一样，只是少了一个zltail_offset字段。ziplist 通过这个字段来定位出最后一个元素的位置，用于逆序遍历。不过 listpack 可以通过其它方式来定位出最后一个元素的位置（这个位置可以通过total_bytes字段和最后一个元素的长度字段计算出来。首先通过total_bytes找到最后的标记位end,占一个字符,去除这个字符,前面就是最后一个元素,而元素length放在了后面,那end的前面就是entry的length,length又是通过固定编码方式存储,要读取出来并不难），所以zltail_offset字段就省掉了。</p>
-<h2 id="基数树"><a href="#基数树" class="headerlink" title="基数树"></a>基数树</h2><p>　　你可以将一本英语字典看成一棵 radix tree，它所有的单词都是按照字典序进行排列，每个词汇都会附带一个解释，这个解释就是 key 对应的 value。有了这棵树，你就可以快速地检索单词，还可以查询以某个前缀开头的单词有哪些。你也可以将公安局的人员档案信息看成一棵 radix tree，它的 key 是每个人的身份证号，value 是这个人的履历。因为身份证号的编码的前缀是按照地区进行一级一级划分的，这点和单词非常类似。有了这棵树，你就可以快速地定位出人员档案，还可以快速查询出某个小片区都有哪些人。</p>
-<p>　　Rax 被用在 Redis Stream 结构里面用于存储消息队列，在 Stream 里面消息 ID 的前缀是时间戳 + 序号，这样的消息可以理解为时间序列消息。使用 Rax 结构进行存储就可以快速地根据消息 ID 定位到具体的消息，然后继续遍历指定消息之后的所有消息。</p>
-<p>　　Rax 被用在 Redis Cluster 中用来记录槽位和key的对应关系，这个对应关系的变量名成叫着slots_to_keys。这个raxNode的key是由槽位编号hashslot和key组合而成的。我们知道cluster的槽位数量是16384，它需要2个字节来表示，所以rax节点里存的key就是2个字节的hashslot和对象key拼接起来的字符串。</p>
-
-          
-        
-      
-    </div>
-    
-    
-    
-
-    
-
-    
-
-    
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </div>
-  
-  
-  
-  </article>
-
-
-    
-      
-
-  
-
-  
-  
-  
-
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-  
-  
-  
-  <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="https://skydh.github.io/2018/09/26/redis GeoHash scan/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="董航">
-      <meta itemprop="description" content="">
-      <meta itemprop="image" content="/images/avatar.gif">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="why are you so happy">
-    </span>
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-                
-                <a class="post-title-link" href="/2018/09/26/redis GeoHash scan/" itemprop="url">redis GeoHash 和scan</a></h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">发表于</span>
-              
-              <time title="创建于" itemprop="dateCreated datePublished" datetime="2018-09-26T11:41:19+08:00">
-                2018-09-26
-              </time>
-            
-
-            
-
-            
-          </span>
-
-          
-
-          
-            
-          
-
-          
-          
-
-          
-
-          
-
-          
-
-        </div>
-      </header>
-    
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          
-            <h2 id="GeoHash的产生"><a href="#GeoHash的产生" class="headerlink" title="GeoHash的产生"></a>GeoHash的产生</h2><p>　　我们用x,y坐标轴表示你的位置，当我们查看附近的人这个功能的时候，就要对一定范围的人查询，如果放在数据里面，这么算的。</p>
-<pre><code>select id from positions where x0-r &lt; x &lt; x0+r and y0-r &lt; y &lt; y0+r
-</code></pre><p>　　但是当数据量大，并发量大的时候就会存在性能瓶颈。<br>　　<br>　　业界有个算法将经纬度２维坐标转换为一维整数，当我们想要计算附近的人的时候，我们只要计算这个线上的点就好了。编码后，二维坐标变成了整数，但是同时整数也可以重新还原坐标。GeoHash算法会对整数进行编码，生成一个字符串，然后放到zset里面。这个字符串作为score，value是元素的key.</p>
-<p>　　geoadd company 116.48105 39.996794 juejin<br>　　我们用这个geoadd来加入到zset里面，redis会按照上面的算法将其2个数字转换为一个score，然后存进去。<br>　　 geodist company juejin ireader km<br>　　这个是计算２个地点的距离。<br>   georadiusbymember company ireader 20 km count 3 asc<br>　　这个是查询company这个zset里面 ireader,20km范围内最多3个元素的正排序，包括自身。</p>
-<h2 id="scan"><a href="#scan" class="headerlink" title="scan"></a>scan</h2><p>　　keys codess*<br>　　找出所有以codess开头的key。但是有缺点，数据量太大，会让服务器卡顿，一长串，数据太多。不好看，不好处理。时间复杂度为o(n).<br>　　后面多了个scan:<br>　　１多了limit参数，可控了<br>　　２通过游标分步进行进行。不阻塞线程。<br>　　３．返回的结果可能会有重复，需要客户端去重复，这点非常重要;<br>　　４．遍历的过程中如果有数据修改，改动后的数据能不能遍历到是不确定的;<br>　　５．单次返回的结果是空的并不意味着遍历结束，而要看返回的游标值是否为零;<br>　　scan 参数提供了三个参数，第一个是 cursor 整数值，第二个是 key 的正则模式，第三个是遍历的 limit hint。第一次遍历时，cursor 值为 0，然后将返回结果中第一个整数值作为下一次遍历的 cursor。一直遍历到返回的 cursor 值为 0 时结束。<br> 　limit 不是限定返回结果的数量，而是限定服务器单次遍历的字典槽位数量(约等于)。如果将 limit 设置为 10，你会发现返回结果是空的，但是游标值不为零，意味着遍历还没结束。</p>
-<h2 id="key-字典"><a href="#key-字典" class="headerlink" title="key 字典"></a>key 字典</h2><p>　　redis里面所有的key存在一个很大的字典里面，类似于hashmap,sacn指令返回的游标就是第一维数组的位置索引，我们将这个位置索引称为槽 (slot)。如果不考虑字典的扩容缩容，直接按数组下标挨个遍历就行了。limit 参数就表示需要遍历的槽位数，之所以返回的结果可能多可能少，是因为不是所有的槽位上都会挂接链表，有些槽位可能是空的，还有些槽位上挂接的链表上的元素可能会有多个。每一次遍历都会将 limit 数量的槽位上挂接的所有链表元素进行模式匹配过滤后，一次性返回给客户端。</p>
-
-          
-        
-      
-    </div>
-    
-    
-    
-
-    
-
-    
-
-    
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </div>
-  
-  
-  
-  </article>
-
-
-    
   </section>
 
   
@@ -1627,7 +1561,7 @@ int&lt;var&gt; length;//本元素大小
               
                 <a href="/archives/">
               
-                  <span class="site-state-item-count">105</span>
+                  <span class="site-state-item-count">107</span>
                   <span class="site-state-item-name">日志</span>
                 </a>
               </div>
@@ -1701,6 +1635,26 @@ int&lt;var&gt; length;//本元素大小
 
 
         
+<div class="busuanzi-count">
+  <script async src="https://dn-lbstatics.qbox.me/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+
+  
+    <span class="site-uv">
+      <i class="fa fa-user"></i>
+      <span class="busuanzi-value" id="busuanzi_value_site_uv"></span>
+      
+    </span>
+  
+
+  
+    <span class="site-pv">
+      <i class="fa fa-eye"></i>
+      <span class="busuanzi-value" id="busuanzi_value_site_pv"></span>
+      
+    </span>
+  
+</div>
+
 
 
 

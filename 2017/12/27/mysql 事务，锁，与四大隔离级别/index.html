@@ -81,14 +81,14 @@
 
 <meta name="description" content="概念事务　　原子性：事务必须是一个自动工作的单元，要么全部执行，要么全部不执行.　　一致性：事务结束的时候，所有的内部数据都是正确的。　　隔离性：并发多个事务时，各个事务不干涉内部数据，处理的都是另外一个事务处理之前或之后的数据。　　持久性：事务提交之后，数据是永久性的，不可再回滚。　　在mysql 中start tr">
 <meta property="og:type" content="article">
-<meta property="og:title" content="why are you so happy">
+<meta property="og:title" content="mysql 锁，事务，隔离级别">
 <meta property="og:url" content="https://skydh.github.io/2017/12/27/mysql 事务，锁，与四大隔离级别/index.html">
 <meta property="og:site_name" content="why are you so happy">
 <meta property="og:description" content="概念事务　　原子性：事务必须是一个自动工作的单元，要么全部执行，要么全部不执行.　　一致性：事务结束的时候，所有的内部数据都是正确的。　　隔离性：并发多个事务时，各个事务不干涉内部数据，处理的都是另外一个事务处理之前或之后的数据。　　持久性：事务提交之后，数据是永久性的，不可再回滚。　　在mysql 中start transaction with consistent snapshot，这个是立即">
 <meta property="og:locale" content="zh-Hans">
-<meta property="og:updated_time" content="2019-04-11T12:17:39.809Z">
+<meta property="og:updated_time" content="2019-06-19T03:09:20.631Z">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:title" content="why are you so happy">
+<meta name="twitter:title" content="mysql 锁，事务，隔离级别">
 <meta name="twitter:description" content="概念事务　　原子性：事务必须是一个自动工作的单元，要么全部执行，要么全部不执行.　　一致性：事务结束的时候，所有的内部数据都是正确的。　　隔离性：并发多个事务时，各个事务不干涉内部数据，处理的都是另外一个事务处理之前或之后的数据。　　持久性：事务提交之后，数据是永久性的，不可再回滚。　　在mysql 中start transaction with consistent snapshot，这个是立即">
 
 
@@ -125,7 +125,7 @@
 
 
 
-  <title> | why are you so happy</title>
+  <title>mysql 锁，事务，隔离级别 | why are you so happy</title>
   
 
 
@@ -249,7 +249,7 @@
 
         
         
-          <h1 class="post-title" itemprop="name headline"></h1>
+          <h1 class="post-title" itemprop="name headline">mysql 锁，事务，隔离级别</h1>
         
 
         <div class="post-meta">
@@ -280,6 +280,11 @@
           
           
 
+          
+            <span class="post-meta-divider">|</span>
+            <span class="page-pv"><i class="fa fa-file-o"></i>
+            <span class="busuanzi-value" id="busuanzi_value_page_pv" ></span>
+            </span>
           
 
           
@@ -451,7 +456,7 @@
               
                 <a href="/archives/">
               
-                  <span class="site-state-item-count">105</span>
+                  <span class="site-state-item-count">107</span>
                   <span class="site-state-item-name">日志</span>
                 </a>
               </div>
@@ -541,6 +546,26 @@
 
 
         
+<div class="busuanzi-count">
+  <script async src="https://dn-lbstatics.qbox.me/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+
+  
+    <span class="site-uv">
+      <i class="fa fa-user"></i>
+      <span class="busuanzi-value" id="busuanzi_value_site_uv"></span>
+      
+    </span>
+  
+
+  
+    <span class="site-pv">
+      <i class="fa fa-eye"></i>
+      <span class="busuanzi-value" id="busuanzi_value_site_pv"></span>
+      
+    </span>
+  
+</div>
+
 
 
 

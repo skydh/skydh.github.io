@@ -232,6 +232,259 @@
   
   
   <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="https://skydh.github.io/2019/01/21/工作中发现的代码不良习惯/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="董航">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="why are you so happy">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                <a class="post-title-link" href="/2019/01/21/工作中发现的代码不良习惯/" itemprop="url">工作中发现的代码不良习惯</a></h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2019-01-21T11:36:28+08:00">
+                2019-01-21
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            <h2 id="接口"><a href="#接口" class="headerlink" title="接口"></a>接口</h2><p>　　接口方法定义不用额外写public abstract,默认即可。</p>
+<h2 id="spring注入属性"><a href="#spring注入属性" class="headerlink" title="spring注入属性"></a>spring注入属性</h2><p>　　我们约定了，当需要从配置文件中读取同一批的属性＞３个时，不要使用value来一个个注入，和springboot一样，将其批量放到一个类里面，然后调用。</p>
+<pre><code>@Component
+@ConfigurationProperties(prefix = &quot;rbapi.rabbitmq&quot;)
+@Data
+public class RbapiProperties {
+       private String  queuename;
+       private String  exchangename;
+       private String  routingkey;
+
+}
+</code></pre><p>　　然后在需要用到这些属性的地方，注解注入这个bean即可。
+　　 </p>
+
+          
+        
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="https://skydh.github.io/2019/01/17/吾日三省吾身/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="董航">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="why are you so happy">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                <a class="post-title-link" href="/2019/01/17/吾日三省吾身/" itemprop="url">吾日三省吾身</a></h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2019-01-17T10:15:14+08:00">
+                2019-01-17
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            <h2 id="why"><a href="#why" class="headerlink" title="why?"></a>why?</h2><p>　　很忧伤，同一级别年终考核，我是ｄ，领导开头就是级别不代表绝对公正性，然而我还是ｄ，一共ａｂｃｄｅｆ，６级，我在后面的0.5里面。</p>
+<h2 id="反思"><a href="#反思" class="headerlink" title="反思"></a>反思</h2><p>　　自身能力不够强，需要改进，领导说的理由，你才来没多久，我们部门是非核心部门，能力不够全面，不仅仅是技术能力，还要人际关系处理，揣摩领导意思！学到了。能力要全面，这个确实是的，我觉得还要有，良好的沟通能力，说话节奏控制住。</p>
+
+          
+        
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
     <link itemprop="mainEntityOfPage" href="https://skydh.github.io/2019/01/17/微服务猜想/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -562,7 +815,10 @@
 <h2 id="为何临时表可以重名。"><a href="#为何临时表可以重名。" class="headerlink" title="为何临时表可以重名。"></a>为何临时表可以重名。</h2><p>　　１.临时表和内存表不一样的，临时表不全是内存表。但是临时表可以是内存表。<br>　　特点：<br>　　１．临时表可以和普通表同名。<br>　　２．创表语法为create temporaty table.　<br>　　３．临时表只能被创建他的session访问，对其他线程不可见。<br>　　４．在一个session里面遇到同名的临时表和普通表时，优先访问临时表。<br>　　原因：mysql创建一个frm文件保存表结构，这个文件的后缀是.frm，前缀是#sql{进程id}<em>{线程id}</em>序列号。因此对于mysql来说，其真实存储的文件名是不一样的。<br>　　在mysql内存里面，每个表对应一个key,这个key是唯一的，普通表和数据库+表名相关，临时表则多了一个线程id。因此对于mysql来说，每个session创建的临时表的内存key和物理表名都不一样。<br>　　在实现上，每个线程维护了一个临时表链表，每次session内操作表的时候，先遍历链表，检查是否存在这个名字的临时表，有，则优先执行。session结束，则删除这个临时表。<br>　　主从：<br>　　如果binlog的格式是statment/mixed,是会把临binlog里面。时表记录到binlog里面，但是如果是row则不会记录到里面。</p>
 <h2 id="内存表"><a href="#内存表" class="headerlink" title="内存表"></a>内存表</h2><p>　　内存表的索引结构是hash结构，查询很快，但是加锁时表锁。在高可用也就是主从的情况下可能导致数据丢失，报错。</p>
 <h2 id="主键自增系列"><a href="#主键自增系列" class="headerlink" title="主键自增系列"></a>主键自增系列</h2><p>　　在mysql5.7以及之前的版本，主键自增的值，保存在内存里面，没有持久化，每次重启后，第一次打开表的时候，都会查找出来最大的id,加一作为新的当前自增值。<br>　　在mysql8.0之后，这时就会将自增至的记录在了redolog中。重启时依靠redolog来恢复值。<br>　　策略：<br>　　１:插入数据id为0，null,未指定值，那么mysql就会将这个表当前的AUTO_INCREMENT插入到自增字段里面。<br>　　２．如果插入数据时，指定了id的值，那就用语句里面指定的值。同时有以下策略，如果指定的值，小于自增值，那么自增值不变，如果大于等于自增值，那么就需要更新自增值，使其大于某个值。策略如下：从 auto_increment_offset 开始，以 auto_increment_increment 为步长持续叠加，直到找到第一个大于 X 的值，作为新的自增值。其中auto_increment_offset默认是1，表示增长的幅度.<br>　　唯一键冲突，事务回滚可能导致主键自增不连续。（双一）。还有就是批量插入时，也可能导致主键不连续，因为批量插入时，为了效率，分配1,2,4指数式增长。即使分配的没有用完，也不会回滚。<br>　　mysql这么设计为了性能考虑。获取主键时，肯定要加锁2个session,A得到2，B得到3，B成功，A失败。如此的话，表设计会比较麻烦。<br>　　在mysql 5.1.22有了一个参数innodb_autoinc_lock_mode，默认是1，有三个值<br>　　０：一条语句申请自增锁，整个语句执行完才释放锁。<br>　　１：单插入语句，申请完就释放，多插入语句，整个执行完释放锁（因为不然可能导致主从存在问题，binlog是statement时，场景如下，sessionA 批量插入10,数据，sessionB插入1数据，可能sessionA的10数据不连续，但是对于binlog来说是顺序的，可能出现问题）。<br>　　２．所有都是申请完就释放。<br>　　因此建议使用2+binlogrow<br>　　ps:在未指定，null,0时，采用主键自增。<br>　　主键自增，int最大值为2/32 -1,如果到了最大值，继续插入会报错，主键冲突，因为它不会继续增加了。如果有可能，建议创建bigint unsigned。更大一些。<br>　　在mysql innodb里面，如果没有创建主键，那么创建一个不可见，长度为6个字节的row_id,innodb维护了一个全局的dict_sys_row_id,所有无主键的innodb表，每插入一行数据，都要将dict_sys_row_id值作为要插入数据的row_id,然后将这个值+1。<br>　　这个row_id的大小是6字节，最大值为2/48-1，当达到最大值时，会重新从0开始。可能存在rowid重复，那么就会新的值覆盖旧的值。覆盖数据意味着数据丢失，因此最好每个表都创建一个主键。</p>
+<h2 id="Xid"><a href="#Xid" class="headerlink" title="Xid"></a>Xid</h2><p>　　redolog和binlog配合的时候有个字段叫做Xid，这个字段是用来对应一个个事务的，在mysql里面，维护了一个全局变量global_query_id,每次执行语句时，将它赋值给Query_id,然后给这个变量加1，如果当前语句时这个事务执行的第一条语句，那么mysql还会同时把query_id赋值给这个事务的Xid。这个全局变量是内存变量，重启后就清空，因此，同一个数据库里面，可能binlog里面存在相同的xid，但是重启之后，mysql会创建一个新的binlog文件，因此同一个binlog文件不会存在相同的xid</p>
 <p>　　</p>
+<h2 id="trx-id"><a href="#trx-id" class="headerlink" title="trx_id"></a>trx_id</h2><p>　　这个id大家都很熟了，和事务隔离相关，这个是innodb自己维护的，innodb维护了一个叫做max_try_id全局变量，每次申请值的时候，就会获取这个全局变量的当前值，然后将这个值+1；innodb只会在当前事务设计到修改更新操作时才会分配trx_id。不给只读事务分配trx_id，可以有效减少活跃事务表的大小，同时减少了trx_id的分配，变相提高了trx_id的吞吐量。max_try_id会持久化存储，重启也不会重置为0，因此存在运行时间足够久的事务中存在，后创建的事务id小于之前创建的事务id，造成脏读。当然这个值的最大值是2/48-1。一个mysqlqps50，持续18年就会出现这样的问题。</p>
+<h2 id="thread-id"><a href="#thread-id" class="headerlink" title="thread_id"></a>thread_id</h2><p>　　thread_id是线程id，系统保存了一个全局变量 thread_id_counter,每新建一个连接，就将thread_id_counter赋值给这个线程变量。最大值是2/32-1，但是达到最大值后，就会从0开始，但是在mysql里面不会存在2个相同的值，因为分配thread_id时，做了去重处理，判断这个id是否存在于当前活跃线程id里面。</p>
 
           
         
@@ -1254,289 +1510,6 @@
 
 
     
-      
-
-  
-
-  
-  
-  
-
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-  
-  
-  
-  <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="https://skydh.github.io/2018/12/12/mysql 删除数据为何空间还是不大/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="董航">
-      <meta itemprop="description" content="">
-      <meta itemprop="image" content="/images/avatar.gif">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="why are you so happy">
-    </span>
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-                
-                <a class="post-title-link" href="/2018/12/12/mysql 删除数据为何空间还是不大/" itemprop="url">mysql 删除数据，空间为何没有回收</a></h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">发表于</span>
-              
-              <time title="创建于" itemprop="dateCreated datePublished" datetime="2018-12-12T09:30:49+08:00">
-                2018-12-12
-              </time>
-            
-
-            
-
-            
-          </span>
-
-          
-
-          
-            
-          
-
-          
-          
-
-          
-
-          
-
-          
-
-        </div>
-      </header>
-    
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          
-            <h2 id="表结构数据和表数据"><a href="#表结构数据和表数据" class="headerlink" title="表结构数据和表数据"></a>表结构数据和表数据</h2><p>　　mysql1.8之前，表结构数据和表数据分开放，表结构放在.frm文件里面。在1.8后就放到一起了。</p>
-<h2 id="innodb-file-per-table"><a href="#innodb-file-per-table" class="headerlink" title="innodb_file_per_table"></a>innodb_file_per_table</h2><p>　　这个参数off是表数据放在共享表空间里面。和数据字典放在一起，on则是表数据单独存为一个后缀为。ibd的文件，当你drop的时候，系统也会删除这个文件，mysql5.6之后系统是默认开启这个这个参数的，也就是说，一个表文件会放在一个文件里面。通常是默认开启的。开启利于管理维护，当我们进行drop时就会直接删除这个文件。从而释放空间，否则放在共享表空间里面，即使删除了，也不会释放空间。</p>
-<h2 id="问题来了"><a href="#问题来了" class="headerlink" title="问题来了"></a>问题来了</h2><p>　　因此我们直接删除表的时候会直接删除这个文件，但是删除部分数据的时候，我们会发现表空间没有被回收。</p>
-<h2 id="innodb删除流程"><a href="#innodb删除流程" class="headerlink" title="innodb删除流程"></a>innodb删除流程</h2><p>　　我们知道mysql innodb存储引擎里面存数据的方式是基于b+树。当删除一个记录，找到这个数据的时候，我们是将其标记为删除状态，而不是真的删除。等到有相关数据的时候那就可以直接插入进去。但是删除了一个页，那就和数据不太一样了，数据的复用是有局限性的，但是整个页是没有问题的。换句话说，你删除了某个数据，你填充这个数据只能是相关的，比如，这个数据页里面是6,7,8，你删除了7，你可以插入6到8之间的数据.或者可以在这个数据页里面的，如果是数据页，那么哪里都可以。同时如果相邻2个数据页的数据利用率很低，那么就会触发合并操作。是的另外一个页数据可复用。当我们使用delete指令的时候，我们进行的是逻辑删除，具体的数据页没有被回收，只是将其置换为可用状态，同时插入也是同样的道理。当你插入的数据在一个已经满了的数据页中间的时候，就要进行分页操作，那样也会造成大量空间被置为可用状态，但是不回收。</p>
-<h2 id="重建表"><a href="#重建表" class="headerlink" title="重建表"></a>重建表</h2><p>　　因此我们可以重建表来获取更加紧凑的结构。使用alter table A engine=InnoDB来进行重建操作，在mysql 5.5之前，逻辑是这样的，先构建一个临时表，然后把数据复制进去，在交换表名，删除旧表。显然这样的逻辑是全表锁的。中间是不能插入删除更新数据的，但是在之后就可以了，就是在上面的操作的过程中，增加一个临时文件，用来存储在这中间的ddl操作，最后再将其同步过去。其过程是先加写锁，再加读锁。</p>
-
-          
-        
-      
-    </div>
-    
-    
-    
-
-    
-
-    
-
-    
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </div>
-  
-  
-  
-  </article>
-
-
-    
-      
-
-  
-
-  
-  
-  
-
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-  
-  
-  
-  <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="https://skydh.github.io/2018/11/28/elk 配置指南/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="董航">
-      <meta itemprop="description" content="">
-      <meta itemprop="image" content="/images/avatar.gif">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="why are you so happy">
-    </span>
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-                
-                <a class="post-title-link" href="/2018/11/28/elk 配置指南/" itemprop="url">elk配置指南</a></h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">发表于</span>
-              
-              <time title="创建于" itemprop="dateCreated datePublished" datetime="2018-11-28T17:24:30+08:00">
-                2018-11-28
-              </time>
-            
-
-            
-
-            
-          </span>
-
-          
-
-          
-            
-          
-
-          
-          
-
-          
-
-          
-
-          
-
-        </div>
-      </header>
-    
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          
-            <h2 id="简介"><a href="#简介" class="headerlink" title="简介"></a>简介</h2><p>　　本文的目的是搭建一个具备elk日志监控的springmvc程序，代码里面将日志输出到redis里面，然后logstash配置input和output,将日志信息从redis里面取出来，然后放入Elasticsearch，然后启动kinaba，配置索引对应关系即可。最终可以通过kinaba可以实时看到日志，利于分析查询。</p>
-<h2 id="搭建一个springmvc的程序"><a href="#搭建一个springmvc的程序" class="headerlink" title="搭建一个springmvc的程序"></a>搭建一个springmvc的程序</h2><p>　　这里我直接给出仓库地址：<br><a href="https://github.com/skydh/spring-elk" target="_blank" rel="noopener">点我一下就到了</a><br>　　这里要注意下。我们把日志输出到了对应的redis里面。</p>
-<pre><code>&lt;appender name=&quot;LOGSTASH&quot; class=&quot;com.cwbase.logback.RedisAppender&quot;&gt;
-    &lt;source&gt;SpringELK&lt;/source&gt;
-    &lt;type&gt;dev-type&lt;/type&gt;
-    &lt;tags&gt;dev&lt;/tags&gt;
-    &lt;host&gt;127.0.0.1&lt;/host&gt;
-    &lt;port&gt;6379&lt;/port&gt;
-    &lt;key&gt;logstash&lt;/key&gt;
-&lt;/appender&gt;
-</code></pre><h2 id="软件下载"><a href="#软件下载" class="headerlink" title="软件下载"></a>软件下载</h2><p>　　１，下载6.3.0版本的kinaba，Elasticsearch，logstash。<br>　　２，下载redis。</p>
-<h2 id="主要配置修改"><a href="#主要配置修改" class="headerlink" title="主要配置修改"></a>主要配置修改</h2><p>　　１．Elasticsearch 在其配置文件Elasticsearch.yml</p>
-<pre><code>http.cors.enabled: true
-http.cors.allow-origin: &quot;*&quot;
-</code></pre><p>　　２．logstash 新建配置文件。</p>
-<pre><code>
-
-input {
-    redis {
-        data_type => "list"
-        key => "logstash"
-        host => "127.0.0.1"  #redis-server
-        port => 6379
-        batch_count => "1"
-        threads => 5
-    }
-}
-
-output {
-  elasticsearch {
-    hosts => ["http://localhost:9200"]
-   index => "%{logstash}-%{+YYYY.MM.dd}"
-    #user => "elastic"
-    #password => "changeme"
-  }
-}
-
-</code></pre>
-
-<h2 id="启动顺序"><a href="#启动顺序" class="headerlink" title="启动顺序"></a>启动顺序</h2><p>　　１．启动redis。<br>　　２．在tomcat里面启动spring mvc代码<br>　　３．启动Elasticsearch。浏览器进入 <a href="http://localhost:9200/" target="_blank" rel="noopener">http://localhost:9200/</a><br>　　４．进入到logstash的bin 目录，输入logstash -f ..config/redis.conf来根据配置文件来启动logstash。浏览器进入<a href="http://localhost:9600/" target="_blank" rel="noopener">http://localhost:9600/</a><br>　　５.直接启动kinaba 浏览器进入<a href="http://localhost:5601，然后配置es的索引，最终在discover里面成功看到了我们的日志。" target="_blank" rel="noopener">http://localhost:5601，然后配置es的索引，最终在discover里面成功看到了我们的日志。</a></p>
-
-          
-        
-      
-    </div>
-    
-    
-    
-
-    
-
-    
-
-    
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </div>
-  
-  
-  
-  </article>
-
-
-    
   </section>
 
   
@@ -1587,7 +1560,7 @@ output {
               
                 <a href="/archives/">
               
-                  <span class="site-state-item-count">105</span>
+                  <span class="site-state-item-count">107</span>
                   <span class="site-state-item-name">日志</span>
                 </a>
               </div>
@@ -1661,6 +1634,26 @@ output {
 
 
         
+<div class="busuanzi-count">
+  <script async src="https://dn-lbstatics.qbox.me/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+
+  
+    <span class="site-uv">
+      <i class="fa fa-user"></i>
+      <span class="busuanzi-value" id="busuanzi_value_site_uv"></span>
+      
+    </span>
+  
+
+  
+    <span class="site-pv">
+      <i class="fa fa-eye"></i>
+      <span class="busuanzi-value" id="busuanzi_value_site_pv"></span>
+      
+    </span>
+  
+</div>
+
 
 
 

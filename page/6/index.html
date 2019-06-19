@@ -232,6 +232,387 @@
   
   
   <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="https://skydh.github.io/2018/07/10/hashmap/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="董航">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="why are you so happy">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                <a class="post-title-link" href="/2018/07/10/hashmap/" itemprop="url">hashmap</a></h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2018-07-10T10:44:58+08:00">
+                2018-07-10
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            <h2 id="基本信息"><a href="#基本信息" class="headerlink" title="基本信息"></a>基本信息</h2><p>　　HashMap可以接受null键值和值，而Hashtable则不能；HashMap是非synchronized;HashMap很快；以及HashMap储存的是键值对。</p>
+<h2 id="注意点"><a href="#注意点" class="headerlink" title="注意点"></a>注意点</h2><p>　　１．当两个对象的hashcode相同会发生什么？<br>　　因为hashcode相同，所以它们的bucket位置相同，‘碰撞’会发生。因为HashMap使用链表存储对象，这个Entry(包含有键值对的Map.Entry对象)会存储在链表中。<br>　　２．如果两个键的hashcode相同，你如何获取值对象？<br>　　找到bucket位置之后，会调用keys.equals()方法去找到链表中正确的节点，最终找到要找的值对象。<br>　　３．如果HashMap的大小超过了负载因子(load factor)定义的容量，怎么办？<br>　　默认的负载因子大小为0.75，也就是说，当一个map填满了75%的bucket时候，和其它集合类(如ArrayList等)一样，将会创建原来HashMap大小的两倍的bucket数组，来重新调整map的大小，并将原来的对象放入新的bucket数组中。这个过程叫作rehashing，因为它调用hash方法找到新的bucket位置。<br>　　４．为什么String, Interger这样的wrapper类适合作为键？<br>　　Ｓtring, Interger这样的wrapper类作为HashMap的键是再适合不过了，而且String最为常用。因为String是不可变的，也是final的，而且已经重写了equals()和hashCode()方法了。其他的wrapper类也有这个特点。不可变性是必要的，因为为了要计算hashCode()，就要防止键值改变，如果键值在放入时和获取时返回不同的hashcode的话，那么就不能从HashMap中找到你想要的对象。不可变性还有其他的优点如线程安全。如果你可以仅仅通过将某个field声明成final就能保证hashCode是不变的，那么请这么做吧。因为获取对象的时候要用到equals()和hashCode()方法，那么键对象正确的重写这两个方法是非常重要的。如果两个不相等的对象返回不同的hashcode的话，那么碰撞的几率就会小些，这样就能提高HashMap的性能。</p>
+<h2 id="简单实现一个hashmap"><a href="#简单实现一个hashmap" class="headerlink" title="简单实现一个hashmap"></a>简单实现一个hashmap</h2><pre><code>package base_struct.hashmap;
+
+/**
+     * 基于链表数组的实现
+     * @author dh
+     * @param &lt;V&gt;
+     * @param &lt;K&gt;
+     *
+*/
+public class DhHashMap&lt;K, V&gt; {
+private class Entry&lt;K,V&gt;{
+    int hash;
+    K key;
+    V value;
+    Entry&lt;K,V&gt; next;
+    Entry(int hash, K key, V value, Entry&lt;K, V&gt; next) {
+        this.hash = hash;
+        this.key = key;
+        this.value = value;
+        this.next = next;
+    }
+}
+private static final int DEFAULT_CAPACITY = 1 &lt;&lt; 4;
+
+private Entry&lt;K, V&gt;[] table;
+
+private int capacity;
+
+private int size;
+public DhHashMap(int capacity) {
+    if (capacity &lt; 0) {
+        throw new IllegalArgumentException();
+    } else {
+        table = new Entry[capacity];
+        size = 0;
+        this.capacity = capacity;
+    }
+}
+public int size() {
+    return size;
+}
+public boolean isEmpty() {
+    return size == 0 ? true : false;}
+
+/**
+ * 这个hash算法采用位运算提高了效率,由于采用位运算，因此默认长度最好是2的幂最好
+ * @param key
+ * @return
+ */
+private int hash(Object key) {
+    return (key == null) ? 0 : key.hashCode()&amp;(capacity-1);
+}
+
+/**
+ * 按照以前邏輯，默认key一样则只修改value,
+ * @param key
+ * @param value
+ */
+public void put(K key, V value) {
+    if (key == null) {
+        throw new IllegalArgumentException();
+    }
+    int hash = hash(key);
+    Entry&lt;K, V&gt; nEntry = new Entry&lt;K, V&gt;(hash, key, value, null);
+    Entry&lt;K, V&gt; entry = table[hash];
+    while (entry != null) {
+        if (entry.key.equals(key)) {
+            entry.value = value;
+            return;
+        }
+        entry = entry.next;
+    }
+    nEntry.next = table[hash];
+    table[hash] = nEntry;
+    size++;
+}
+/**
+ * h很简单的逻辑，找到确认的hash值后，一个个遍历
+ * @param key
+ * @return
+ */
+public V get(K key) {
+    if (key == null) {
+        throw new IllegalArgumentException();
+    }
+    int hash = hash(key);
+    Entry&lt;K, V&gt; entry = table[hash];
+    while (entry != null) {
+        if (entry.key.equals(key)) {
+            return entry.value;
+        }
+        entry = entry.next;
+    }
+    return null;
+}
+}
+</code></pre><h2 id="gt-gt-gt-操作符"><a href="#gt-gt-gt-操作符" class="headerlink" title="&gt;&gt;&gt;操作符"></a>&gt;&gt;&gt;操作符</h2><p>　这个操作符的作用是将当前整数，转换为２进制后，右移。比如<br>２&gt;&gt;&gt;1,就是10右移1位剩下了一个1，就是1。<br>　　案例如下：<br>    public static void main(String [] args)<br>    {<br>        System.out.println(4&gt;&gt;&gt; 1);<br>    }<br>　　结果是２．<br>    public static void main(String [] args)<br>    {<br>        System.out.println(4&gt;&gt;&gt; 2);<br>    }<br>　　结果是１</p>
+<h2 id="1-8增加了对其优化。"><a href="#1-8增加了对其优化。" class="headerlink" title="1.8增加了对其优化。"></a>1.8增加了对其优化。</h2><p>　　其原因是hash的的平均分布可能有问题，有可能导致链表过长，从而使得效率变的很低。因此加了一个新的结构红黑树，如果说1.8之前的hashMap是数组+链表，那么现在版本的就是数组+链表+红黑树。当链表长度<8时，默认以前的方式加元素，也就是数组+链表，当链表>8时则将链表转换为红黑树。（红黑树是一个自平衡的二叉查找树，其插入删除时为了保持红黑树的平衡特征，回自旋来保证，可以将其理解为一个具有自平衡的查找2叉树）</8时，默认以前的方式加元素，也就是数组+链表，当链表></p>
+<h2 id="hashmap线程不安全"><a href="#hashmap线程不安全" class="headerlink" title="hashmap线程不安全"></a>hashmap线程不安全</h2><p>　　hashmap没有做加锁处理，举个简单例子，2个线程插入一个数据，其hashcode都是一样的，在极端情况下，可能导致插入少了一个数据。</p>
+
+          
+        
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="https://skydh.github.io/2018/07/09/CountDownLatch/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="董航">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="why are you so happy">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                <a class="post-title-link" href="/2018/07/09/CountDownLatch/" itemprop="url">CountDownLatch 用法</a></h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2018-07-09T15:13:26+08:00">
+                2018-07-09
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            <pre><code>package test;
+import java.util.concurrent.CountDownLatch;
+public class Test {
+ public static void main(String[] args) {   
+     final CountDownLatch latch = new CountDownLatch(2)；
+     new Thread(){
+         public void run() {
+             try {
+                 System.out.println(&quot;子线程&quot;+Thread.currentThread().getName()+&quot;正在执行&quot;);
+                Thread.sleep(3000);
+                System.out.println(&quot;子线程&quot;+Thread.currentThread().getName()+&quot;执行完毕&quot;);
+                latch.countDown();
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+         };
+     }.start();
+
+     new Thread(){
+         public void run() {
+             try {
+                 System.out.println(&quot;子线程&quot;+Thread.currentThread().getName()+&quot;正在执行&quot;);
+                 Thread.sleep(3000);
+                 System.out.println(&quot;子线程&quot;+Thread.currentThread().getName()+&quot;执行完毕&quot;);
+                 latch.countDown();
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+         };
+     }.start();
+
+     try {
+         System.out.println(&quot;等待2个子线程执行完毕...&quot;);
+        latch.await();
+        System.out.println(&quot;2个子线程已经执行完毕&quot;);
+        System.out.println(&quot;继续执行主线程&quot;);
+            } catch (InterruptedException e) {
+        e.printStackTrace();
+        }
+     }
+}
+</code></pre><p>　　对于这个类来说，这就是个计数器，设置了一个值，这个值不为０则调用其await()方法时，其线程将持续等待。这个功能的作用就是在一个方法里面可以异步的启动一个线程让异步从而加快运行。</p>
+
+          
+        
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
     <link itemprop="mainEntityOfPage" href="https://skydh.github.io/2018/07/02/spring mvc流程分析 /">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -1347,255 +1728,6 @@ public JsonBackData queryDetail(@RequestParam String id) {
 
 
     
-      
-
-  
-
-  
-  
-  
-
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-  
-  
-  
-  <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="https://skydh.github.io/2018/05/15/java和线程/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="董航">
-      <meta itemprop="description" content="">
-      <meta itemprop="image" content="/images/avatar.gif">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="why are you so happy">
-    </span>
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-                
-                <a class="post-title-link" href="/2018/05/15/java和线程/" itemprop="url">java和线程</a></h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">发表于</span>
-              
-              <time title="创建于" itemprop="dateCreated datePublished" datetime="2018-05-15T20:06:48+08:00">
-                2018-05-15
-              </time>
-            
-
-            
-
-            
-          </span>
-
-          
-
-          
-            
-          
-
-          
-          
-
-          
-
-          
-
-          
-
-        </div>
-      </header>
-    
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          
-            <h2 id="线程的实现"><a href="#线程的实现" class="headerlink" title="线程的实现"></a>线程的实现</h2><p>　　线程是CPU调度的基本单位，正如前面说的，一个进程的线程可以共享进程资源。也有自己独立的工作区间。在java中，Thread类的关键方法全是Native的。下面是实现线程的3种方式。</p>
-<h3 id="使用内核线程实现"><a href="#使用内核线程实现" class="headerlink" title="使用内核线程实现"></a>使用内核线程实现</h3><p>　　内核线程就是直接由操作系统内核支持的线程，这种线程由内核来完成线程切换，内核通过线程进行调度，负责将线程任务映射到各个处理器上，每个线程可以视为内核的一个分身，这样操作系统就有能力同时处理很多事情，支持多线程的内核叫多线程内核。但是程序一般不会直接使用内核线程，而是使用内核线程的高级接口，轻量级进程，每个轻量级进程都有一个内核线程支持，也是一对一的关系。但是这个轻量级线程是基于内核线程实现的，因此很浪费系统资源。</p>
-<h3 id="用户线程实现"><a href="#用户线程实现" class="headerlink" title="用户线程实现"></a>用户线程实现</h3><p>　　一个线程不是内核线程那就是用户线程。狭义上来说就是建立在用户空间的线程库上，用户线程的建立，同步，销毁，调度完全在用户态执行。不需要内核的帮助，由于不需要切换到内核态，因此操作是快速且低消耗的，可以支持规模大的线程熟练。缺点是，没有内核的支援，线程的创建，切换，等都需要用户程序自己解决。</p>
-<h3 id="用户线程-轻量级线程混合"><a href="#用户线程-轻量级线程混合" class="headerlink" title="用户线程+轻量级线程混合"></a>用户线程+轻量级线程混合</h3><p>　　把上面的２个一起使用，线程还是创建在用户空间里面，而轻量级线程则作为用户线程和内核线程的桥梁。这样就可以使用内核提供的线程调度功能</p>
-<h3 id="java线程的实现"><a href="#java线程的实现" class="headerlink" title="java线程的实现"></a>java线程的实现</h3><p>　　JDK1.2之前是用户线程实现的，1.2中线程魔性替换为基于操作系统原生线程模型。至于现在是什么模型，看虚拟机自身的实现。</p>
-<h3 id="java线程的调度"><a href="#java线程的调度" class="headerlink" title="java线程的调度"></a>java线程的调度</h3><p>　　线程调度分为２种方式：协同式线程调度，抢占式线程调度。<br>　　协同式线程调度：线程的执行时间由线程本身来控制，线程自身的工作执行完了之后，要主动通知系统切换到另外一个线程上，优势是实现简单，而且线程执行完还要通知其他线程，切换操作对开发来说是可知的，所以没有线程同步问题，但是线程执行时间不可控制，如果一个线程代码有问题就会导致这个系统奔溃。<br>　　抢占式调度：每个线程由系统来分配执行时间，线程的切换不由本身决定，在这种调度下，线程的执行时间是系统控制的，不会存在一个线程一直阻塞而导致整个系统奔溃。<br>　　在java中，虽然线程调度是系统自动完成的，但是我们可以设置线程的优先级，但是这种优先级是不靠谱的，因为java线程的实现最终是通过映射到系统线程来实现的。优先级可能对应不上去。</p>
-<h3 id="java线程状态转换"><a href="#java线程状态转换" class="headerlink" title="java线程状态转换"></a>java线程状态转换</h3><p>　　请看前面章节有介绍</p>
-
-          
-        
-      
-    </div>
-    
-    
-    
-
-    
-
-    
-
-    
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </div>
-  
-  
-  
-  </article>
-
-
-    
-      
-
-  
-
-  
-  
-  
-
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-  
-  
-  
-  <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="https://skydh.github.io/2018/05/15/java内存模型/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="董航">
-      <meta itemprop="description" content="">
-      <meta itemprop="image" content="/images/avatar.gif">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="why are you so happy">
-    </span>
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-                
-                <a class="post-title-link" href="/2018/05/15/java内存模型/" itemprop="url">java内存模型</a></h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">发表于</span>
-              
-              <time title="创建于" itemprop="dateCreated datePublished" datetime="2018-05-15T14:18:33+08:00">
-                2018-05-15
-              </time>
-            
-
-            
-
-            
-          </span>
-
-          
-
-          
-            
-          
-
-          
-          
-
-          
-
-          
-
-          
-
-        </div>
-      </header>
-    
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          
-            <h2 id="主内存和工作内存"><a href="#主内存和工作内存" class="headerlink" title="主内存和工作内存"></a>主内存和工作内存</h2><p>　　主内存是所有变量存储的地方，工作内存是当前线程的中要使用变量的主内存的副本，线程对变量的操作就在工作内存里面完成，不能直接修改主内存的变量，不同线程不能直接读写对方工作内存的变量，之间交互必须通过主内存来完成。</p>
-<h2 id="内存之间的交互操作"><a href="#内存之间的交互操作" class="headerlink" title="内存之间的交互操作"></a>内存之间的交互操作</h2><p>　　虚拟机定义了８种原子操作来完成工作内存和主内存的交互。<br>　　lock:将主内存中一个变量标识为一个线程独占的状态。<br>　　unlock:将主内存中被锁住的变量解锁。<br>　　read:将一个变量值从主内存中传输到线程的工作内存中去。<br>　　load:将read操作读取的值放入到工作内存的变量副本中去。<br>　　use:将工作内存中一个变量的值传递给执行引擎，当虚拟机需要使用时就会执行这个操作。<br>　　assign：将执行引擎的值赋值给工作内存的变量。<br>　　store:将工作内存中的值传到主内存中去。<br>　　write:将从工作内存中得到的值放入到主内存的变量中。<br>　　同时有以下规则：<br>　　１．不许read和load，store和write分开执行。<br>　　２．不许线程丢弃assign操作，也就是在工作内存中改变了值，必须同步到主内存中去。<br>　　３．不许一个线程在没有发生assign的操作下就将数据从工作内存同步到主内存中去。<br>　　４．一个变量在同一时刻只许一个线程对其lock.<br>　　５．如果对一个变量lock，就会清空工作内存中该变量的值，在执行引擎使用这个变量前，需要重洗load和assign初始化这个变量的值。<br>　　６．不许对其他线程或者没有lock的线程执行unlock。<br>　　７.对变量执行unlock之前要先将变量同步到主内存中去。</p>
-<h2 id="volatile关键字"><a href="#volatile关键字" class="headerlink" title="volatile关键字"></a>volatile关键字</h2><p>　　可见性：当一个线程修改这个变量的值后，新值对其他变量是可见的。<br>　　禁止指令重排序：指令重排序是在单线程下优化字节码的执行顺序，但是在多线程下可能出现问题，可以看本博客的单例模式下2重锁问题的解释为何要加volatile关键字。这个关键字通过内存屏障来禁止指令重排序。对于加锁和这个关键字，能用这个关键字的就不加锁，看你的业务场景吧。<br>　　这个关键字通过以下规则保证可见性和禁止重排序。<br>　　１．每次使用volatile变量时必须先从主内存中刷新读取最新的值。<br>　　２．每次修改volatile变量时，必须立刻同步数据到主内存。</p>
-<p>　　</p>
-
-          
-        
-      
-    </div>
-    
-    
-    
-
-    
-
-    
-
-    
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </div>
-  
-  
-  
-  </article>
-
-
-    
   </section>
 
   
@@ -1646,7 +1778,7 @@ public JsonBackData queryDetail(@RequestParam String id) {
               
                 <a href="/archives/">
               
-                  <span class="site-state-item-count">105</span>
+                  <span class="site-state-item-count">107</span>
                   <span class="site-state-item-name">日志</span>
                 </a>
               </div>
@@ -1720,6 +1852,26 @@ public JsonBackData queryDetail(@RequestParam String id) {
 
 
         
+<div class="busuanzi-count">
+  <script async src="https://dn-lbstatics.qbox.me/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+
+  
+    <span class="site-uv">
+      <i class="fa fa-user"></i>
+      <span class="busuanzi-value" id="busuanzi_value_site_uv"></span>
+      
+    </span>
+  
+
+  
+    <span class="site-pv">
+      <i class="fa fa-eye"></i>
+      <span class="busuanzi-value" id="busuanzi_value_site_pv"></span>
+      
+    </span>
+  
+</div>
+
 
 
 

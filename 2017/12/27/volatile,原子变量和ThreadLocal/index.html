@@ -86,7 +86,7 @@
 <meta property="og:site_name" content="why are you so happy">
 <meta property="og:description" content="概念多线程中的变量　　首先我介绍的是volatile关键字，其次是原子变量，最后则是ThreadLocal线程本地变量 java基本内存模型　　用到volatile这个关键字以及后面的原子变量之前，我们必须先了解一下什么是java基本内存模型。　　先明确几个概念：　　主内存：主内存就是所有线程共享的内存，对于一个共享变量来说，主内存存放其真实数据（本尊数据）　　线程工作内存：线程对数据操作时，都会">
 <meta property="og:locale" content="zh-Hans">
-<meta property="og:updated_time" content="2019-05-13T12:13:42.403Z">
+<meta property="og:updated_time" content="2019-06-12T02:19:11.708Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="volatile,原子变量和ThreadLocal">
 <meta name="twitter:description" content="概念多线程中的变量　　首先我介绍的是volatile关键字，其次是原子变量，最后则是ThreadLocal线程本地变量 java基本内存模型　　用到volatile这个关键字以及后面的原子变量之前，我们必须先了解一下什么是java基本内存模型。　　先明确几个概念：　　主内存：主内存就是所有线程共享的内存，对于一个共享变量来说，主内存存放其真实数据（本尊数据）　　线程工作内存：线程对数据操作时，都会">
@@ -281,6 +281,11 @@
           
 
           
+            <span class="post-meta-divider">|</span>
+            <span class="page-pv"><i class="fa fa-file-o"></i>
+            <span class="busuanzi-value" id="busuanzi_value_page_pv" ></span>
+            </span>
+          
 
           
 
@@ -342,11 +347,11 @@
 <pre><code>ThreadLocalMap getMap(Thread t) {
     return t.threadLocals;
 }
-</code></pre><p>　　ThreadLocal的getMap方法：</p>
+</code></pre><p>　　ThreadLocal的createMap方法：</p>
 <pre><code>void createMap(Thread t, T firstValue) {
     t.threadLocals = new ThreadLocalMap(this, firstValue);
 }
-</code></pre><p>　　</p>
+</code></pre><p>　　我们发现值是存在当前线程的的一个内部类里面，存的就是当前threadlocal和值的键值对。</p>
 <p>　　ThreadLocalMap的构造方法：</p>
 <pre><code>ThreadLocalMap(ThreadLocal&lt;?&gt; firstKey, Object firstValue) {
         //创建一个数组，数组对象为entity,初始化大小为16
@@ -532,7 +537,7 @@
               
                 <a href="/archives/">
               
-                  <span class="site-state-item-count">105</span>
+                  <span class="site-state-item-count">107</span>
                   <span class="site-state-item-name">日志</span>
                 </a>
               </div>
@@ -622,6 +627,26 @@
 
 
         
+<div class="busuanzi-count">
+  <script async src="https://dn-lbstatics.qbox.me/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+
+  
+    <span class="site-uv">
+      <i class="fa fa-user"></i>
+      <span class="busuanzi-value" id="busuanzi_value_site_uv"></span>
+      
+    </span>
+  
+
+  
+    <span class="site-pv">
+      <i class="fa fa-eye"></i>
+      <span class="busuanzi-value" id="busuanzi_value_site_pv"></span>
+      
+    </span>
+  
+</div>
+
 
 
 

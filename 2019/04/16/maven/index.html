@@ -86,7 +86,7 @@
 <meta property="og:site_name" content="why are you so happy">
 <meta property="og:description" content="约定配置　　maven约定大于配置：　　${basedir}    存放pom.xml和所有的子目录　　${basedir}/src/main/java    项目的java源代码　　${basedir}/src/main/resources    项目的资源，比如property文件，springmvc.xml　　${basedir}/src/test/java    项目的测试类，比如说Jun">
 <meta property="og:locale" content="zh-Hans">
-<meta property="og:updated_time" content="2019-05-07T06:43:45.052Z">
+<meta property="og:updated_time" content="2019-06-18T08:02:08.793Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="maven">
 <meta name="twitter:description" content="约定配置　　maven约定大于配置：　　${basedir}    存放pom.xml和所有的子目录　　${basedir}/src/main/java    项目的java源代码　　${basedir}/src/main/resources    项目的资源，比如property文件，springmvc.xml　　${basedir}/src/test/java    项目的测试类，比如说Jun">
@@ -281,6 +281,11 @@
           
 
           
+            <span class="post-meta-divider">|</span>
+            <span class="page-pv"><i class="fa fa-file-o"></i>
+            <span class="busuanzi-value" id="busuanzi_value_page_pv" ></span>
+            </span>
+          
 
           
 
@@ -303,7 +308,26 @@
 <h2 id="pom"><a href="#pom" class="headerlink" title="pom"></a>pom</h2><h3 id="pom基本标签简介"><a href="#pom基本标签简介" class="headerlink" title="pom基本标签简介"></a>pom基本标签简介</h3><p>　　groupId：公司或者组织的唯一标志，并且配置时生成的路径也是由此生成， 如<br>　　<groupid>com.companyname.project-group</groupid>，maven会将该项目打成的jar包放本地路径：/com/companyname/project-group<br>　　artifactId：项目的唯一ID，一个groupId下面可能多个项目，就是靠artifactId来区分的。<br>　　version：版本号。<br>　　project：工程的根标签。<br>　　modelVersion：模型版本，基本都是4.0</p>
 <h3 id="父pom"><a href="#父pom" class="headerlink" title="父pom"></a>父pom</h3><p>　　所有的pom都要继承一个父pom。父pom声明了一些可被继承的默认设置。maven使用effective pom(父pom+自己工程pom的配置)来执行目标，目的是为了尽可能减少配置。
 　　</p>
-<h2 id="maven生命周期"><a href="#maven生命周期" class="headerlink" title="maven生命周期"></a>maven生命周期</h2><p>　　validate：验证项目是否正确且所有必须信息是可用的。<br>　　compile：执行编译    源代码编译在此阶段完成。<br>　　Test：使用适当的单元测试框架（例如JUnit）运行测试<br>　　package：打包创建JAR/WAR包如在 pom.xml 中定义提及的包<br>　　verify：    检查    对集成测试的结果进行检查，以保证质量达标<br>　　install：安装安装打包的项目到本地仓库，以供其他项目使用<br>　　deploy：    部署    拷贝最终的工程包到远程仓库中，以共享给其他开发人员和工程</p>
+<h2 id="maven生命周期"><a href="#maven生命周期" class="headerlink" title="maven生命周期"></a>maven生命周期</h2><p>　　validate：验证项目是否正确且所有必须信息是可用的。</p>
+<p>　　compile：执行编译    源代码编译在此阶段完成。</p>
+<p>　　Test：使用适当的单元测试框架（例如JUnit）运行测试</p>
+<p>　　package：打包创建JAR/WAR包如在 pom.xml 中定义提及的包</p>
+<p>　　verify：    检查    对集成测试的结果进行检查，以保证质量达标</p>
+<p>　　install：安装安装打包的项目到本地仓库，以供其他项目使用</p>
+<p>　　deploy：    部署    拷贝最终的工程包到远程仓库中，以共享给其他开发人员和工程</p>
+<h2 id="仓库"><a href="#仓库" class="headerlink" title="仓库"></a>仓库</h2><p>　　Maven根据坐标寻找构件的时候，它先会查看本地仓库，如果本地仓库存在构件，则直接使用；如果没有，则从远程仓库查找，找到后，下载到本地。</p>
+<p>　　分类</p>
+<p>　　本地仓库</p>
+<p>　　远程仓库：</p>
+<p>　　中央仓库：默认的远程仓库。maven的setting文件有个父pom,在你安装的maven的lib下的 maven-model-builde-xxx.jar解压，然后不断点击进入，找到super pom里面配置了一个id为central的中央仓库。</p>
+<p>　　私服：私服是一种特殊的远程Maven仓库，它是架设在局域网内的仓库服务，私服一般被配置为互联网远程仓库的镜像，供局域网内的Maven用户使用。当Maven需要下载构件的时候，先向私服请求，如果私服上不存在该构件，则从外部的远程仓库下载，同时缓存在私服之上，然后为Maven下载请求提供下载服务，另外，对于自定义或第三方的jar可以从本地上传到私服，供局域网内其他maven用户使用。<br>　　profile。</p>
+<p>　　普通远程仓库。</p>
+<p>　　每个用户只能有一个本地仓库，和多个远程仓库。</p>
+<p>　　maven镜像：</p>
+<p>　　当远程仓库被镜像匹配到，那么获取jar将从镜像仓库获取，而不是我们配置的repository仓库。</p>
+<p>　　ps：这个镜像，个人觉得，类似于拦截器，用于拦截父pom，以及你项目配置的仓库。拦截后使用，setting文件里面的pom文件。没有匹配到远程仓库的毫无意义。匹配到的则是替换。因此远程仓库和镜像是一个级别。</p>
+<p>　　获取jar的优先级。</p>
+<p>　　本地仓库 &gt; 私服 （profile）&gt; 远程仓库（repository）和 镜像 （mirror） &gt; 中央仓库 （central）</p>
 
       
     </div>
@@ -417,7 +441,7 @@
               
                 <a href="/archives/">
               
-                  <span class="site-state-item-count">105</span>
+                  <span class="site-state-item-count">107</span>
                   <span class="site-state-item-name">日志</span>
                 </a>
               </div>
@@ -456,7 +480,7 @@
             
 
             
-              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#约定配置"><span class="nav-number">1.</span> <span class="nav-text">约定配置</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#pom"><span class="nav-number">2.</span> <span class="nav-text">pom</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#pom基本标签简介"><span class="nav-number">2.1.</span> <span class="nav-text">pom基本标签简介</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#父pom"><span class="nav-number">2.2.</span> <span class="nav-text">父pom</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#maven生命周期"><span class="nav-number">3.</span> <span class="nav-text">maven生命周期</span></a></li></ol></div>
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#约定配置"><span class="nav-number">1.</span> <span class="nav-text">约定配置</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#pom"><span class="nav-number">2.</span> <span class="nav-text">pom</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#pom基本标签简介"><span class="nav-number">2.1.</span> <span class="nav-text">pom基本标签简介</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#父pom"><span class="nav-number">2.2.</span> <span class="nav-text">父pom</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#maven生命周期"><span class="nav-number">3.</span> <span class="nav-text">maven生命周期</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#仓库"><span class="nav-number">4.</span> <span class="nav-text">仓库</span></a></li></ol></div>
             
 
           </div>
@@ -507,6 +531,26 @@
 
 
         
+<div class="busuanzi-count">
+  <script async src="https://dn-lbstatics.qbox.me/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+
+  
+    <span class="site-uv">
+      <i class="fa fa-user"></i>
+      <span class="busuanzi-value" id="busuanzi_value_site_uv"></span>
+      
+    </span>
+  
+
+  
+    <span class="site-pv">
+      <i class="fa fa-eye"></i>
+      <span class="busuanzi-value" id="busuanzi_value_site_pv"></span>
+      
+    </span>
+  
+</div>
+
 
 
 

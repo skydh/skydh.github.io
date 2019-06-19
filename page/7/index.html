@@ -232,6 +232,255 @@
   
   
   <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="https://skydh.github.io/2018/05/15/java和线程/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="董航">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="why are you so happy">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                <a class="post-title-link" href="/2018/05/15/java和线程/" itemprop="url">java和线程</a></h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2018-05-15T20:06:48+08:00">
+                2018-05-15
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            <h2 id="线程的实现"><a href="#线程的实现" class="headerlink" title="线程的实现"></a>线程的实现</h2><p>　　线程是CPU调度的基本单位，正如前面说的，一个进程的线程可以共享进程资源。也有自己独立的工作区间。在java中，Thread类的关键方法全是Native的。下面是实现线程的3种方式。</p>
+<h3 id="使用内核线程实现"><a href="#使用内核线程实现" class="headerlink" title="使用内核线程实现"></a>使用内核线程实现</h3><p>　　内核线程就是直接由操作系统内核支持的线程，这种线程由内核来完成线程切换，内核通过线程进行调度，负责将线程任务映射到各个处理器上，每个线程可以视为内核的一个分身，这样操作系统就有能力同时处理很多事情，支持多线程的内核叫多线程内核。但是程序一般不会直接使用内核线程，而是使用内核线程的高级接口，轻量级进程，每个轻量级进程都有一个内核线程支持，也是一对一的关系。但是这个轻量级线程是基于内核线程实现的，因此很浪费系统资源。</p>
+<h3 id="用户线程实现"><a href="#用户线程实现" class="headerlink" title="用户线程实现"></a>用户线程实现</h3><p>　　一个线程不是内核线程那就是用户线程。狭义上来说就是建立在用户空间的线程库上，用户线程的建立，同步，销毁，调度完全在用户态执行。不需要内核的帮助，由于不需要切换到内核态，因此操作是快速且低消耗的，可以支持规模大的线程熟练。缺点是，没有内核的支援，线程的创建，切换，等都需要用户程序自己解决。</p>
+<h3 id="用户线程-轻量级线程混合"><a href="#用户线程-轻量级线程混合" class="headerlink" title="用户线程+轻量级线程混合"></a>用户线程+轻量级线程混合</h3><p>　　把上面的２个一起使用，线程还是创建在用户空间里面，而轻量级线程则作为用户线程和内核线程的桥梁。这样就可以使用内核提供的线程调度功能</p>
+<h3 id="java线程的实现"><a href="#java线程的实现" class="headerlink" title="java线程的实现"></a>java线程的实现</h3><p>　　JDK1.2之前是用户线程实现的，1.2中线程魔性替换为基于操作系统原生线程模型。至于现在是什么模型，看虚拟机自身的实现。</p>
+<h3 id="java线程的调度"><a href="#java线程的调度" class="headerlink" title="java线程的调度"></a>java线程的调度</h3><p>　　线程调度分为２种方式：协同式线程调度，抢占式线程调度。<br>　　协同式线程调度：线程的执行时间由线程本身来控制，线程自身的工作执行完了之后，要主动通知系统切换到另外一个线程上，优势是实现简单，而且线程执行完还要通知其他线程，切换操作对开发来说是可知的，所以没有线程同步问题，但是线程执行时间不可控制，如果一个线程代码有问题就会导致这个系统奔溃。<br>　　抢占式调度：每个线程由系统来分配执行时间，线程的切换不由本身决定，在这种调度下，线程的执行时间是系统控制的，不会存在一个线程一直阻塞而导致整个系统奔溃。<br>　　在java中，虽然线程调度是系统自动完成的，但是我们可以设置线程的优先级，但是这种优先级是不靠谱的，因为java线程的实现最终是通过映射到系统线程来实现的。优先级可能对应不上去。</p>
+<h3 id="java线程状态转换"><a href="#java线程状态转换" class="headerlink" title="java线程状态转换"></a>java线程状态转换</h3><p>　　请看前面章节有介绍</p>
+
+          
+        
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="https://skydh.github.io/2018/05/15/java内存模型/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="董航">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="why are you so happy">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                <a class="post-title-link" href="/2018/05/15/java内存模型/" itemprop="url">java内存模型</a></h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2018-05-15T14:18:33+08:00">
+                2018-05-15
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            <h2 id="主内存和工作内存"><a href="#主内存和工作内存" class="headerlink" title="主内存和工作内存"></a>主内存和工作内存</h2><p>　　主内存是所有变量存储的地方，工作内存是当前线程的中要使用变量的主内存的副本，线程对变量的操作就在工作内存里面完成，不能直接修改主内存的变量，不同线程不能直接读写对方工作内存的变量，之间交互必须通过主内存来完成。</p>
+<h2 id="内存之间的交互操作"><a href="#内存之间的交互操作" class="headerlink" title="内存之间的交互操作"></a>内存之间的交互操作</h2><p>　　虚拟机定义了８种原子操作来完成工作内存和主内存的交互。<br>　　lock:将主内存中一个变量标识为一个线程独占的状态。<br>　　unlock:将主内存中被锁住的变量解锁。<br>　　read:将一个变量值从主内存中传输到线程的工作内存中去。<br>　　load:将read操作读取的值放入到工作内存的变量副本中去。<br>　　use:将工作内存中一个变量的值传递给执行引擎，当虚拟机需要使用时就会执行这个操作。<br>　　assign：将执行引擎的值赋值给工作内存的变量。<br>　　store:将工作内存中的值传到主内存中去。<br>　　write:将从工作内存中得到的值放入到主内存的变量中。<br>　　同时有以下规则：<br>　　１．不许read和load，store和write分开执行。<br>　　２．不许线程丢弃assign操作，也就是在工作内存中改变了值，必须同步到主内存中去。<br>　　３．不许一个线程在没有发生assign的操作下就将数据从工作内存同步到主内存中去。<br>　　４．一个变量在同一时刻只许一个线程对其lock.<br>　　５．如果对一个变量lock，就会清空工作内存中该变量的值，在执行引擎使用这个变量前，需要重洗load和assign初始化这个变量的值。<br>　　６．不许对其他线程或者没有lock的线程执行unlock。<br>　　７.对变量执行unlock之前要先将变量同步到主内存中去。</p>
+<h2 id="volatile关键字"><a href="#volatile关键字" class="headerlink" title="volatile关键字"></a>volatile关键字</h2><p>　　可见性：当一个线程修改这个变量的值后，新值对其他变量是可见的。<br>　　禁止指令重排序：指令重排序是在单线程下优化字节码的执行顺序，但是在多线程下可能出现问题，可以看本博客的单例模式下2重锁问题的解释为何要加volatile关键字。这个关键字通过内存屏障来禁止指令重排序。对于加锁和这个关键字，能用这个关键字的就不加锁，看你的业务场景吧。<br>　　这个关键字通过以下规则保证可见性和禁止重排序。<br>　　１．每次使用volatile变量时必须先从主内存中刷新读取最新的值。<br>　　２．每次修改volatile变量时，必须立刻同步数据到主内存。</p>
+<p>　　</p>
+
+          
+        
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
     <link itemprop="mainEntityOfPage" href="https://skydh.github.io/2018/05/14/虚拟机字节码执行引擎/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -1283,317 +1532,6 @@ public class DemoTest {
 
 
     
-      
-
-  
-
-  
-  
-  
-
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-  
-  
-  
-  <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="https://skydh.github.io/2018/04/22/java String +操作导致的问题/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="董航">
-      <meta itemprop="description" content="">
-      <meta itemprop="image" content="/images/avatar.gif">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="why are you so happy">
-    </span>
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-                
-                <a class="post-title-link" href="/2018/04/22/java String +操作导致的问题/" itemprop="url">java String 的+操作导致的问题</a></h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">发表于</span>
-              
-              <time title="创建于" itemprop="dateCreated datePublished" datetime="2018-04-22T18:24:32+08:00">
-                2018-04-22
-              </time>
-            
-
-            
-
-            
-          </span>
-
-          
-
-          
-            
-          
-
-          
-          
-
-          
-
-          
-
-          
-
-        </div>
-      </header>
-    
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          
-            <h2 id="定义"><a href="#定义" class="headerlink" title="定义"></a>定义</h2><p>　　在java中 null既不是对象，也不是一种类型，而是一种特殊的值。在这里我要说的是一种特殊情况哈。</p>
-<h2 id="编译器自带的优化"><a href="#编译器自带的优化" class="headerlink" title="编译器自带的优化"></a>编译器自带的优化</h2><p>　　总所周知，我们的java代码中String对象那如果直接用+连连接字符串可能导致效率变低。但是现在在java1.5以后编译器对其自动做了优化，如果你有时间打开反编译的源码看看，你会发现，String a=”b”+”cc”;这个代码在编译器中优化了，优化方式为在这行代码的开始的地方声明一个StringBuilder,然后不断append后面的字符串。因此对于java来说你用StringBuilder和String的+其实效率都是一样的，但是为了保证一个良好的习惯还是用StringBuilder好一点。</p>
-<h2 id="导致的问题"><a href="#导致的问题" class="headerlink" title="+导致的问题"></a>+导致的问题</h2><p>　　我们用””+null，这个空对象，会生成一个null字符串。这是为什么呢？<br>　　前文已经提到，我们已经用编译器做了优化，String对象的+被优化为了StringBuilder的append，然而我们看看append的源码，你就会发现为何是null字符串了。</p>
-<pre>
-
-         public StringBuilder append(Object obj) {
-            return append(String.valueOf(obj));
-        }
-
-        @Override
-        public StringBuilder append(String str) {
-            super.append(str);
-            return this;
-        }
-
-</pre>
-　　查看源码发现，append方法向上调用了其抽象类AbstractStringBuilder方法的append方法，在看
-<pre>
-
-     public AbstractStringBuilder append(String str) {
-            if (str == null)
-                return appendNull();
-            int len = str.length();
-            ensureCapacityInternal(count + len);
-            str.getChars(0, len, value, count);
-            count += len;
-            return this;
-        }
-     private AbstractStringBuilder appendNull() {
-            int c = count;
-            ensureCapacityInternal(c + 4);
-            final char[] value = this.value;
-            value[c++] = 'n';
-            value[c++] = 'u';
-            value[c++] = 'l';
-            value[c++] = 'l';
-            count = c;
-            return this;
-        }
-
-</pre>
-　　你看真相大白了，在这个抽象类的这个append方法中，先进行了判断，如果为null,则是把这个null作为一个字符串加上去。因此解决了上面我们遇到的问题，为何String对象+null,会条件一个null字符串。
-　　测试案例如下：
-<pre>
-
-    public static void main(String[] args) {
-            String a="dh";
-            String b=a+null;
-            System.out.println(b);
-
-        }
-</pre>
-　　结果如下：
-<pre>
-    dhnull
-</pre>
-
-
-
-          
-        
-      
-    </div>
-    
-    
-    
-
-    
-
-    
-
-    
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </div>
-  
-  
-  
-  </article>
-
-
-    
-      
-
-  
-
-  
-  
-  
-
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-  
-  
-  
-  <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="https://skydh.github.io/2018/04/22/java为何方法可以多态而属性没有多态/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="董航">
-      <meta itemprop="description" content="">
-      <meta itemprop="image" content="/images/avatar.gif">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="why are you so happy">
-    </span>
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-                
-                <a class="post-title-link" href="/2018/04/22/java为何方法可以多态而属性没有多态/" itemprop="url">java属性为什么没多态，而是方法多态</a></h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">发表于</span>
-              
-              <time title="创建于" itemprop="dateCreated datePublished" datetime="2018-04-22T18:07:37+08:00">
-                2018-04-22
-              </time>
-            
-
-            
-
-            
-          </span>
-
-          
-
-          
-            
-          
-
-          
-          
-
-          
-
-          
-
-          
-
-        </div>
-      </header>
-    
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          
-            <h2 id="定义"><a href="#定义" class="headerlink" title="定义"></a>定义</h2><p>　　java多肽的特性：方法具有多态性，属性却没有。</p>
-<h2 id="准备"><a href="#准备" class="headerlink" title="准备"></a>准备</h2><p>　　基类：</p>
-<p><img src="https://raw.githubusercontent.com/skydh/picture/master/%E5%A4%9A%E6%80%81/base.png" alt="aaa"></p>
-<p>　　子类：</p>
-<p><img src="https://raw.githubusercontent.com/skydh/picture/master/%E5%A4%9A%E6%80%81/child.png" alt="aaa"></p>
-<p>　　测试类：</p>
-<p><img src="https://raw.githubusercontent.com/skydh/picture/master/%E5%A4%9A%E6%80%81/test%20(1" alt="aaa">.png)</p>
-<p>　　结果：</p>
-<p><img src="https://raw.githubusercontent.com/skydh/picture/master/%E5%A4%9A%E6%80%81/result.png" alt="aaa"></p>
-<h2 id="分析如下"><a href="#分析如下" class="headerlink" title="分析如下"></a>分析如下</h2><p>  父类  a=new 子类，实际对象时子类。由于向上转型，我们可以用父类在编译期间代替子类，使得编译不报错，当然你调用的方法必须是父类所拥有的，不然编译监察报错，</p>
-<p>  其实new 子类（）,那么实际类型就是子类，运行期间就是子类的方法和属性啊，而一个父类有多个子类，那么就造成多态的生成和原理，那么问题来了，为什么</p>
-<p>  我们的属性不具有多态特性。我们直接调用属性值，那么出来的就是父类的属性值，为什么呢？</p>
-<p>  这个就是静态绑定和动态绑定的问题了</p>
-<p>  编译期间的绑定就是静态绑定，运行期间的绑定就是动态绑定，java为了实现多态的这个机制，选择让方法在运行期间绑定对应对象所对应实际类型，选择让属性在编译期间绑定其所对应实际类型。那么这个问题不就解决了？</p>
-<p>  编译期间时，肯定是父类的类型，如果直接调用属性，故名思议则是父类所对应的属性值。而方法则是在运行期间绑定的，这个对象实际上实际是子类对象，那么运行期间就肯定是子类类型，故方法是子类的方法，而在方法中调用的值是子类的值就更简单了，我们调用子类的值时，实际上简写了this.属性，而this却是指当前对象。当前对象只有被实例化才会有对象，那么肯定是运行期间，故在方法里面调用属性值是子类的值。</p>
-
-          
-        
-      
-    </div>
-    
-    
-    
-
-    
-
-    
-
-    
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </div>
-  
-  
-  
-  </article>
-
-
-    
   </section>
 
   
@@ -1644,7 +1582,7 @@ public class DemoTest {
               
                 <a href="/archives/">
               
-                  <span class="site-state-item-count">105</span>
+                  <span class="site-state-item-count">107</span>
                   <span class="site-state-item-name">日志</span>
                 </a>
               </div>
@@ -1718,6 +1656,26 @@ public class DemoTest {
 
 
         
+<div class="busuanzi-count">
+  <script async src="https://dn-lbstatics.qbox.me/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+
+  
+    <span class="site-uv">
+      <i class="fa fa-user"></i>
+      <span class="busuanzi-value" id="busuanzi_value_site_uv"></span>
+      
+    </span>
+  
+
+  
+    <span class="site-pv">
+      <i class="fa fa-eye"></i>
+      <span class="busuanzi-value" id="busuanzi_value_site_pv"></span>
+      
+    </span>
+  
+</div>
+
 
 
 
