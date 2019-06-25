@@ -232,6 +232,481 @@
   
   
   <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="https://skydh.github.io/2019/06/25/kafka基础-消费者/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="董航">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="why are you so happy">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                <a class="post-title-link" href="/2019/06/25/kafka基础-消费者/" itemprop="url">kafak入门002 -消费者</a></h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2019-06-25T16:24:53+08:00">
+                2019-06-25
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            
+          
+        
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="https://skydh.github.io/2019/06/24/kafka集群配置/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="董航">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="why are you so happy">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                <a class="post-title-link" href="/2019/06/24/kafka集群配置/" itemprop="url">kafak入门004 -集群配置</a></h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2019-06-24T14:20:55+08:00">
+                2019-06-24
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            <h2 id="配置存储的参数"><a href="#配置存储的参数" class="headerlink" title="配置存储的参数"></a>配置存储的参数</h2><p>　　log.dirs：这是非常重要的参数，指定了Broker需要使用的若干个文件目录路径。这个参数是没有默认值的，必须由你亲自指定。样例：比如/home/kafka1,/home/kafka2,/home/kafka3这样。如果有条件的话你最好保证这些目录挂载到不同的物理磁盘上。多个磁盘可以提高读写性能，实现故障转移。<br>　　log.dir：能表示单个路径，它是补充上一个参数用的。一般不需要设置</p>
+<h2 id="zookeeper参数"><a href="#zookeeper参数" class="headerlink" title="zookeeper参数"></a>zookeeper参数</h2><p>　　zookeeper.connect：比如我可以指定它的值为zk1:2181,zk2:2181,zk3:2181。2181是ZooKeeper的默认端口如果多个kafka集群共用一个zookeeper集群时，如何配置处理。在最后的一个zookeeper后加个别名例如：zk1:2181,zk2:2181,zk3:2181/kafka</p>
+<h2 id="broker通信相关"><a href="#broker通信相关" class="headerlink" title="broker通信相关"></a>broker通信相关</h2><p>　　listeners这个配置的，前文由于写demo介绍过。</p>
+<p>　　listeners：学名叫监听器，其实就是告诉外部连接者要通过什么协议访问指定主机名和端口开放的Kafka服务。<br>　　advertised.listeners：和listeners相比多了个advertised。Advertised的含义表示宣称的、公布的，就是说这组监听器是Broker用于对外发布的。<br>　　host.name/port：列出这两个参数就是想说你把它们忘掉吧，压根不要为它们指定值，毕竟都是过期的参数了。</p>
+<h2 id="topic"><a href="#topic" class="headerlink" title="topic"></a>topic</h2><p>　　auto.create.topics.enable：是否允许自动创建Topic。一般为false，让运维管控。免得出现一堆奇葩命名的<br>　　unclean.leader.election.enable：是否允许Unclean Leader选举。每个分区存在多个副本，有的副本落后lead太多数据，但是lead和其他不落后的都挂了，如果为true，那么这个分区可能数据丢失，因为会选举落后很多的副本作为lead<br>　　auto.leader.rebalance.enable：是否允许定期进行Leader选举。它的值为true表示允许Kafka定期地对一些Topic分区进行Leader重选举，这个是强行选举，因此需要设置为false.</p>
+<h2 id="数据留存"><a href="#数据留存" class="headerlink" title="数据留存"></a>数据留存</h2><p>　　log.retention.{hour|minutes|ms}：这是个“三兄弟”，都是控制一条消息数据被保存多长时间。从优先级上来说ms设置最高、minutes次之、hour最低。<br>　　log.retention.bytes：这是指定Broker为消息保存的总磁盘容量大小。<br>　　message.max.bytes：控制Broker能够接收的最大消息大小</p>
+
+          
+        
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="https://skydh.github.io/2019/06/20/kafka基础-生产者/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="董航">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="why are you so happy">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                <a class="post-title-link" href="/2019/06/20/kafka基础-生产者/" itemprop="url">kafak入门002 -生产者</a></h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2019-06-20T10:30:55+08:00">
+                2019-06-20
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            <h2 id="消息格式"><a href="#消息格式" class="headerlink" title="消息格式"></a>消息格式</h2><pre><code>public class ProducerRecord&lt;K, V&gt; {
+    private final String topic;
+    private final Integer partition;
+    private final Headers headers;
+    private final K key;
+    private final V value;
+    private final Long timestamp;
+}
+</code></pre><p>　　topic是消息主题，partition是分区号，headers一般没用，key是消息的键，同一个key的消息会被发到一个分区里面。</p>
+<h2 id="参数配置"><a href="#参数配置" class="headerlink" title="参数配置"></a>参数配置</h2><p>　　bootstrap.servers：生成者客户端连接kafka集群所需的broker地址清单，一般写2个，host:port,host1:port1,不要全部写出来，因为生产者会从给定的broke里面查出其他broker的信息，写2个是为了防止一个宕机了，生产者依旧可以连接到kafak。</p>
+<p>　　key.deserializer，value.deserializer：broker服务器接受的消息是字节数组存在的，这个就是指定，key和value的序列化操作的序列化器。</p>
+<p>　　client.id:对应kafka客户端的id，也就是客户端的名字，如果不设置则是默认取名，produce-i</p>
+<p>　　retries：对于可重试异常，可重试次数配置，默认是０，ps(KafkaProducer一般有2种异常，一个是可重试异常，比如NetworkException,表示网络异常，可以通过重试解决，一个是不可重试异常，比如RecordToolargeException,表示消息太大，不会重试。)，重试次数超过了配置的值。也会抛出异常。<br>　　retry.backoff.ms：这个主要是和上面的retries相对应的。是重试时间间隔。默认是100</p>
+<p>　　props.put(ProducerConfig.ACKS_CONFIG, “0”);<br>　　当为0时，发到服务端就不管了。<br>　　当为1时，只要leader副本写入，就返回，但是可能leader奔溃了，但是其他副本没有拉取到消息。造成数据丢失<br>　　当为-1或者all时，必须所有副本都要同步完才返回。</p>
+<p>　　max.request.size:默认值是1m,主要要和broke端配置的message.max.bytes相对应。</p>
+<p>　　max.in.flight.requests.per.connection为1时，可以保证顺序消费。<br>　　compression.type:默认为none，可以配置为gzip,lz4等压缩方式，可以减小网络io但是会造成时延。</p>
+<p>　　connection.max.idle.ms:默认9分钟，多久后关闭限制的连接。</p>
+<p>　　Linger.ms:这个参数是指ProducerBatch（看后文）等待更多ProducerRecord加入的时间，默认为0，生产者会在这个ProducerBatch被填满，或者等待时间超过Linger.ms时发送出去</p>
+<p>　　send.buffer.bytes：socket接收消息缓冲区大小。默认32k。<br>　　<br>　　send.buffer.bytes：socket发送消息缓冲区大小。默认128k。</p>
+<p>　　request.timeout.ms:等待请求响应最长时间，默认30000ms，超时后可以选择重试。但是注意了，这个值要比broker端的replica.lag.time.max.ms的值要大，可以减小因为客户端重试导致的消息重复。</p>
+<h2 id="代码拼写"><a href="#代码拼写" class="headerlink" title="代码拼写"></a>代码拼写</h2><p>　　props.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, StringDeserializer.class.getName());<br>　　我们写这些参数时可能某个字符写错了。因此可以用ProducerConfig来替代。<br>　　KafkaProducer是线程安全的。</p>
+<h2 id="发送消息"><a href="#发送消息" class="headerlink" title="发送消息"></a>发送消息</h2><p>　　３个模式<br>　　１．发后即忘<br>　　这个模式不关心消息是否正确到达，大多数也没什么问题，但是存在不可重试异常时，会造成消息的丢失，这个方式效率最高，可靠性最低。实现方式为</p>
+<pre><code>try {
+        producer.send(record);
+    } catch (Exception e) {
+        e.printStackTrace();
+    }
+</code></pre><p>　　２．同步<br>　　这个模式是直接链式调用send方法返回对象的get方法来阻塞等待kafka的响应。直到消息发送成功，或者发生异常被捕捉处理。实现方式如下：</p>
+<pre><code>try {
+        Future&lt;RecordMetadata&gt; future=producer.send(record);
+        RecordMetadata recordMetadata=future.get();
+    } catch (Exception e) {
+        e.printStackTrace();
+    }
+</code></pre><p>　　３．异步<br>　　这个解决了上面的性能问题，上面的future也是异步的逻辑处理。但是写法没有下面的方便：</p>
+<pre><code>producer.send(record, new Callback() {
+            @Override
+            public void onCompletion(RecordMetadata metadata, Exception exception) {
+                if (exception != null)
+                    exception.printStackTrace();
+            }
+        });
+</code></pre><p>　　这样就不会阻塞程序的执行了，等道kafka响应时就会做出相关操作处理。前面说过kafka通过偏移量保证顺序消费，响应如果是同一个分区，那么也是顺序的。</p>
+<p>　　close方法，会阻塞之前所有请求后再关闭KafkaProducer。来进行资源回收。</p>
+<h2 id="序列化"><a href="#序列化" class="headerlink" title="序列化"></a>序列化</h2><p>　　除了上面说的StringDeserializer这个string类型的序列化器之外，还有Integer,Long,Double,Bytes,都实现了序列化接口，主要有2个方法，解析下：<br>    @Override<br>    public void configure(Map<string, ?=""> configs, boolean isKey) {<br>        String propertyName = isKey ? “key.serializer.encoding” : “value.serializer.encoding”;<br>        Object encodingValue = configs.get(propertyName);<br>        if (encodingValue == null)<br>            encodingValue = configs.get(“serializer.encoding”);<br>        if (encodingValue instanceof String)<br>            encoding = (String) encodingValue;<br>    }<br>　　这个方法是KafkaProducer创建实例时调用的，来确定编码类型。</string,></p>
+<pre><code>@Override
+public byte[] serialize(String topic, String data) {
+    try {
+        if (data == null)
+            return null;
+        else
+            return data.getBytes(encoding);
+    } catch (UnsupportedEncodingException e) {
+        throw new SerializationException(&quot;Error when serializing string to byte[] due to unsupported encoding &quot; + encoding);
+    }
+}
+</code></pre><p>　　很简单，序列化。<br>　　我们也可以自定义序列化器。只需要实现org.apache.kafka.common.serialization.Serializer<t>接口即可。然后替换下即可。</t></p>
+<h2 id="分区器"><a href="#分区器" class="headerlink" title="分区器"></a>分区器</h2><p>　　生成者send数据到broke时，需要经过拦截器，序列化器，和分区器等，在消息对象的partition不为空时，则不走分区器，为空则需要走分区器，分区器根据key来进行分区。<br>　　默认的分区器是DefaultPartitioner，实现了Partitioner这个接口。在这个类里面主要方法。</p>
+<pre><code>public int partition(String topic, Object key, byte[] keyBytes, Object value, byte[] valueBytes, Cluster cluster) {
+    List&lt;PartitionInfo&gt; partitions = cluster.partitionsForTopic(topic);
+    int numPartitions = partitions.size();
+    if (keyBytes == null) {
+        int nextValue = nextValue(topic);
+        List&lt;PartitionInfo&gt; availablePartitions = cluster.availablePartitionsForTopic(topic);
+        if (availablePartitions.size() &gt; 0) {
+            int part = Utils.toPositive(nextValue) % availablePartitions.size();
+            return availablePartitions.get(part).partition();
+        } else {
+            // no partitions are available, give a non-available partition
+            return Utils.toPositive(nextValue) % numPartitions;
+        }
+    } else {
+        // hash the keyBytes to choose a partition
+        return Utils.toPositive(Utils.murmur2(keyBytes)) % numPartitions;
+    }
+}
+</code></pre><p>　　<br>　　代码很简单，key不为空时根据hash算法，算出key对应的编号。为空时则是获取这个topic的所有分区轮训。中间用到了currenthashmap<br>　　我们也可以通过实现Partitioner这个接口来自定义分区器，只需要早参数配置时加入</p>
+<pre><code>props.put(ProducerConfig.PARTITIONER_CLASS_CONFIG, DefaultPartitioner.class.getName());
+</code></pre><p>　　来设定你的分区器。</p>
+<h2 id="生产者拦截器"><a href="#生产者拦截器" class="headerlink" title="生产者拦截器"></a>生产者拦截器</h2><p>　　需要实现ProducerInterceptor这个接口即可。KafkaProducer的send方法</p>
+<pre><code>@Override
+public Future&lt;RecordMetadata&gt; send(ProducerRecord&lt;K, V&gt; record, Callback callback) {
+    // intercept the record, which can be potentially modified; this method does not throw exceptions
+    ProducerRecord&lt;K, V&gt; interceptedRecord = this.interceptors.onSend(record);
+    return doSend(interceptedRecord, callback);
+}
+</code></pre><p>　　会在第一时间先调用拦截器的send方法来对消息进行相应的处理。</p>
+<p>　　同时会在消息应答或者消息发送失败时，调用拦截器onAcknowledgement方法。这个调用在Callback之前发生。</p>
+<pre><code>public class ProduceInterceptor implements ProducerInterceptor&lt;String, String&gt; {
+@Override
+public void configure(Map&lt;String, ?&gt; configs) {
+    // TODO Auto-generated method stub
+}
+@Override
+public ProducerRecord&lt;String, String&gt; onSend(ProducerRecord&lt;String, String&gt; record) {
+    return record;
+}
+@Override
+public void onAcknowledgement(RecordMetadata metadata, Exception exception) {
+    // TODO Auto-generated method stub
+
+}
+@Override
+public void close() {
+    // TODO Auto-generated method stub
+}
+}
+</code></pre><p>　　简单如上实现即可。　<br>　　然后在prop上注册即可。</p>
+<pre><code>props.put(ProducerConfig.INTERCEPTOR_CLASSES_CONFIG, ProduceInterceptor.class.getName());
+</code></pre><p>　　同理，这边也支持职责链模式。也就是多个拦截器。</p>
+<pre><code>props.put(ProducerConfig.INTERCEPTOR_CLASSES_CONFIG, ProduceInterceptor.class.getName()+&quot;,&quot;+ProduceInterceptor.class.getName());
+</code></pre><h2 id="整体流程"><a href="#整体流程" class="headerlink" title="整体流程"></a>整体流程</h2><p>　　１.主线程生产者调用send()方法后，先经过拦截器，序列化器和分区器后，在缓存到RecordAccumulator（消息累加器）中。<br>　　２.Send线程负责从RecordAccumulator获取消息，批量发送，减少网络传输的资源消耗。<br>　　３．有2个生产者参数，buffer.memory 这个是RecordAccumulator的大小默认是32m， 如果1的速度大于2，那么可能空间不足，因此1要么阻塞，要么抛出异常，取决于max.block.ms的配置，这个值默认是60s。<br>　　４.RecordAccumulator内部为每个分区维护了一个双向队列。ConcurrentMap<topicpartition, deque<producerbatch="">&gt; batches，写入消息是追加到尾部，send读消息时从头部读取，这里面的ProducerBatch是一个或者多个ProducerRecord的合成。<br>　　５.当一个消息ProducerRecord被append到RecordAccumulator时会根据一个叫做batch.size默认参数是16kb进行区分，首先判断尾部的ProducerBatch是否可以继续添加ProducerRecord，不可以的话，判断是否大于batch.size,如果不大于则按照16kb的大小创建ProducerBatch，因为RecordAccumulator内部有个BufferPool这个是缓存了固定大小的ByteBuffer对象。<br>　　６.InFlightRequests,在send线程发送到kafka之前，会把对象保存到这个对象里面Map<string, deque<networkclient.inflightrequest="">&gt;，这个里面request保存了发出去了，但是没有收到回复的响应请求。<br>　　７.元数据的更新<br>　　当客户端没有所需要的元数据时，就会向其中一个node发送请求，获取元数据（元数据包括：集群有哪些主题，哪些分区，lead副本在哪个节点上等）</string,></topicpartition,></p>
+
+          
+        
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
     <link itemprop="mainEntityOfPage" href="https://skydh.github.io/2019/06/19/springboot单应用脚手架/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -440,6 +915,21 @@
         
           
             <h2 id="优势"><a href="#优势" class="headerlink" title="优势"></a>优势</h2><p>　　１．HikariCp优化创建了concurrentBag，增加了并发读写的效率，减少了其他没必要的操作，是的集合性能提高了很多。<br>　　２．使用threadlocal缓存连接以及大量使用cas的机制，避免lock.<br>　　３．使用Javassist来实现动态代理类，实现了字节码的优化。<br>　　４．心跳语句由select 1 变成了ping。<br>　　５．大量的方法内联。效率提高了很多。<br>　　６．代码量少。<br>　　７．FastStatementList代替了Arraylist，去掉了调用get时的范围检查，增加性能。</p>
+<h2 id="声明定义"><a href="#声明定义" class="headerlink" title="声明定义"></a>声明定义</h2><p>　　HikariDataSource：数据源，我们通过其对象来获取连接。</p>
+<p>　　HikariPool：连接池，对资源进行管理。</p>
+<p>　　ConcurrentBag：作为物理连接的共享资源站。</p>
+<p>　　PoolEntry：物理连接的封装。</p>
+<p> 　　获取连接流程getConnection：<br>　　１．HikariDataSource对象调用getConnection来获取连接<br>　　２．调用HikariPool的getConnection获取连接。<br>　　３．调用ConcurrentBag取出一个PoolEntry．然后这个PoolEntry通过createProxyConnection掉用工厂类生成HikariProxyConnection返回。</p>
+<p>　　连接关闭closeConnection()：<br>　　closeConnectionExecutor关闭连接后，会调用fillPool()方法对连接池进行连接填充。同时HikariPool提供evictConnection(Connection)方法对物理连接进行手动关闭。<br>　　连接关闭close():<br>　　HikariProxyConnection调用close方法时调用了PooleEntry的recycle方法，之后通过HikariPool调用了ConcurrentBag的requite放回。（poolEntry通过borrow从bag中取出，再通过requite放回。资源成功回收）。</p>
+<p>　　创建连接createPoolEntry：<br>　　HikariCP中通过独立的线程池addConnectionExecutor进行新连接的生成，连接生成方法为PoolEntryCreator。物理链接的生成只由PoolBase的newConnection()实现，之后封装成PoolEntry，通过Bag的add方法加入ConcurrentBag。当ConcurrentBag存在等待线程，或者有连接被关闭时，会触发IBagItemListener的addBagItem(wait)方法，调用PoolEntryCreator进行新连接的生成。</p>
+<h2 id="连接池到底该多大"><a href="#连接池到底该多大" class="headerlink" title="连接池到底该多大"></a>连接池到底该多大</h2><p>　　２个参数：</p>
+<p>　　maxPoolSize：最大连接数。</p>
+<p>　　minIdle：最小连接数。作者建议这个值和maxPoolSize保持一致作为一个固定大小的连接池。</p>
+<p>　　连接池大家是综合每个应用系统的业务逻辑特性，加上应用硬件配置，加上应用部署数量，再加上db硬件配置和最大允许连接数测试出来的。很难有一个简单公式进行计算。连接数及超时时间设置不正确经常会带来较大的性能问题，并影响整个服务能力的稳定性。具体设置多少，要看系统的访问量，可通过反复测试，找到最佳点。压测很重要。</p>
+<p>　　我们进行判断时，可以从以下几个层面分析：<br>　　系统中多少个线程在进行与数据库有关的工作？多少个线程在等待获取数据库连接？获取数据库连接需要的平均时长是多少？如果平均时长较长，如大于 100ms，则可能说明配置的数据库连接数不足，或存在连接泄漏问题。
+　　</p>
+<p>　　
+　　</p>
 
           
         
@@ -564,15 +1054,81 @@
 <h4 id="存储系统"><a href="#存储系统" class="headerlink" title="存储系统"></a>存储系统</h4><p>　　消息是持久化存储的。</p>
 <h3 id="流式平台处理"><a href="#流式平台处理" class="headerlink" title="流式平台处理"></a>流式平台处理</h3><p>　　kafka不仅为多个流行的流式处理框架提供了可靠的数据来源，还提供了完整的流式处理类库。</p>
 <h2 id="概念"><a href="#概念" class="headerlink" title="概念"></a>概念</h2><h3 id="producer"><a href="#producer" class="headerlink" title="producer"></a>producer</h3><p>　　生产者：生产消息发送给kakfa实例。</p>
-<h3 id="Consumer"><a href="#Consumer" class="headerlink" title="Consumer"></a>Consumer</h3><p>　　消费者：负责消费kafka上面的消息。消费者端采用pull的方式拉去消息，保存了数据的偏移量，当消费者宕机后重新上线，可以更具之前保存的消费位置重新进行消费。即点对点模型（Peer to Peer，P2P）和发布订阅模型。这里面的点对点指的是同一条消息只能被下游的一个消费者消费，其他消费者则不能染指。在Kafka中实现这种P2P模型的方法就是引入了消费者组（Consumer Group）。所谓的消费者组，指的是多个消费者实例共同组成一个组来消费一组主题。这组主题中的每个分区都只会被组内的一个消费者实例消费，其他消费者实例不能消费它。消费者组里面的所有消费者实例不仅“瓜分”订阅主题的数据，而且更酷的是它们还能彼此协助。假设组内某个实例挂掉了，Kafka能够自动检测到，然后把这个Failed实例之前负责的分区转移给其他活着的消费者。这个过程就是Kafka中大名鼎鼎的“重平衡”（Rebalance）。</p>
+<h3 id="Consumer"><a href="#Consumer" class="headerlink" title="Consumer"></a>Consumer</h3><p>　　消费者：负责消费kafka上面的消息。消费者端采用pull的方式拉去消息，保存了数据的偏移量，当消费者宕机后重新上线，可以更具之前保存的消费位置重新进行消费。<br>　　即点对点模型（Peer to Peer，P2P）和发布订阅模型。这里面的点对点指的是同一条消息只能被下游的一个消费者消费，其他消费者则不能染指。在Kafka中实现这种P2P模型的方法就是引入了消费者组（Consumer Group）。所谓的消费者组，指的是多个消费者实例共同组成一个组来消费一组主题。这组主题中的每个分区都只会被组内的一个消费者实例消费，其他消费者实例不能消费它。消费者组里面的所有消费者实例不仅“瓜分”订阅主题的数据，而且更酷的是它们还能彼此协助。假设组内某个实例挂掉了，Kafka能够自动检测到，然后把这个Failed实例之前负责的分区转移给其他活着的消费者。这个过程就是Kafka中大名鼎鼎的“重平衡”（Rebalance）。</p>
 <h3 id="Broker"><a href="#Broker" class="headerlink" title="Broker"></a>Broker</h3><p>　　一个kafka实例，一个kafka集群里面有多个Broker，也就是多个kafka实例</p>
-<h3 id="ZooKeeper"><a href="#ZooKeeper" class="headerlink" title="ZooKeeper"></a>ZooKeeper</h3><p>　　Zk负责管理kafka集群的的元数据，控制器的选举等。</p>
+<h3 id="ZooKeeper"><a href="#ZooKeeper" class="headerlink" title="ZooKeeper"></a>ZooKeeper</h3><p>　　Zk负责管理kafka集群的的元数据，控制器的选举等。它是一个分布式协调框架，负责协调管理并保存Kafka集群的所有元数据信息，比如集群都有哪些Broker在运行、创建了哪些Topic，每个Topic都有多少分区以及这些分区的Leader副本都在哪些机器上等信息。</p>
 <h3 id="主题"><a href="#主题" class="headerlink" title="主题"></a>主题</h3><p>　　kafka的消息是根据主题来分类。生产者发送的消息都要指定一个主题，消费者消费消息也是订阅主题。</p>
 <h3 id="分区"><a href="#分区" class="headerlink" title="分区"></a>分区</h3><p>　　主题是逻辑上的概念，一个主题可能是多个分区组成的，一个分区只可能会是一个主题的。分区可以看做是一个可追加的日志文件，每个消息在分区里面都有一个偏移量，kafka通过这个偏移量保证顺序消费，但是kafka保证的是分区顺序消费，而不是主题顺序消费。</p>
 <h3 id="副本"><a href="#副本" class="headerlink" title="副本"></a>副本</h3><p>　　一个分区有多个副本，其中一个是lead副本，其余是follow副本，分布在不同的broker里面，lead副本负责读写，其余副本负责和lead副本消息同步，当lead副本故障时，可以选举follow副本继续提供服务。由于副本的同步是异步的，因此可能不一致，所有副本统称为AR，所有和lead副本保持一致的是统称为ISR，与lead副本滞后的副本则统称为osr副本。这2个集合的副本是动态的，当ISR不满足时则将其提到OSR,当OSR更上时，则将其丢到ISR,副本数据的限制和你的当前borker相关，因为多个副本放在一台broken上毫无意思，因此，每个副本在不同的broken上。</p>
 <h3 id="HW"><a href="#HW" class="headerlink" title="HW"></a>HW</h3><p>　　高水位。这个是消费者目前只能拉倒的消息偏移量。这个值是所有副本AR里面保存数据最小值offset。</p>
 <h3 id="LEO"><a href="#LEO" class="headerlink" title="LEO"></a>LEO</h3><p>　　则是记录当前下一条数据写入的offset.</p>
-
+<h3 id="版本号"><a href="#版本号" class="headerlink" title="版本号"></a>版本号</h3><p>　　kafka-2.11-2.1.1，这个里面2.11是scala的编译器版本，2.1.1是kafka真实的版本。2是大版本，第一个1是小版本号，第二个1是修订号。<br>　　0.7远古版本。<br>　　0.8加了副本机制，但是api是远古版本客户端api，且和新版本不兼容。<br>　　0.9加入了安全认证，权限的功能，新版本生产者api稳定，但是消费者api极其不稳定。<br>　　0.10:加了了kafka Streams。消费者api较为稳定。<br>　　0.11提供幂等性produceapi和事务api.以及对消息做了重构。<br>　　1.0和2.0对stream做了优化，消息没有什么变化。</p>
+<h3 id="简单java代码"><a href="#简单java代码" class="headerlink" title="简单java代码"></a>简单java代码</h3><p>　　ps:注意kafka的server.properrties的listeners要开放出来，其格式为protocoll://hostname:port1。协议+域名ip+端口。第一个协议有很多，默认是PLAINTEXT不开启安全校验，域名要写出来，不写则是默认网卡，但是可能为127.0.0.1导致外部无法访问。还有advertised.listeners作用和listeners类似，主要用于IaaS环境，比如公有云上配备多个网卡，包含了私网网卡和公网网卡。对于这种情况，可以设置advertised.listeners绑定公网ip对外客户端使用。使用listeners绑定私网ip给broker之间通信。</p>
+<p>　　maven依赖</p>
+<pre><code>&lt;dependency&gt;
+    &lt;groupId&gt;org.apache.kafka&lt;/groupId&gt;
+    &lt;artifactId&gt;kafka-clients&lt;/artifactId&gt;
+&lt;/dependency&gt;
+</code></pre><p>　　生产者：</p>
+<pre><code>package com.dh.kafka;
+import java.util.Properties;
+import org.apache.kafka.clients.producer.KafkaProducer;
+import org.apache.kafka.clients.producer.ProducerRecord;
+/**
+ * 
+ * @author Lenovo
+  *
+ */
+public class SimpleKafkaProducer {
+    public static void main(String[] args) {
+        Properties props = new Properties();
+        // broker地址
+        props.put(&quot;bootstrap.servers&quot;, &quot;192.168.147.131:9092&quot;);
+        // 指定消息key序列化方式
+        props.put(&quot;key.serializer&quot;, &quot;org.apache.kafka.common.serialization.StringSerializer&quot;);
+        // 指定消息本身的序列化方式
+        props.put(&quot;value.serializer&quot;, &quot;org.apache.kafka.common.serialization.StringSerializer&quot;);
+        KafkaProducer&lt;String, String&gt; producer = new KafkaProducer&lt;&gt;(props);
+        ProducerRecord&lt;String, String&gt; record = new ProducerRecord&lt;&gt;(&quot;topic-demo111&quot;, &quot;hello, kafka&quot;);
+        try {
+            producer.send(record);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        System.out.println(&quot;Message sent successfully&quot;);
+        producer.close();
+    }
+}
+</code></pre><p>　　消费者：</p>
+<pre><code>package com.dh.kafka;
+import java.time.Duration;
+import java.util.Collections;
+import java.util.Properties;
+import org.apache.kafka.clients.consumer.ConsumerRecord;
+import org.apache.kafka.clients.consumer.ConsumerRecords;
+import org.apache.kafka.clients.consumer.KafkaConsumer;
+public class SimpleKafkaConsumer {
+    public static void main(String[] args) {
+        Properties props = new Properties();
+        props.put(&quot;bootstrap.servers&quot;, &quot;192.168.147.131:9092&quot;);
+        // 每个消费者分配独立的组号
+        props.put(&quot;group.id&quot;, &quot;group.demo&quot;);
+        // 设置多久一次更新被消费消息的偏移量
+        props.put(&quot;auto.commit.interval.ms&quot;, &quot;1000&quot;);
+        props.put(&quot;key.deserializer&quot;, &quot;org.apache.kafka.common.serialization.StringDeserializer&quot;);
+        props.put(&quot;value.deserializer&quot;, &quot;org.apache.kafka.common.serialization.StringDeserializer&quot;);
+        @SuppressWarnings(&quot;resource&quot;)
+        KafkaConsumer&lt;String, String&gt; consumer = new KafkaConsumer&lt;&gt;(props);
+        consumer.subscribe(Collections.singletonList(&quot;topic-demo111&quot;));
+        System.out.println(&quot;Subscribed to topic &quot; + &quot;topic-demo111&quot;);
+        while (true) {
+            ConsumerRecords&lt;String, String&gt; records = consumer.poll(Duration.ofMillis(1000));
+            for (ConsumerRecord&lt;String, String&gt; record : records)
+                System.out.printf(record.value());
+        }
+    }
+}
+</code></pre>
           
         
       
@@ -1110,403 +1666,11 @@
 
 
     
-      
-
-  
-
-  
-  
-  
-
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-  
-  
-  
-  <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="https://skydh.github.io/2019/05/15/上传jar到私服命令模式/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="董航">
-      <meta itemprop="description" content="">
-      <meta itemprop="image" content="/images/avatar.gif">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="why are you so happy">
-    </span>
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-                
-                <a class="post-title-link" href="/2019/05/15/上传jar到私服命令模式/" itemprop="url">上传jar到私服命令模式</a></h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">发表于</span>
-              
-              <time title="创建于" itemprop="dateCreated datePublished" datetime="2019-05-15T10:41:37+08:00">
-                2019-05-15
-              </time>
-            
-
-            
-
-            
-          </span>
-
-          
-
-          
-            
-          
-
-          
-          
-
-          
-
-          
-
-          
-
-        </div>
-      </header>
-    
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          
-            <h2 id="命令如下"><a href="#命令如下" class="headerlink" title="命令如下"></a>命令如下</h2><p>　　mvn deploy:deploy-file -DgroupId=net.sf.squirrel-sql.plugins -DartifactId=greenplum -Dversion=3.5.0 -Dpackaging=jar -Dfile=C:\Users\Lenovo.m2\repository\net\sf\squirrel-sql\plugins\greenplum\3.5.0\greenplum-3.5.0.jar -Durl=<a href="http://maven.×××.com/nexus/content/repositories/thirdparty/" target="_blank" rel="noopener">http://maven.×××.com/nexus/content/repositories/thirdparty/</a> -DrepositoryId=3rd.nexus –settings  D:\maven\apache-maven-3.5.0\conf\settings.xml</p>
-<p>　　其中-DgroupId 为上传的jar的groupId</p>
-<p>　　-DartifactId 为上传的jar的artifactId</p>
-<p>　　-Dversion 为上传的jar的需要被依赖的时候的版本号</p>
-<p>　　然后是-Dpackaging为jar，-Dfile为jar包路径 </p>
-<p>　　-Durl 为要上传的路径，可以通过以下方式获取到</p>
-<p>　　-DrepositoryId 为repository的唯一标示，和setting.xml里面server相同<br>　　　<br>　　–settings 指定配置文件</p>
-
-          
-        
-      
-    </div>
-    
-    
-    
-
-    
-
-    
-
-    
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </div>
-  
-  
-  
-  </article>
-
-
-    
-      
-
-  
-
-  
-  
-  
-
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-  
-  
-  
-  <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="https://skydh.github.io/2019/04/24/mysql 主从/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="董航">
-      <meta itemprop="description" content="">
-      <meta itemprop="image" content="/images/avatar.gif">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="why are you so happy">
-    </span>
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-                
-                <a class="post-title-link" href="/2019/04/24/mysql 主从/" itemprop="url">mysql 主从</a></h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">发表于</span>
-              
-              <time title="创建于" itemprop="dateCreated datePublished" datetime="2019-04-24T19:10:24+08:00">
-                2019-04-24
-              </time>
-            
-
-            
-
-            
-          </span>
-
-          
-
-          
-            
-          
-
-          
-          
-
-          
-
-          
-
-          
-
-        </div>
-      </header>
-    
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          
-            <h2 id="mysql主从基本原理"><a href="#mysql主从基本原理" class="headerlink" title="mysql主从基本原理"></a>mysql主从基本原理</h2><p>　　一个主库，可以读写，一个从库可读，不可写。<br>　　流程：一个更新操作：<br>　　１．主库执行更新操作，写入到binlog里面。，备库和主库维持一个长连接。主库内部有个线程，专门用于服务备库的这个长连接。<br>    2.备库通过change master 设置主库A的ip，端口，用户名，密码，以及要从哪个位置来请求binlog，这个位置包含文件名和日志偏移量。<br>　　３．备库执行start slave 命令，这个时候，备库会启动2个线程。一个叫做 io_thread（用来负责和主库建立连接），主库检验完用户名。密码后开始按照备库传过来的位置读取binlog，发送给备库，备库拿到数据后，放到relay log。另一个线程就是sql_thread ，读取relay log.然后执行。<br>　　双主结构：从节点和主节点互为主备关系。切换时不修改主备关系。但是从节点依旧是readonly.互为主备存在循环日志关系，比如a把binlog发给了b，b接受到后吧日志发给了a，如此就循环了，这边方法时每个库的serverid保持不一样，当接受日志的时候，当发现serverid和自己一样时，丢掉日志。</p>
-<h2 id="binlog３个格式"><a href="#binlog３个格式" class="headerlink" title="binlog３个格式"></a>binlog３个格式</h2><p>　　statement：记录原语句。<br>　　row：记录的是修改后的动作。比如删除 id=1,新增 id2=2等信息。直接记录的就是数据.<br>　　mix：混合上面2个格式的。为何有这种格式呢？statement，直接执行语句可能导致报错，而row占的空间太大。使用mix，不存在歧义的语句采用statement,存在歧义的使用row。<br>　　歧义sql:<br>　　 delete from t   where a&gt;=4 and t_modified&lt;=’2018-11-10’ limit 1;<br>　　其可能使用ａ这个索引，或者t_modified这个索引。采用不同索引，可能删除的数据不一样。<br>　　row格式日志其保存了修改前后的变化，如果误操作了，可以查看回滚。所以一般都是用这个row这种格式来记录binlog。如果用statement格式的binlog恢复数据时，要先用mysqlbinlog解析出来，再把结果发给mysql执行。</p>
-<h2 id="主备延迟"><a href="#主备延迟" class="headerlink" title="主备延迟"></a>主备延迟</h2><p>　　每个事务都有一个时间，这个时间就是主库写入时间，而主备延迟是从库写入的系统时间，减去这个主库写入时间的差值。这个时间值一般来源于，从库接受到数据，到写入到从库的时间。网络影响较小。<br>　　原因如下：<br>　　１.由于备库没有请求，于是给备库配置的机器极差，但是，备库同步数据时，对磁盘的操作也是有的，更新操作也很多，因此，造成了大量的延迟。<br>　　２．让备库去处理请求，由于考虑到只是读请求，因此不加限制，导致备库同步数据慢。<br>　　　针对原因２解决方案：<br>　　　１：增加几个从库<br>　　　２．将信息binlog输出到外部系统Hadoop来减轻压力。<br>　　　３．大事务，一个大的事务，在主库都执行了很久，何况从库。<br>　　  ４．DDL,ddl会重建表。而大表的重建，性能损耗很大。<br>　　３．备库的并行复制能力</p>
-<h2 id="双主切换流程"><a href="#双主切换流程" class="headerlink" title="双主切换流程"></a>双主切换流程</h2><p>　　１．判断延迟时间是否小于一个阈值。否则重复这一步。<br>　　２．将主库改为只读，<br>　　３．判断备库的延迟时间是否为０.<br>　　４．将备库改为可读写。<br>　　５，将请求切换到备库Ｂ．<br>　　其中最耗时的是步骤３，因此我们要控制好步骤一的阈值，从而减少不可用时间。　按照这个步骤可以让可靠性达到最高。，但是可用性会随之下降。假设先执行４．５步骤，可用性最高，一直可用，主库插入一个数据４，主键自增，（１,４）。然后切换主备，这个（１,４）没有写入到从库，然后新增数据５，从库存了（１,５）然后，接受到存４，存了（２,４）然后主从数据库不一致了。　　　如果是row格式的binlog，那就不是数据不一致，那是数据根本存不进去。<br>　　如果发生异常，主库宕机了，而从库延迟时间极长，那么切换为从库，会造成系统长时间不可用。因此mysql高可用是建立在延迟时间短的情况下的。</p>
-
-          
-        
-      
-    </div>
-    
-    
-    
-
-    
-
-    
-
-    
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </div>
-  
-  
-  
-  </article>
-
-
-    
-      
-
-  
-
-  
-  
-  
-
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-  
-  
-  
-  <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="https://skydh.github.io/2019/04/16/maven/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="董航">
-      <meta itemprop="description" content="">
-      <meta itemprop="image" content="/images/avatar.gif">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="why are you so happy">
-    </span>
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-                
-                <a class="post-title-link" href="/2019/04/16/maven/" itemprop="url">maven</a></h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">发表于</span>
-              
-              <time title="创建于" itemprop="dateCreated datePublished" datetime="2019-04-16T09:22:50+08:00">
-                2019-04-16
-              </time>
-            
-
-            
-
-            
-          </span>
-
-          
-
-          
-            
-          
-
-          
-          
-
-          
-
-          
-
-          
-
-        </div>
-      </header>
-    
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          
-            <h2 id="约定配置"><a href="#约定配置" class="headerlink" title="约定配置"></a>约定配置</h2><p>　　maven约定大于配置：<br>　　${basedir}    存放pom.xml和所有的子目录<br>　　${basedir}/src/main/java    项目的java源代码<br>　　${basedir}/src/main/resources    项目的资源，比如property文件，springmvc.xml<br>　　${basedir}/src/test/java    项目的测试类，比如说Junit代码<br>　　${basedir}/src/test/resources    测试用的资源<br>　　${basedir}/src/main/webapp/WEB-INF    web应用文件目录，web项目的信息，比如存放web.xml、本地图片、jsp视图页面<br>　　${basedir}/target    打包输出目录<br>　　${basedir}/target/classes    编译输出目录<br>　　${basedir}/target/test-classes    测试编译输出目录<br>　　Test.java    Maven只会自动运行符合该命名规则的测试类<br>　　~/.m2/repository    Maven默认的本地仓库目录位置。</p>
-<h2 id="pom"><a href="#pom" class="headerlink" title="pom"></a>pom</h2><h3 id="pom基本标签简介"><a href="#pom基本标签简介" class="headerlink" title="pom基本标签简介"></a>pom基本标签简介</h3><p>　　groupId：公司或者组织的唯一标志，并且配置时生成的路径也是由此生成， 如<br>　　<groupid>com.companyname.project-group</groupid>，maven会将该项目打成的jar包放本地路径：/com/companyname/project-group<br>　　artifactId：项目的唯一ID，一个groupId下面可能多个项目，就是靠artifactId来区分的。<br>　　version：版本号。<br>　　project：工程的根标签。<br>　　modelVersion：模型版本，基本都是4.0</p>
-<h3 id="父pom"><a href="#父pom" class="headerlink" title="父pom"></a>父pom</h3><p>　　所有的pom都要继承一个父pom。父pom声明了一些可被继承的默认设置。maven使用effective pom(父pom+自己工程pom的配置)来执行目标，目的是为了尽可能减少配置。
-　　</p>
-<h2 id="maven生命周期"><a href="#maven生命周期" class="headerlink" title="maven生命周期"></a>maven生命周期</h2><p>　　validate：验证项目是否正确且所有必须信息是可用的。</p>
-<p>　　compile：执行编译    源代码编译在此阶段完成。</p>
-<p>　　Test：使用适当的单元测试框架（例如JUnit）运行测试</p>
-<p>　　package：打包创建JAR/WAR包如在 pom.xml 中定义提及的包</p>
-<p>　　verify：    检查    对集成测试的结果进行检查，以保证质量达标</p>
-<p>　　install：安装安装打包的项目到本地仓库，以供其他项目使用</p>
-<p>　　deploy：    部署    拷贝最终的工程包到远程仓库中，以共享给其他开发人员和工程</p>
-<h2 id="仓库"><a href="#仓库" class="headerlink" title="仓库"></a>仓库</h2><p>　　Maven根据坐标寻找构件的时候，它先会查看本地仓库，如果本地仓库存在构件，则直接使用；如果没有，则从远程仓库查找，找到后，下载到本地。</p>
-<p>　　分类</p>
-<p>　　本地仓库</p>
-<p>　　远程仓库：</p>
-<p>　　中央仓库：默认的远程仓库。maven的setting文件有个父pom,在你安装的maven的lib下的 maven-model-builde-xxx.jar解压，然后不断点击进入，找到super pom里面配置了一个id为central的中央仓库。</p>
-<p>　　私服：私服是一种特殊的远程Maven仓库，它是架设在局域网内的仓库服务，私服一般被配置为互联网远程仓库的镜像，供局域网内的Maven用户使用。当Maven需要下载构件的时候，先向私服请求，如果私服上不存在该构件，则从外部的远程仓库下载，同时缓存在私服之上，然后为Maven下载请求提供下载服务，另外，对于自定义或第三方的jar可以从本地上传到私服，供局域网内其他maven用户使用。<br>　　profile。</p>
-<p>　　普通远程仓库。</p>
-<p>　　每个用户只能有一个本地仓库，和多个远程仓库。</p>
-<p>　　maven镜像：</p>
-<p>　　当远程仓库被镜像匹配到，那么获取jar将从镜像仓库获取，而不是我们配置的repository仓库。</p>
-<p>　　ps：这个镜像，个人觉得，类似于拦截器，用于拦截父pom，以及你项目配置的仓库。拦截后使用，setting文件里面的pom文件。没有匹配到远程仓库的毫无意义。匹配到的则是替换。因此远程仓库和镜像是一个级别。</p>
-<p>　　获取jar的优先级。</p>
-<p>　　本地仓库 &gt; 私服 （profile）&gt; 远程仓库（repository）和 镜像 （mirror） &gt; 中央仓库 （central）</p>
-
-          
-        
-      
-    </div>
-    
-    
-    
-
-    
-
-    
-
-    
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </div>
-  
-  
-  
-  </article>
-
-
-    
   </section>
 
   
   <nav class="pagination">
-    <span class="page-number current">1</span><a class="page-number" href="/page/2/">2</a><span class="space">&hellip;</span><a class="page-number" href="/page/11/">11</a><a class="extend next" rel="next" href="/page/2/"><i class="fa fa-angle-right"></i></a>
+    <span class="page-number current">1</span><a class="page-number" href="/page/2/">2</a><span class="space">&hellip;</span><a class="page-number" href="/page/12/">12</a><a class="extend next" rel="next" href="/page/2/"><i class="fa fa-angle-right"></i></a>
   </nav>
 
 
@@ -1552,7 +1716,7 @@
               
                 <a href="/archives/">
               
-                  <span class="site-state-item-count">108</span>
+                  <span class="site-state-item-count">111</span>
                   <span class="site-state-item-name">日志</span>
                 </a>
               </div>

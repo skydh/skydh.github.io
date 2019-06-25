@@ -86,7 +86,7 @@
 <meta property="og:site_name" content="why are you so happy">
 <meta property="og:description" content="优势　　１．HikariCp优化创建了concurrentBag，增加了并发读写的效率，减少了其他没必要的操作，是的集合性能提高了很多。　　２．使用threadlocal缓存连接以及大量使用cas的机制，避免lock.　　３．使用Javassist来实现动态代理类，实现了字节码的优化。　　４．心跳语句由select 1 变成了ping。　　５．大量的方法内联。效率提高了很多。　　６．代码量少。">
 <meta property="og:locale" content="zh-Hans">
-<meta property="og:updated_time" content="2019-06-19T08:32:27.989Z">
+<meta property="og:updated_time" content="2019-06-25T03:09:32.730Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="HikariCP 笔记">
 <meta name="twitter:description" content="优势　　１．HikariCp优化创建了concurrentBag，增加了并发读写的效率，减少了其他没必要的操作，是的集合性能提高了很多。　　２．使用threadlocal缓存连接以及大量使用cas的机制，避免lock.　　３．使用Javassist来实现动态代理类，实现了字节码的优化。　　４．心跳语句由select 1 变成了ping。　　５．大量的方法内联。效率提高了很多。　　６．代码量少。">
@@ -305,6 +305,21 @@
 
       
         <h2 id="优势"><a href="#优势" class="headerlink" title="优势"></a>优势</h2><p>　　１．HikariCp优化创建了concurrentBag，增加了并发读写的效率，减少了其他没必要的操作，是的集合性能提高了很多。<br>　　２．使用threadlocal缓存连接以及大量使用cas的机制，避免lock.<br>　　３．使用Javassist来实现动态代理类，实现了字节码的优化。<br>　　４．心跳语句由select 1 变成了ping。<br>　　５．大量的方法内联。效率提高了很多。<br>　　６．代码量少。<br>　　７．FastStatementList代替了Arraylist，去掉了调用get时的范围检查，增加性能。</p>
+<h2 id="声明定义"><a href="#声明定义" class="headerlink" title="声明定义"></a>声明定义</h2><p>　　HikariDataSource：数据源，我们通过其对象来获取连接。</p>
+<p>　　HikariPool：连接池，对资源进行管理。</p>
+<p>　　ConcurrentBag：作为物理连接的共享资源站。</p>
+<p>　　PoolEntry：物理连接的封装。</p>
+<p> 　　获取连接流程getConnection：<br>　　１．HikariDataSource对象调用getConnection来获取连接<br>　　２．调用HikariPool的getConnection获取连接。<br>　　３．调用ConcurrentBag取出一个PoolEntry．然后这个PoolEntry通过createProxyConnection掉用工厂类生成HikariProxyConnection返回。</p>
+<p>　　连接关闭closeConnection()：<br>　　closeConnectionExecutor关闭连接后，会调用fillPool()方法对连接池进行连接填充。同时HikariPool提供evictConnection(Connection)方法对物理连接进行手动关闭。<br>　　连接关闭close():<br>　　HikariProxyConnection调用close方法时调用了PooleEntry的recycle方法，之后通过HikariPool调用了ConcurrentBag的requite放回。（poolEntry通过borrow从bag中取出，再通过requite放回。资源成功回收）。</p>
+<p>　　创建连接createPoolEntry：<br>　　HikariCP中通过独立的线程池addConnectionExecutor进行新连接的生成，连接生成方法为PoolEntryCreator。物理链接的生成只由PoolBase的newConnection()实现，之后封装成PoolEntry，通过Bag的add方法加入ConcurrentBag。当ConcurrentBag存在等待线程，或者有连接被关闭时，会触发IBagItemListener的addBagItem(wait)方法，调用PoolEntryCreator进行新连接的生成。</p>
+<h2 id="连接池到底该多大"><a href="#连接池到底该多大" class="headerlink" title="连接池到底该多大"></a>连接池到底该多大</h2><p>　　２个参数：</p>
+<p>　　maxPoolSize：最大连接数。</p>
+<p>　　minIdle：最小连接数。作者建议这个值和maxPoolSize保持一致作为一个固定大小的连接池。</p>
+<p>　　连接池大家是综合每个应用系统的业务逻辑特性，加上应用硬件配置，加上应用部署数量，再加上db硬件配置和最大允许连接数测试出来的。很难有一个简单公式进行计算。连接数及超时时间设置不正确经常会带来较大的性能问题，并影响整个服务能力的稳定性。具体设置多少，要看系统的访问量，可通过反复测试，找到最佳点。压测很重要。</p>
+<p>　　我们进行判断时，可以从以下几个层面分析：<br>　　系统中多少个线程在进行与数据库有关的工作？多少个线程在等待获取数据库连接？获取数据库连接需要的平均时长是多少？如果平均时长较长，如大于 100ms，则可能说明配置的数据库连接数不足，或存在连接泄漏问题。
+　　</p>
+<p>　　
+　　</p>
 
       
     </div>
@@ -418,7 +433,7 @@
               
                 <a href="/archives/">
               
-                  <span class="site-state-item-count">108</span>
+                  <span class="site-state-item-count">111</span>
                   <span class="site-state-item-name">日志</span>
                 </a>
               </div>
@@ -457,7 +472,7 @@
             
 
             
-              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#优势"><span class="nav-number">1.</span> <span class="nav-text">优势</span></a></li></ol></div>
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#优势"><span class="nav-number">1.</span> <span class="nav-text">优势</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#声明定义"><span class="nav-number">2.</span> <span class="nav-text">声明定义</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#连接池到底该多大"><span class="nav-number">3.</span> <span class="nav-text">连接池到底该多大</span></a></li></ol></div>
             
 
           </div>
