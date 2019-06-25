@@ -86,7 +86,7 @@
 <meta property="og:site_name" content="why are you so happy">
 <meta property="og:description" content="消息格式public class ProducerRecord&amp;lt;K, V&amp;gt; {     private final String topic;     private final Integer partition;     private final Headers headers;     private final K key;     private final V value">
 <meta property="og:locale" content="zh-Hans">
-<meta property="og:updated_time" content="2019-06-25T08:24:29.919Z">
+<meta property="og:updated_time" content="2019-06-25T08:31:05.192Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="kafak入门002 -生产者">
 <meta name="twitter:description" content="消息格式public class ProducerRecord&amp;lt;K, V&amp;gt; {     private final String topic;     private final Integer partition;     private final Headers headers;     private final K key;     private final V value">
@@ -324,7 +324,8 @@
 <p>　　Linger.ms:这个参数是指ProducerBatch（看后文）等待更多ProducerRecord加入的时间，默认为0，生产者会在这个ProducerBatch被填满，或者等待时间超过Linger.ms时发送出去</p>
 <p>　　send.buffer.bytes：socket接收消息缓冲区大小。默认32k。<br>　　<br>　　send.buffer.bytes：socket发送消息缓冲区大小。默认128k。</p>
 <p>　　request.timeout.ms:等待请求响应最长时间，默认30000ms，超时后可以选择重试。但是注意了，这个值要比broker端的replica.lag.time.max.ms的值要大，可以减小因为客户端重试导致的消息重复。</p>
-<h2 id="代码拼写"><a href="#代码拼写" class="headerlink" title="代码拼写"></a>代码拼写</h2><p>　　props.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, StringDeserializer.class.getName());<br>　　我们写这些参数时可能某个字符写错了。因此可以用ProducerConfig来替代。<br>　　KafkaProducer是线程安全的。</p>
+<h2 id="代码拼写"><a href="#代码拼写" class="headerlink" title="代码拼写"></a>代码拼写</h2><pre><code>props.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, StringDeserializer.class.getName());
+</code></pre><p>　　我们写这些参数时可能某个字符写错了。因此可以用ProducerConfig来替代。<br>　　KafkaProducer是线程安全的。</p>
 <h2 id="发送消息"><a href="#发送消息" class="headerlink" title="发送消息"></a>发送消息</h2><p>　　３个模式<br>　　１．发后即忘<br>　　这个模式不关心消息是否正确到达，大多数也没什么问题，但是存在不可重试异常时，会造成消息的丢失，这个方式效率最高，可靠性最低。实现方式为</p>
 <pre><code>try {
         producer.send(record);
@@ -348,7 +349,17 @@
         });
 </code></pre><p>　　这样就不会阻塞程序的执行了，等道kafka响应时就会做出相关操作处理。前面说过kafka通过偏移量保证顺序消费，响应如果是同一个分区，那么也是顺序的。</p>
 <p>　　close方法，会阻塞之前所有请求后再关闭KafkaProducer。来进行资源回收。</p>
-<h2 id="序列化"><a href="#序列化" class="headerlink" title="序列化"></a>序列化</h2><p>　　除了上面说的StringDeserializer这个string类型的序列化器之外，还有Integer,Long,Double,Bytes,都实现了序列化接口，主要有2个方法，解析下：<br>    @Override<br>    public void configure(Map<string, ?=""> configs, boolean isKey) {<br>        String propertyName = isKey ? “key.serializer.encoding” : “value.serializer.encoding”;<br>        Object encodingValue = configs.get(propertyName);<br>        if (encodingValue == null)<br>            encodingValue = configs.get(“serializer.encoding”);<br>        if (encodingValue instanceof String)<br>            encoding = (String) encodingValue;<br>    }<br>　　这个方法是KafkaProducer创建实例时调用的，来确定编码类型。</string,></p>
+<h2 id="序列化"><a href="#序列化" class="headerlink" title="序列化"></a>序列化</h2><p>　　除了上面说的StringDeserializer这个string类型的序列化器之外，还有Integer,Long,Double,Bytes,都实现了序列化接口，主要有2个方法，解析下：</p>
+<pre><code>@Override
+public void configure(Map&lt;String, ?&gt; configs, boolean isKey) {
+    String propertyName = isKey ? &quot;key.serializer.encoding&quot; : &quot;value.serializer.encoding&quot;;
+    Object encodingValue = configs.get(propertyName);
+    if (encodingValue == null)
+        encodingValue = configs.get(&quot;serializer.encoding&quot;);
+    if (encodingValue instanceof String)
+        encoding = (String) encodingValue;
+}
+</code></pre><p>　　这个方法是KafkaProducer创建实例时调用的，来确定编码类型。</p>
 <pre><code>@Override
 public byte[] serialize(String topic, String data) {
     try {
