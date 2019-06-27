@@ -86,7 +86,7 @@
 <meta property="og:site_name" content="why are you so happy">
 <meta property="og:description" content="消息格式public class ProducerRecord&amp;lt;K, V&amp;gt; {     private final String topic;     private final Integer partition;     private final Headers headers;     private final K key;     private final V value">
 <meta property="og:locale" content="zh-Hans">
-<meta property="og:updated_time" content="2019-06-25T08:31:05.192Z">
+<meta property="og:updated_time" content="2019-06-26T02:12:42.658Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="kafak入门002 -生产者">
 <meta name="twitter:description" content="消息格式public class ProducerRecord&amp;lt;K, V&amp;gt; {     private final String topic;     private final Integer partition;     private final Headers headers;     private final K key;     private final V value">
@@ -314,7 +314,7 @@
 }
 </code></pre><p>　　topic是消息主题，partition是分区号，headers一般没用，key是消息的键，同一个key的消息会被发到一个分区里面。</p>
 <h2 id="参数配置"><a href="#参数配置" class="headerlink" title="参数配置"></a>参数配置</h2><p>　　bootstrap.servers：生成者客户端连接kafka集群所需的broker地址清单，一般写2个，host:port,host1:port1,不要全部写出来，因为生产者会从给定的broke里面查出其他broker的信息，写2个是为了防止一个宕机了，生产者依旧可以连接到kafak。</p>
-<p>　　key.deserializer，value.deserializer：broker服务器接受的消息是字节数组存在的，这个就是指定，key和value的序列化操作的序列化器。</p>
+<p>　　key.serializer，value.serializer：broker服务器接受的消息是字节数组存在的，这个就是指定，key和value的序列化操作的序列化器。</p>
 <p>　　client.id:对应kafka客户端的id，也就是客户端的名字，如果不设置则是默认取名，produce-i</p>
 <p>　　retries：对于可重试异常，可重试次数配置，默认是０，ps(KafkaProducer一般有2种异常，一个是可重试异常，比如NetworkException,表示网络异常，可以通过重试解决，一个是不可重试异常，比如RecordToolargeException,表示消息太大，不会重试。)，重试次数超过了配置的值。也会抛出异常。<br>　　retry.backoff.ms：这个主要是和上面的retries相对应的。是重试时间间隔。默认是100</p>
 <p>　　props.put(ProducerConfig.ACKS_CONFIG, “0”);<br>　　当为0时，发到服务端就不管了。<br>　　当为1时，只要leader副本写入，就返回，但是可能leader奔溃了，但是其他副本没有拉取到消息。造成数据丢失<br>　　当为-1或者all时，必须所有副本都要同步完才返回。</p>
@@ -540,7 +540,7 @@ public void close() {
               
                 <a href="/archives/">
               
-                  <span class="site-state-item-count">111</span>
+                  <span class="site-state-item-count">112</span>
                   <span class="site-state-item-name">日志</span>
                 </a>
               </div>

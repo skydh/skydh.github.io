@@ -232,6 +232,167 @@
   
   
   <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="https://skydh.github.io/2018/06/19/ControllerAdvice注解/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="董航">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="why are you so happy">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                <a class="post-title-link" href="/2018/06/19/ControllerAdvice注解/" itemprop="url">ControllerAdvice用法解析</a></h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2018-06-19T20:32:58+08:00">
+                2018-06-19
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            <h2 id="简介"><a href="#简介" class="headerlink" title="简介"></a>简介</h2><p>　　通过@ControllerAdvice注解可以将对于控制器的全局配置放在同一个位置。<br>　　注解了@Controller的类的方法可以使用@ExceptionHandler、@InitBinder、@ModelAttribute注解到方法上。<br>　　@ControllerAdvice注解将作用在所有注解了@RequestMapping的控制器的方法上<br>　　@ExceptionHandler：用于全局处理控制器里的异常。</p>
+<h2 id="用法"><a href="#用法" class="headerlink" title="用法"></a>用法</h2><pre><code>@ControllerAdvice
+@ResponseBody
+public class BusinessExceptionHandler {
+    @ExceptionHandler(value = Exception.class)
+    public JsonBackData exceptionHandler(HttpServletRequest request, Exception e) {
+        e.printStackTrace();
+        JsonBackData back = new JsonBackData();
+        if (e instanceof BusinessException) {
+            BusinessException ex = (BusinessException) e;
+            back.setSuccess(false);
+            back.setBackMsg(ex.getMessage());
+        }
+        return back;
+    }
+</code></pre><p>　　加了这个全局配置的Bean后，以前我的代码是这样的：</p>
+<pre><code>@RequestMapping(value = &quot;queryDetail&quot;)
+@ResponseBody
+public JsonBackData queryDetail(@RequestParam String id) {
+    JsonBackData back = new JsonBackData();
+    try {
+        OpenSourceThrottleAdjustVO vo = openSourceThrottlePlanQueryService.findById(id);
+        back.setBackData(vo);
+        back.setSuccess(true);
+        back.setBackMsg(&quot;查询详细信息成功&quot;);
+    } catch (BusinessException e) {
+        back.setSuccess(false);
+        back.setBackMsg(&quot;查询详细信息失败:&quot; + e.getMessage());
+    }
+    return back;
+}
+</code></pre><p> 　多了很多无关信息。几乎每个类都要try catch一下，代码极度冗余。<br>但是加了上面的全局处理控制器的异常处理后。代码就变成了下面的了。</p>
+<pre><code>@RequestMapping(value = &quot;queryDetail&quot;)
+@ResponseBody
+public JsonBackData queryDetail(@RequestParam String id) {
+    JsonBackData back = new JsonBackData();
+    OpenSourceThrottleAdjustVO vo = openSourceThrottlePlanQueryService.findById(id);
+    back.setBackData(vo);
+    back.setSuccess(true);
+    back.setBackMsg(&quot;查询详细信息成功&quot;);
+    return back;
+}
+</code></pre>
+          
+        
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
     <link itemprop="mainEntityOfPage" href="https://skydh.github.io/2018/06/12/原因/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -1343,130 +1504,6 @@ public void test(B b){...} ...2
 
 
     
-      
-
-  
-
-  
-  
-  
-
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-  
-  
-  
-  <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="https://skydh.github.io/2018/05/09/jvm内存分配策略/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="董航">
-      <meta itemprop="description" content="">
-      <meta itemprop="image" content="/images/avatar.gif">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="why are you so happy">
-    </span>
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-                
-                <a class="post-title-link" href="/2018/05/09/jvm内存分配策略/" itemprop="url">jvm内存分配策略</a></h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">发表于</span>
-              
-              <time title="创建于" itemprop="dateCreated datePublished" datetime="2018-05-09T15:05:24+08:00">
-                2018-05-09
-              </time>
-            
-
-            
-
-            
-          </span>
-
-          
-
-          
-            
-          
-
-          
-          
-
-          
-
-          
-
-          
-
-        </div>
-      </header>
-    
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          
-            <h2 id="对象优先在新生代分配"><a href="#对象优先在新生代分配" class="headerlink" title="对象优先在新生代分配"></a>对象优先在新生代分配</h2><p>　　就是新生的对象按照原则一般在新生代内存区给其分配空间。</p>
-<h2 id="大对象直接进入老年态"><a href="#大对象直接进入老年态" class="headerlink" title="大对象直接进入老年态"></a>大对象直接进入老年态</h2><p>　　大对象是指需要大量连续的内存空间的对象，比如非常长的字符串或者数组。因为出现这些对象意味着虚拟机要进行一次垃圾回收才可以安置这些对象，可以在虚拟机启动的时候设置 -XX pretenuresizethreshold 参数 来设置大于这个参数的大对象直接进入老年态。</p>
-<h2 id="长期存活的对象将进入老年态"><a href="#长期存活的对象将进入老年态" class="headerlink" title="长期存活的对象将进入老年态"></a>长期存活的对象将进入老年态</h2><p>　　既然虚拟机采用了分带管理的策略来管理内存，那么如何判断一个对象时应该在老年态还是新生态中。虚拟机给每个对象设置了一个年龄计算器，当对象在Eden出生，并且活过了第一次垃圾回收，那么该对象将进入到Suivivor空间，年龄也会增加一，妹熬过一次就加一，当达到一个阈值时，就会被移动到老年态中，这个阈值默认是15，也可以通过参数配置和设置。</p>
-<h2 id="动态对象年龄判定"><a href="#动态对象年龄判定" class="headerlink" title="动态对象年龄判定"></a>动态对象年龄判定</h2><p>　　为了更好的适应虚拟机的内存整理，虚拟机还有一个原则，如果在新生代的Suivivor空间的相同年龄对象所占的内存大于Suivivor一半时，将大于和等于这个年龄的对象加入到老年代。</p>
-<h2 id="空间分配担保"><a href="#空间分配担保" class="headerlink" title="空间分配担保"></a>空间分配担保</h2><p>　　在新生代发生垃圾回收时，虚拟机都会先检查这个老年态最大可用连续空间是否大于新生代所有对象总空间，如果成立，那么这次垃圾回收是安全的，可以直接进行垃圾回收。如果不成立，就会查看HandlePromotionFailure这个值是否设置开启的，如果开启，就会继续判断老年代最大可用连续空间是否大于历次垃圾回收晋升到老年代对象的平均大小，如果大于，则进行一次啊垃圾回收。如果小于或者这个参数设置为关闭状态，那么就要进行一次啊Full GC。<br>　　为何如此？前面说了，新生代垃圾回收是复制算法，新生代内存分为8:1:1，每次垃圾回收就会将9份的移到剩余一份里面的，可能溢出，那么就用老年代担保，所以如此哦。一般上面的参数会默认设置为开启状态。</p>
-
-          
-        
-      
-    </div>
-    
-    
-    
-
-    
-
-    
-
-    
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </div>
-  
-  
-  
-  </article>
-
-
-    
   </section>
 
   
@@ -1517,7 +1554,7 @@ public void test(B b){...} ...2
               
                 <a href="/archives/">
               
-                  <span class="site-state-item-count">111</span>
+                  <span class="site-state-item-count">112</span>
                   <span class="site-state-item-name">日志</span>
                 </a>
               </div>
