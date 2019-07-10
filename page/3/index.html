@@ -232,6 +232,134 @@
   
   
   <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="https://skydh.github.io/2019/01/10/mysql 知识杂点/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="董航">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="why are you so happy">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                <a class="post-title-link" href="/2019/01/10/mysql 知识杂点/" itemprop="url">mysql 知识杂点</a></h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2019-01-10T14:45:51+08:00">
+                2019-01-10
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            <h2 id="迅速短暂的提高性能"><a href="#迅速短暂的提高性能" class="headerlink" title="迅速短暂的提高性能"></a>迅速短暂的提高性能</h2><p>　　１．处理掉占着的但是不工作的连接。首先使用show processlist，但是不知道那些sleep的连接是否是事务外的，我们继续查询 information_schema库的innodb_trx表。select * from information_schema.innodb_trx\G,查看那些连接是在事务内的。<br>　　当我们断掉连接后，客户端不会立马知道，而是在第二个请求时才发现，连接断了。<br>　　２．减少连接过程的消耗，比如去掉安全校验。<br>　　３．索引没设计好，当要修改表结构时。可以采用如下方案。１，从库执行　set sql_log_bin=off,也就是不开启binlog,然后执行alter语句，主备切换，主库和上述从库一样的方案。</p>
+<h2 id="为何mysql用了函数就无法使用索引了"><a href="#为何mysql用了函数就无法使用索引了" class="headerlink" title="为何mysql用了函数就无法使用索引了"></a>为何mysql用了函数就无法使用索引了</h2><p>　　B+树的快速定位能力，来源于同一层兄弟节点的有序性。当你使用函数时，在b+树的第一层就不知道如何是好了。对索引字段做函数操作，会破坏其有序性。<br>　　既然这样，对mysql来说，字符串和数字比较是将字符串转换为数字，因此你一个字符串索引，当你的查询条件是数字时，会自动加上函数，导致其，破坏其有序性，导致进行全索引扫描。</p>
+<h2 id="为何临时表可以重名。"><a href="#为何临时表可以重名。" class="headerlink" title="为何临时表可以重名。"></a>为何临时表可以重名。</h2><p>　　１.临时表和内存表不一样的，临时表不全是内存表。但是临时表可以是内存表。<br>　　特点：<br>　　１．临时表可以和普通表同名。<br>　　２．创表语法为create temporaty table.　<br>　　３．临时表只能被创建他的session访问，对其他线程不可见。<br>　　４．在一个session里面遇到同名的临时表和普通表时，优先访问临时表。<br>　　原因：mysql创建一个frm文件保存表结构，这个文件的后缀是.frm，前缀是#sql{进程id}<em>{线程id}</em>序列号。因此对于mysql来说，其真实存储的文件名是不一样的。<br>　　在mysql内存里面，每个表对应一个key,这个key是唯一的，普通表和数据库+表名相关，临时表则多了一个线程id。因此对于mysql来说，每个session创建的临时表的内存key和物理表名都不一样。<br>　　在实现上，每个线程维护了一个临时表链表，每次session内操作表的时候，先遍历链表，检查是否存在这个名字的临时表，有，则优先执行。session结束，则删除这个临时表。<br>　　主从：<br>　　如果binlog的格式是statment/mixed,是会把临binlog里面。时表记录到binlog里面，但是如果是row则不会记录到里面。</p>
+<h2 id="内存表"><a href="#内存表" class="headerlink" title="内存表"></a>内存表</h2><p>　　内存表的索引结构是hash结构，查询很快，但是加锁时表锁。在高可用也就是主从的情况下可能导致数据丢失，报错。</p>
+<h2 id="主键自增系列"><a href="#主键自增系列" class="headerlink" title="主键自增系列"></a>主键自增系列</h2><p>　　在mysql5.7以及之前的版本，主键自增的值，保存在内存里面，没有持久化，每次重启后，第一次打开表的时候，都会查找出来最大的id,加一作为新的当前自增值。<br>　　在mysql8.0之后，这时就会将自增至的记录在了redolog中。重启时依靠redolog来恢复值。<br>　　策略：<br>　　１:插入数据id为0，null,未指定值，那么mysql就会将这个表当前的AUTO_INCREMENT插入到自增字段里面。<br>　　２．如果插入数据时，指定了id的值，那就用语句里面指定的值。同时有以下策略，如果指定的值，小于自增值，那么自增值不变，如果大于等于自增值，那么就需要更新自增值，使其大于某个值。策略如下：从 auto_increment_offset 开始，以 auto_increment_increment 为步长持续叠加，直到找到第一个大于 X 的值，作为新的自增值。其中auto_increment_offset默认是1，表示增长的幅度.<br>　　唯一键冲突，事务回滚可能导致主键自增不连续。（双一）。还有就是批量插入时，也可能导致主键不连续，因为批量插入时，为了效率，分配1,2,4指数式增长。即使分配的没有用完，也不会回滚。<br>　　mysql这么设计为了性能考虑。获取主键时，肯定要加锁2个session,A得到2，B得到3，B成功，A失败。如此的话，表设计会比较麻烦。<br>　　在mysql 5.1.22有了一个参数innodb_autoinc_lock_mode，默认是1，有三个值<br>　　０：一条语句申请自增锁，整个语句执行完才释放锁。<br>　　１：单插入语句，申请完就释放，多插入语句，整个执行完释放锁（因为不然可能导致主从存在问题，binlog是statement时，场景如下，sessionA 批量插入10,数据，sessionB插入1数据，可能sessionA的10数据不连续，但是对于binlog来说是顺序的，可能出现问题）。<br>　　２．所有都是申请完就释放。<br>　　因此建议使用2+binlogrow<br>　　ps:在未指定，null,0时，采用主键自增。<br>　　主键自增，int最大值为2/32 -1,如果到了最大值，继续插入会报错，主键冲突，因为它不会继续增加了。如果有可能，建议创建bigint unsigned。更大一些。<br>　　在mysql innodb里面，如果没有创建主键，那么创建一个不可见，长度为6个字节的row_id,innodb维护了一个全局的dict_sys_row_id,所有无主键的innodb表，每插入一行数据，都要将dict_sys_row_id值作为要插入数据的row_id,然后将这个值+1。<br>　　这个row_id的大小是6字节，最大值为2/48-1，当达到最大值时，会重新从0开始。可能存在rowid重复，那么就会新的值覆盖旧的值。覆盖数据意味着数据丢失，因此最好每个表都创建一个主键。</p>
+<h2 id="Xid"><a href="#Xid" class="headerlink" title="Xid"></a>Xid</h2><p>　　redolog和binlog配合的时候有个字段叫做Xid，这个字段是用来对应一个个事务的，在mysql里面，维护了一个全局变量global_query_id,每次执行语句时，将它赋值给Query_id,然后给这个变量加1，如果当前语句时这个事务执行的第一条语句，那么mysql还会同时把query_id赋值给这个事务的Xid。这个全局变量是内存变量，重启后就清空，因此，同一个数据库里面，可能binlog里面存在相同的xid，但是重启之后，mysql会创建一个新的binlog文件，因此同一个binlog文件不会存在相同的xid</p>
+<p>　　</p>
+<h2 id="trx-id"><a href="#trx-id" class="headerlink" title="trx_id"></a>trx_id</h2><p>　　这个id大家都很熟了，和事务隔离相关，这个是innodb自己维护的，innodb维护了一个叫做max_try_id全局变量，每次申请值的时候，就会获取这个全局变量的当前值，然后将这个值+1；innodb只会在当前事务涉及到修改更新操作时才会分配trx_id。不给只读事务分配trx_id，直接默认为0，可以有效减少活跃事务表的大小，同时减少了trx_id的分配，变相提高了trx_id的吞吐量。max_try_id会持久化存储，重启也不会重置为0，因此存在运行时间足够久的事务中存在，后创建的事务id小于之前创建的事务id，造成脏读。当然这个值的最大值是2/48-1。一个mysqlqps50，持续18年就会出现这样的问题。</p>
+<h2 id="thread-id"><a href="#thread-id" class="headerlink" title="thread_id"></a>thread_id</h2><p>　　thread_id是线程id，系统保存了一个全局变量 thread_id_counter,每新建一个连接，就将thread_id_counter赋值给这个线程变量。最大值是2/32-1，但是达到最大值后，就会从0开始，但是在mysql里面不会存在2个相同的值，因为分配thread_id时，做了去重处理，判断这个id是否存在于当前活跃线程id里面。</p>
+
+          
+        
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
     <link itemprop="mainEntityOfPage" href="https://skydh.github.io/2019/01/07/cookie/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -1411,126 +1539,6 @@ output {
 
 
     
-      
-
-  
-
-  
-  
-  
-
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-  
-  
-  
-  <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="https://skydh.github.io/2018/11/26/2个数据库差异对比/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="董航">
-      <meta itemprop="description" content="">
-      <meta itemprop="image" content="/images/avatar.gif">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="why are you so happy">
-    </span>
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-                
-                <a class="post-title-link" href="/2018/11/26/2个数据库差异对比/" itemprop="url">2个数据库差异对比分析</a></h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">发表于</span>
-              
-              <time title="创建于" itemprop="dateCreated datePublished" datetime="2018-11-26T09:58:02+08:00">
-                2018-11-26
-              </time>
-            
-
-            
-
-            
-          </span>
-
-          
-
-          
-            
-          
-
-          
-          
-
-          
-
-          
-
-          
-
-        </div>
-      </header>
-    
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          
-            <h2 id="方法"><a href="#方法" class="headerlink" title="方法"></a>方法</h2><p>　　１．我们使用Navicat来帮助。点击工具，在点击结构同步。出现一个界面。<br>　　２．点击对比，把要比较的２个库，一个源库，一个对比库填写进去，然后点击对比<br>　　３．点击查询修改，即可获得差异化信息。</p>
-
-          
-        
-      
-    </div>
-    
-    
-    
-
-    
-
-    
-
-    
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </div>
-  
-  
-  
-  </article>
-
-
-    
   </section>
 
   
@@ -1581,7 +1589,7 @@ output {
               
                 <a href="/archives/">
               
-                  <span class="site-state-item-count">112</span>
+                  <span class="site-state-item-count">113</span>
                   <span class="site-state-item-name">日志</span>
                 </a>
               </div>

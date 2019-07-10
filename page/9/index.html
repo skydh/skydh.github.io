@@ -232,6 +232,141 @@
   
   
   <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="https://skydh.github.io/2018/04/22/spring post乱码/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="董航">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="why are you so happy">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                <a class="post-title-link" href="/2018/04/22/spring post乱码/" itemprop="url">spring mvc post请求乱码问题</a></h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2018-04-22T12:59:44+08:00">
+                2018-04-22
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            <h2 id="如何处理"><a href="#如何处理" class="headerlink" title="如何处理"></a>如何处理</h2><p>　　在web.xml的拦截过滤器上加</p>
+<pre><code>&lt;filter&gt;
+    &lt;filter-name&gt;CharacterEncodingFilter&lt;/filter-name&gt;
+    &lt;filter-class&gt;org.springframework.web.filter.CharacterEncodingFilter&lt;/filter-class&gt;
+    &lt;init-param&gt;
+        &lt;param-name&gt;encoding&lt;/param-name&gt;
+        &lt;param-value&gt;utf-8&lt;/param-value&gt;
+    &lt;/init-param&gt;
+&lt;/filter&gt;
+&lt;filter-mapping&gt;
+    &lt;filter-name&gt;CharacterEncodingFilter&lt;/filter-name&gt;
+    &lt;url-pattern&gt;/*&lt;/url-pattern&gt;
+&lt;/filter-mapping&gt;
+</code></pre><p>　　必须放在第一个拦截器上。</p>
+<h2 id="数据规范"><a href="#数据规范" class="headerlink" title="数据规范"></a>数据规范</h2><p>　　当前很多浏览器并不发送带Content-Type头部的字符编码标识符，它会把字符编码的决定留在读取HTTP请求的时候。如果客户端没有指明编码，容器用来创建请求读和解析POST数据的默认编码必须是”ISO-8859-1”。然而，为了提示开发者客户端没有成功发送一个字符编码，容器中getCharacterEncoding方法会返回null。<br>　　如果客户端没有设置字符编码，并且请求数据使用了不同编码而不是上述的默认编码，程序将会出现中断。</p>
+<h2 id="为何放在第一个过滤器上"><a href="#为何放在第一个过滤器上" class="headerlink" title="为何放在第一个过滤器上"></a>为何放在第一个过滤器上</h2><p>　　为了纠正这种状态。一个新的方法setCharacterEncoding(String enc) 被添加到ServletRequest接口。开发者调用这个方法能重写容器提供的字符编码。这个方法必须在解析request中任何post数据或者读任何输入之前调用。一旦数据已经被读取，调用这个方法不会影响它的编码。</p>
+
+          
+        
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
     <link itemprop="mainEntityOfPage" href="https://skydh.github.io/2018/04/21/缓存穿透和缓存雪崩/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -1618,144 +1753,6 @@ KeySpace 键值对统计数量信息
 
 
     
-      
-
-  
-
-  
-  
-  
-
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-  
-  
-  
-  <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="https://skydh.github.io/2018/03/02/消息中间件/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="董航">
-      <meta itemprop="description" content="">
-      <meta itemprop="image" content="/images/avatar.gif">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="why are you so happy">
-    </span>
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-                
-                <a class="post-title-link" href="/2018/03/02/消息中间件/" itemprop="url">java消息中间件入门</a></h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">发表于</span>
-              
-              <time title="创建于" itemprop="dateCreated datePublished" datetime="2018-03-02T10:55:54+08:00">
-                2018-03-02
-              </time>
-            
-
-            
-
-            
-          </span>
-
-          
-
-          
-            
-          
-
-          
-          
-
-          
-
-          
-
-          
-
-        </div>
-      </header>
-    
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          
-            <h2 id="消息中间件来解耦服务调用"><a href="#消息中间件来解耦服务调用" class="headerlink" title="消息中间件来解耦服务调用"></a>消息中间件来解耦服务调用</h2><p>　　比如１个登录系统，登录的话需要调用很多系统的其他服务，如果中间调用失败，可能会导致登录信息一致无法返回，同时也增加了系统的耦合度。而用消息中间件的话，则是不发送服务到其他系统，而是发送服务到消息中间件，发完消息就直接返回结果，完美。而消息中间件则是自己吧消息发送给那些服务。</p>
-<h2 id="什么是中间件"><a href="#什么是中间件" class="headerlink" title="什么是中间件"></a>什么是中间件</h2><p>　　非底层操作系统软件。非业务应用软件，不是直接给用户的，不能给客户带来直接价值的软件叫中间件。</p>
-<h2 id="什么是消息中间件"><a href="#什么是消息中间件" class="headerlink" title="什么是消息中间件"></a>什么是消息中间件</h2><p>　　关注与数据的发送和接受，利用高效可靠的异步消息传递机制集成分布式系统。</p>
-<h2 id="什么是JMS"><a href="#什么是JMS" class="headerlink" title="什么是JMS"></a>什么是JMS</h2><p>　　java消息服务即是JMS,是一个java平台中关于面向消息中间件的API,用于2个程序啊件进行异步通信。就是一个规范。</p>
-<h2 id="什么是AMQP"><a href="#什么是AMQP" class="headerlink" title="什么是AMQP"></a>什么是AMQP</h2><p>　　一个提供统一消息服务的应用层标准高级消息队列协议,是应用层协议的一个开放标准,为面向消息的中间件设计。和JMS想对。</p>
-<h2 id="案例"><a href="#案例" class="headerlink" title="案例"></a>案例</h2><h3 id="简介"><a href="#简介" class="headerlink" title="简介"></a>简介</h3><p>　　第一步，下载安装activemq,第二步，编写发送端和接收端。<br>　　下载后可以修改这个消息队列的配置文件，来修改持久化方式，有文件持久化，数据库持久化等。发送端发送消息给消息队列，接收端从消息队列中获取消息。有２个方式来消费消息，一个是队列方式，一个是主体模式。队列模式就是现有的消费者们平均或者按照一定规则消费队列里面的消息。主题模式则是每个消费者完整的消费消息队列里面的消息。<br>　　这里写了一个案例来显示<br>　　生产者代码</p>
-<p><pre><br>    public class Producer {<br>        public static final String url = “tcp://127.0.0.1:61616”;<br>        public static final String queueName = “dh-test-queue”;<br>        public static void main(String[] args) throws JMSException {<br>            ConnectionFactory connectionFactory = new ActiveMQConnectionFactory(url);<br>            Connection connection = connectionFactory.createConnection();<br>            connection.start();<br>            Session session = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);<br>            Destination destination = session.createQueue(queueName);<br>            MessageProducer mp = session.createProducer(destination);<br>            for (int i = 0; i &lt; 100; i++) {<br>                TextMessage textMessage = session.createTextMessage(“test” + i);<br>                mp.send(textMessage);<br>                System.out.println(“发送消息” + textMessage.getText());<br>            }<br>            connection.close();</pre></p>
-<pre><code>}
-</code></pre><p><br>　　这个是先根据url生成一个连接工厂，然后根据这个工厂类生成一个连接。然后根据这个连接创建一个session，然后根据这个session创建一个目的地，这个就是消息队列上你的消息队列的名字，然后根据session和这个目的地，创建一个消息发送者，就可以发送消息到消息队列了。</p>
-<p>　　消费者代码</p>
-<p><pre><br>    public class ConsumerApp {<br>        public static final String url = “tcp://127.0.0.1:61616”;<br>        public static final String queueName = “dh-test-queue”;<br>        public static void main(String[] args) throws JMSException {<br>            ConnectionFactory connectionFactory = new ActiveMQConnectionFactory(url);<br>            Connection connection = connectionFactory.createConnection();<br>            connection.start();<br>            Session session = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);<br>            Destination destination = session.createQueue(queueName);<br>            MessageConsumer mc= session.createConsumer(destination);<br>            mc.setMessageListener(new MessageListener() {<br>                @Override<br>                public void onMessage(Message message)<br>                    TextMessage textMessage=(TextMessage) message;<br>                    try {<br>                        System.out.println(textMessage.getText());<br>                    } catch (JMSException e) {<br>                        // TODO Auto-generated catch block<br>                        e.printStackTrace();<br>                    }<br>                }<br>            });<br>            //connection.close();</pre></p>
-<pre><code>}
-</code></pre><p><br>　　前面代码都大致一样，后面不同的就是根据session和目的地生成一个消费者，然后用这个消费者调用一个监听器持续监听来自消息队列的消息，从而获取消息。</p>
-<h2 id="rabbitmq"><a href="#rabbitmq" class="headerlink" title="rabbitmq"></a>rabbitmq</h2><h3 id="生产者到消息队列确认机制，以及为何发生消息重复"><a href="#生产者到消息队列确认机制，以及为何发生消息重复" class="headerlink" title="生产者到消息队列确认机制，以及为何发生消息重复"></a>生产者到消息队列确认机制，以及为何发生消息重复</h3><p>　　定义几个概念：<br>　　A=生成者-&gt;消息队列,发送消息到消费者。<br>　　B=消息队列加入消息持久化，<br>　　C=消息队列-&gt;生产者。回复ack，<br>　　D=消息队列-&gt;消费者，发送消息到消费者。<br>　　E=消费者-&gt;消息队列，回复ack，<br>　　F=消息队列删除消息，持久化。<br>　　基本可以分为这几个步骤。<br>　　１.第一个是前３个回合。<br>　　生产端要维护一个消息发送的表，消息发送的时候记录消息id，这个消息id是消息队列自己生产的id,唯一。在消息成功落地broker磁盘并且进行回调确认（ack）的时候，根据本地消息表和回调确认的消息id进行对比，然后删除。如果这个表里面存在没有收到ack的消息，且超时了，那么生产者会再次发送。且消息id不变。<br>　　我们分析，前面３个步骤Ａ，Ｂ，Ｃ无论哪个出了问题，生产者都没有收到ack,那么都会发送再次发送消息到消息队列，那么势必造成重复，但是消息队列对这个做了去重处理，根据消息id.<br>　　第二个回合就是后面３个回合了。<br>　　对于消息队列来说，必须收到ack，我才会进行进行删除，不然我会持续发送，但是存在一个情况就是E的时候网络断了，但是消息是确实消费了，消息队列却没有删除，再次消费，则会造成消息重复，这个需要我们自己去处理。<br>　　因此第一个回合消息是幂等的，第二个回合消息不是幂等的。</p>
-<h3 id="四种交换机"><a href="#四种交换机" class="headerlink" title="四种交换机"></a>四种交换机</h3><p>　　１．扇形交换机<br>　　广播模式，将消息发送到绑定到该交换机的所有队列上。<br>　　２．直连交换机<br>　　每个队列绑定到一个交换机上面，同时有个routing_key对应这个队列到交换机。同时消息也携带一个routing_key。交换机根据这个routing_key将消息指定到对应队列里面。如果希望一个消息发送到多个队列里面，那么就要发送多次.这里面的routing_key是写死的，比如某个队列绑定到交换机的routing_key=back,那么携带back的消息就会被路由分配到这个队列里面。<br>　　３．主题交换机<br>　　这个是上面直连交换机的加强版。不过routing_key加强了，可以用一部分规则了。规则如下。*：一个单词。#：任意单词。我们队列的routing_key=com.hehe.#，那么任何以com.hehe开头的消息都会被分配到这里。<br>　　４．首部交换机<br>　　首部交换机个人觉得类似于主题交换机，只不过规则变了，是基于hash了，队列和交换机绑定的时候声明一个hash数据结构，当消息发送的时候，会携带一个hash数组，然后进行匹配，如果匹配成功就会写入到相对应的队列。</p>
-<h2 id="持久化"><a href="#持久化" class="headerlink" title="持久化"></a>持久化</h2><p>　　为了保证rabbitMq的可靠性，保证消息的可靠性。需要将quene,exchange,message都持久化。</p>
-<p>　　quene持久化就是将quene的持久化标示设置为true,当服务重启后，之前存在quene会被重洗放到rabbitmq里面。</p>
-<p>　　message持久化：quene持久化，如果message不持久化，那么重启后quene里面的没消费的消息会丢失。设置了队列和消息的持久化之后，当broker服务重启的之后，消息依旧存在。单只设置队列持久化，重启之后消息会丢失；单只设置消息的持久化，重启之后队列消失，既而消息也丢失。单单设置消息持久化而不设置队列的持久化显得毫无意义。<br>　　exchange持久化：这个持久化与否没什么影响，但是建议持久化，不然重启后交换机就会丢失。</p>
-<h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><p>　　大致了解了一些消息队列，以及做出了一个简单demo，目前没有用到，用到在细看。</p>
-
-          
-        
-      
-    </div>
-    
-    
-    
-
-    
-
-    
-
-    
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </div>
-  
-  
-  
-  </article>
-
-
-    
   </section>
 
   
@@ -1806,7 +1803,7 @@ KeySpace 键值对统计数量信息
               
                 <a href="/archives/">
               
-                  <span class="site-state-item-count">112</span>
+                  <span class="site-state-item-count">113</span>
                   <span class="site-state-item-name">日志</span>
                 </a>
               </div>

@@ -86,7 +86,7 @@
 <meta property="og:site_name" content="why are you so happy">
 <meta property="og:description" content="配置存储的参数　　log.dirs：这是非常重要的参数，指定了Broker需要使用的若干个文件目录路径。这个参数是没有默认值的，必须由你亲自指定。样例：比如/home/kafka1,/home/kafka2,/home/kafka3这样。如果有条件的话你最好保证这些目录挂载到不同的物理磁盘上。多个磁盘可以提高读写性能，实现故障转移。　　log.dir：能表示单个路径，它是补充上一个参数用的。一般不">
 <meta property="og:locale" content="zh-Hans">
-<meta property="og:updated_time" content="2019-06-25T03:09:34.795Z">
+<meta property="og:updated_time" content="2019-07-01T06:36:35.071Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="kafak入门004 -集群配置">
 <meta name="twitter:description" content="配置存储的参数　　log.dirs：这是非常重要的参数，指定了Broker需要使用的若干个文件目录路径。这个参数是没有默认值的，必须由你亲自指定。样例：比如/home/kafka1,/home/kafka2,/home/kafka3这样。如果有条件的话你最好保证这些目录挂载到不同的物理磁盘上。多个磁盘可以提高读写性能，实现故障转移。　　log.dir：能表示单个路径，它是补充上一个参数用的。一般不">
@@ -310,6 +310,12 @@
 <p>　　listeners：学名叫监听器，其实就是告诉外部连接者要通过什么协议访问指定主机名和端口开放的Kafka服务。<br>　　advertised.listeners：和listeners相比多了个advertised。Advertised的含义表示宣称的、公布的，就是说这组监听器是Broker用于对外发布的。<br>　　host.name/port：列出这两个参数就是想说你把它们忘掉吧，压根不要为它们指定值，毕竟都是过期的参数了。</p>
 <h2 id="topic"><a href="#topic" class="headerlink" title="topic"></a>topic</h2><p>　　auto.create.topics.enable：是否允许自动创建Topic。一般为false，让运维管控。免得出现一堆奇葩命名的<br>　　unclean.leader.election.enable：是否允许Unclean Leader选举。每个分区存在多个副本，有的副本落后lead太多数据，但是lead和其他不落后的都挂了，如果为true，那么这个分区可能数据丢失，因为会选举落后很多的副本作为lead<br>　　auto.leader.rebalance.enable：是否允许定期进行Leader选举。它的值为true表示允许Kafka定期地对一些Topic分区进行Leader重选举，这个是强行选举，因此需要设置为false.</p>
 <h2 id="数据留存"><a href="#数据留存" class="headerlink" title="数据留存"></a>数据留存</h2><p>　　log.retention.{hour|minutes|ms}：这是个“三兄弟”，都是控制一条消息数据被保存多长时间。从优先级上来说ms设置最高、minutes次之、hour最低。<br>　　log.retention.bytes：这是指定Broker为消息保存的总磁盘容量大小。<br>　　message.max.bytes：控制Broker能够接收的最大消息大小</p>
+<h2 id="参数级别"><a href="#参数级别" class="headerlink" title="参数级别"></a>参数级别</h2><p>　　我们可以在broke端加参数，也可以在topic端添加参数。参数意义一样的，topic端会覆盖broke端。不同消息主题有不同的需求，比如A主题需要消息留存时间2h,B主题则仅仅需要5m,那么们broke端只能设置一个最长的参数来确定，但是有了topic主题后，我们可以针对性设置。</p>
+<p>　　retention.ms：规定了该Topic消息被保存的时长。默认是7天，即该Topic只保存最近7天的消息。一旦设置了这个值，它会覆盖掉Broker端的全局参数值。</p>
+<p>　　retention.bytes：规定了要为该Topic预留多大的磁盘空间。和全局参数作用相似，这个值通常在多租户的Kafka集群中会有用武之地。当前默认值是-1，表示可以无限使用磁盘空间。</p>
+<p>　　我们可以在用户创建kafka的topic，和修改topic时可以增加修改topic参数。</p>
+<h2 id="jvm参数"><a href="#jvm参数" class="headerlink" title="jvm参数"></a>jvm参数</h2><p>　　一般最好是java1.8,堆大小最好6GB。我们必须在启动kafka之前加好这些环境变量。<br>　　KAFKA_HEAP_OPTS：指定堆大小。KAFKA_JVM_PERFORMANCE_OPTS：指定GC参数。<br>　　然后正常启动即可。</p>
+<h2 id="操作系统参数"><a href="#操作系统参数" class="headerlink" title="操作系统参数"></a>操作系统参数</h2><p>　　文件描述符，可以将其设置的大一点。<br>　　文件系统类型，XFS性能更高。<br>　　swap,内存交换空间，这个值设置的尽量小一点，但是不要设置为0。因为那样内存不够了，会直接杀死任意一个进程。<br>　　flush落盘时间，这个值可以大一点。</p>
 
       
     </div>
@@ -423,7 +429,7 @@
               
                 <a href="/archives/">
               
-                  <span class="site-state-item-count">112</span>
+                  <span class="site-state-item-count">113</span>
                   <span class="site-state-item-name">日志</span>
                 </a>
               </div>
@@ -462,7 +468,7 @@
             
 
             
-              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#配置存储的参数"><span class="nav-number">1.</span> <span class="nav-text">配置存储的参数</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#zookeeper参数"><span class="nav-number">2.</span> <span class="nav-text">zookeeper参数</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#broker通信相关"><span class="nav-number">3.</span> <span class="nav-text">broker通信相关</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#topic"><span class="nav-number">4.</span> <span class="nav-text">topic</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#数据留存"><span class="nav-number">5.</span> <span class="nav-text">数据留存</span></a></li></ol></div>
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#配置存储的参数"><span class="nav-number">1.</span> <span class="nav-text">配置存储的参数</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#zookeeper参数"><span class="nav-number">2.</span> <span class="nav-text">zookeeper参数</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#broker通信相关"><span class="nav-number">3.</span> <span class="nav-text">broker通信相关</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#topic"><span class="nav-number">4.</span> <span class="nav-text">topic</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#数据留存"><span class="nav-number">5.</span> <span class="nav-text">数据留存</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#参数级别"><span class="nav-number">6.</span> <span class="nav-text">参数级别</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#jvm参数"><span class="nav-number">7.</span> <span class="nav-text">jvm参数</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#操作系统参数"><span class="nav-number">8.</span> <span class="nav-text">操作系统参数</span></a></li></ol></div>
             
 
           </div>
