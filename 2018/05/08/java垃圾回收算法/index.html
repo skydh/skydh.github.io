@@ -86,7 +86,7 @@
 <meta property="og:site_name" content="why are you so happy">
 <meta property="og:description" content="引用　　强引用：这个引用在程序代码间很常见，类似于Object a=new Object（），这样直接声明的对象，只要强引用还存在，那么这个对象就不会被gc回收。　　软引用：java用SoftReference类来实现软引用。软引用关联的对象会在系统即将发生内存溢出，也就是内存不够时，将会把这些对象进行回收，如果回收后依旧没有足够的内存才会抛出内存溢出异常。　　弱引用：java用WeakRefer">
 <meta property="og:locale" content="zh-Hans">
-<meta property="og:updated_time" content="2019-03-25T05:49:20.588Z">
+<meta property="og:updated_time" content="2019-07-18T10:58:27.295Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="jvm垃圾回收算法">
 <meta name="twitter:description" content="引用　　强引用：这个引用在程序代码间很常见，类似于Object a=new Object（），这样直接声明的对象，只要强引用还存在，那么这个对象就不会被gc回收。　　软引用：java用SoftReference类来实现软引用。软引用关联的对象会在系统即将发生内存溢出，也就是内存不够时，将会把这些对象进行回收，如果回收后依旧没有足够的内存才会抛出内存溢出异常。　　弱引用：java用WeakRefer">
@@ -305,7 +305,7 @@
 
       
         <h2 id="引用"><a href="#引用" class="headerlink" title="引用"></a>引用</h2><p>　　强引用：这个引用在程序代码间很常见，类似于Object a=new Object（），这样直接声明的对象，只要强引用还存在，那么这个对象就不会被gc回收。<br>　　软引用：java用SoftReference类来实现软引用。软引用关联的对象会在系统即将发生内存溢出，也就是内存不够时，将会把这些对象进行回收，如果回收后依旧没有足够的内存才会抛出内存溢出异常。<br>　　弱引用：java用WeakReference类实现弱引用，其强度更弱于软引用，被弱引用的对象会在下次垃圾回收时直接被回收，无论内存是否足够。<br>　　虚引用：java用PhantomReference类来实现虚引用。这个是最弱的一种引用，甚至无法通过虚引用来获取对象。</p>
-<h1 id="判断对象是否被引用"><a href="#判断对象是否被引用" class="headerlink" title="判断对象是否被引用"></a>判断对象是否被引用</h1><h2 id="引用计数算法"><a href="#引用计数算法" class="headerlink" title="引用计数算法"></a>引用计数算法</h2><p>　　给对象加一个引用计数器，每当一个地方引用它时，计数器就加一，当引用失效时，计数器就减一，任何时刻计数器为０时的对象就是不可能再被使用的。但是有ｂｕｇ，２个对象相互引用，那么这个对象就永远无法被回收。</p>
+<h1 id="判断对象是否被引用"><a href="#判断对象是否被引用" class="headerlink" title="判断对象是否被引用"></a>判断对象是否被引用</h1><h2 id="引用计数算法"><a href="#引用计数算法" class="headerlink" title="引用计数算法"></a>引用计数算法</h2><p>　　给对象加一个引用计数器，每当一个地方引用它时，计数器就加一，当引用失效时，计数器就减一，任何时刻计数器为0时的对象就是不可能再被使用的。但是有bug，２个对象相互引用，那么这个对象就永远无法被回收。</p>
 <h2 id="可达性分析算法"><a href="#可达性分析算法" class="headerlink" title="可达性分析算法"></a>可达性分析算法</h2><p>　　这个算法是通过一个叫”GC Roots”的对象作为起始点，从这个节点开始向下搜索，搜索的路径叫做引用链，如果可以通过引用链找到这个对象，那么这个对象时有效的，否则，无效，解决了上面2个对象相互引用但是没有别的对象可达的问题，可以作为”GC Roots”的对象有方法区常量引用的对象，虚拟机栈引用的对象，等。目前java就是这种判断模式。</p>
 <h1 id="gc垃圾回收算法"><a href="#gc垃圾回收算法" class="headerlink" title="gc垃圾回收算法"></a>gc垃圾回收算法</h1><h2 id="标记-清除算法"><a href="#标记-清除算法" class="headerlink" title="标记-清除算法"></a>标记-清除算法</h2><p>　　最基础的算法，就是把要回收的对象标记后进行回收，缺点是容易产生大量不连续的内存碎片，如果产生一个大的对象时，由于全是内存碎片，没有整个的内存，因此内存不够就会提前触发垃圾回收，效率很低。</p>
 <h2 id="复制算法"><a href="#复制算法" class="headerlink" title="复制算法"></a>复制算法</h2><p>　　目前主流虚拟机的收集算法之一主要针对新生态对象，初始化时是一比一的算法，就是把内存分为2部分一样大的部分，平时只使用其中一个部分也就是其一半，当发生垃圾回收时，就会把这个部分存活的对象放到另一个部分，这样子就避免了内存碎片，但是要只使用一半的内存，亏损太大划不来，目前主流虚拟机都是用这个算法来回收新生代。IBM研究发现，９８％的新生态对象生存周期很短的，于是一个新的算法出来了，就是把内存分为3部分，8：1：1，每次使用其中的0.9部分，当发生垃圾回收的时候那就把剩余的对象就放到剩余的0.1那里，当然剩余的0.1可能不够那就可以把一部分对象转化为老年态暂时存到老年态里面，这样子就只浪费0.1的内存了，性价比可以。</p>
@@ -434,7 +434,7 @@
               
                 <a href="/archives/">
               
-                  <span class="site-state-item-count">113</span>
+                  <span class="site-state-item-count">115</span>
                   <span class="site-state-item-name">日志</span>
                 </a>
               </div>

@@ -81,14 +81,14 @@
 
 <meta name="description" content="创建主题　　在集群配置的时候就说过了　auto.create.topics.enable这个值设置为true时。生产者发送一个没有被创建主题的消息时，会自动创建一个分区数为num.partition默认为1，副本因子为default.replication.factory默认为1的主题。消费者请求某个主题时也会创建一个">
 <meta property="og:type" content="article">
-<meta property="og:title" content="kafak入门005 -主题和分区">
+<meta property="og:title" content="kafka入门005 -主题和分区">
 <meta property="og:url" content="https://skydh.github.io/2019/06/27/kafka基础-主题和分区/index.html">
 <meta property="og:site_name" content="why are you so happy">
 <meta property="og:description" content="创建主题　　在集群配置的时候就说过了　auto.create.topics.enable这个值设置为true时。生产者发送一个没有被创建主题的消息时，会自动创建一个分区数为num.partition默认为1，副本因子为default.replication.factory默认为1的主题。消费者请求某个主题时也会创建一个类似的主题。这样主题不利于管理，因此我们需要将　auto.create.topi">
 <meta property="og:locale" content="zh-Hans">
-<meta property="og:updated_time" content="2019-07-08T13:28:11.945Z">
+<meta property="og:updated_time" content="2019-07-15T13:24:30.045Z">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:title" content="kafak入门005 -主题和分区">
+<meta name="twitter:title" content="kafka入门005 -主题和分区">
 <meta name="twitter:description" content="创建主题　　在集群配置的时候就说过了　auto.create.topics.enable这个值设置为true时。生产者发送一个没有被创建主题的消息时，会自动创建一个分区数为num.partition默认为1，副本因子为default.replication.factory默认为1的主题。消费者请求某个主题时也会创建一个类似的主题。这样主题不利于管理，因此我们需要将　auto.create.topi">
 
 
@@ -125,7 +125,7 @@
 
 
 
-  <title>kafak入门005 -主题和分区 | why are you so happy</title>
+  <title>kafka入门005 -主题和分区 | why are you so happy</title>
   
 
 
@@ -249,7 +249,7 @@
 
         
         
-          <h1 class="post-title" itemprop="name headline">kafak入门005 -主题和分区</h1>
+          <h1 class="post-title" itemprop="name headline">kafka入门005 -主题和分区</h1>
         
 
         <div class="post-meta">
@@ -361,6 +361,17 @@ val shift = 1 + (secondReplicaShift + replicaIndex) % (nBrokers - 1)
 }
 </code></pre><p>　　这个算法使得分区副本分配的很均匀。差不多正好。<br>　　指定机架信息和没指定机架信息本质上差不多。一个机架可以分配多个broker节点，但是满足下面条件的broker不可哟添加到当前分区的副本列表里面。<br>　　１.此broker所在机架已经有一个broker在这个分区的副本列表里面，且其他机架中没有任何的broken在该分区的副本列表里面。</p>
 <p>　　２.此broker已经在在列表，且其他broker不在。创建主题时实质上是在zookeeper中的/kafka/brokers/topics节点下创建和该主题对应的子节点，并且写入副本分配信息，且在/config/topics节点下创建该节点对应的子节点并且主题配置信息。kafka创建主题的实质上动作是交给控制器异步完成的。<br>　　因此我们可以直接通过创建规则下的节点，来直接创建一个新的主题。这样我们可以绕过一些规则，比如我们创建主题分区的时候都是从０开始计数。我们通过创建zookeeper节点就不用从0开始累加了。</p>
+<h2 id="查看主题"><a href="#查看主题" class="headerlink" title="查看主题"></a>查看主题</h2><p>　　kafka-topics.sh这个命令有５个指令类型：create,list,describe,alter和delete。其中list和describe是查看主题信息的。</p>
+<pre><code>./bin/kafka-topics.sh --zookeeper localhost:2181/kafka -list
+</code></pre><p>　　这个命令是查看当前kafka当前所有可用主题。</p>
+<pre><code>./bin/kafka-topics.sh --zookeeper localhost:2181/kafka --describe --topic topic-create 
+</code></pre><p>　　这个是查看topic-create这个主题的详细信息，可以接多个主题，一次查看多个主题信息。如果没有–topic这个参数则是查看所有主题信息。</p>
+<pre><code>./bin/kafka-topics.sh --zookeeper localhost:2181/kafka --describe  --topics-with-overrides
+</code></pre><p>　　–topics-with-overrides加这个参数则是查看所有使用了覆盖配置的主题。</p>
+<pre><code>./bin/kafka-topics.sh --zookeeper localhost:2181/kafka --describe --topic topic-create --under-replicated-partitions
+</code></pre><p>　　这个参数是查询当前主题所有包含失效副本的分区</p>
+<pre><code>./bin/kafka-topics.sh --zookeeper localhost:2181/kafka --describe --topic topic-create -unavaliable-partitions 
+</code></pre><p> 　　这个参数查看主题中没有lead副本的分区。</p>
 
       
     </div>
@@ -385,8 +396,8 @@ val shift = 1 + (secondReplicaShift + replicaIndex) % (nBrokers - 1)
         <div class="post-nav">
           <div class="post-nav-next post-nav-item">
             
-              <a href="/2019/06/25/kafka基础-消费者/" rel="next" title="kafak入门003 -消费者">
-                <i class="fa fa-chevron-left"></i> kafak入门003 -消费者
+              <a href="/2019/06/25/kafka基础-消费者/" rel="next" title="kafka入门003 -消费者">
+                <i class="fa fa-chevron-left"></i> kafka入门003 -消费者
               </a>
             
           </div>
@@ -395,8 +406,8 @@ val shift = 1 + (secondReplicaShift + replicaIndex) % (nBrokers - 1)
 
           <div class="post-nav-prev post-nav-item">
             
-              <a href="/2019/07/08/网关/" rel="prev" title="网关">
-                网关 <i class="fa fa-chevron-right"></i>
+              <a href="/2019/07/08/网关/" rel="prev" title="Api网关">
+                Api网关 <i class="fa fa-chevron-right"></i>
               </a>
             
           </div>
@@ -474,7 +485,7 @@ val shift = 1 + (secondReplicaShift + replicaIndex) % (nBrokers - 1)
               
                 <a href="/archives/">
               
-                  <span class="site-state-item-count">113</span>
+                  <span class="site-state-item-count">115</span>
                   <span class="site-state-item-name">日志</span>
                 </a>
               </div>
@@ -513,7 +524,7 @@ val shift = 1 + (secondReplicaShift + replicaIndex) % (nBrokers - 1)
             
 
             
-              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#创建主题"><span class="nav-number">1.</span> <span class="nav-text">创建主题</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#分区副本的分配"><span class="nav-number">2.</span> <span class="nav-text">分区副本的分配</span></a></li></ol></div>
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#创建主题"><span class="nav-number">1.</span> <span class="nav-text">创建主题</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#分区副本的分配"><span class="nav-number">2.</span> <span class="nav-text">分区副本的分配</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#查看主题"><span class="nav-number">3.</span> <span class="nav-text">查看主题</span></a></li></ol></div>
             
 
           </div>

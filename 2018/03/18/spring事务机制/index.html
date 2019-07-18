@@ -79,17 +79,17 @@
 
 
 
-<meta name="description" content="clear 航">
+<meta name="description" content="简介 spring事务通过这个接口来定义的：TransactionDefinition ，这个接口包含了和事务属性有关的方法和参数定义。 spring事务里面PlatformTransactionManager这个接口定义了事务的具体执行操作方法。其最终的实现类主要有：DataSourceTransactionMana">
 <meta property="og:type" content="article">
 <meta property="og:title" content="spring 事务机制">
 <meta property="og:url" content="https://skydh.github.io/2018/03/18/spring事务机制/index.html">
 <meta property="og:site_name" content="why are you so happy">
-<meta property="og:description" content="clear 航">
+<meta property="og:description" content="简介 spring事务通过这个接口来定义的：TransactionDefinition ，这个接口包含了和事务属性有关的方法和参数定义。 spring事务里面PlatformTransactionManager这个接口定义了事务的具体执行操作方法。其最终的实现类主要有：DataSourceTransactionManager：适用于使用JDBC和iBatis进行数据持久化操作的情况。Hiberna">
 <meta property="og:locale" content="zh-Hans">
-<meta property="og:updated_time" content="2018-03-18T09:15:09.842Z">
+<meta property="og:updated_time" content="2019-07-16T09:18:32.926Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="spring 事务机制">
-<meta name="twitter:description" content="clear 航">
+<meta name="twitter:description" content="简介 spring事务通过这个接口来定义的：TransactionDefinition ，这个接口包含了和事务属性有关的方法和参数定义。 spring事务里面PlatformTransactionManager这个接口定义了事务的具体执行操作方法。其最终的实现类主要有：DataSourceTransactionManager：适用于使用JDBC和iBatis进行数据持久化操作的情况。Hiberna">
 
 
 
@@ -304,7 +304,34 @@
       
 
       
-        
+        <h1 id="简介"><a href="#简介" class="headerlink" title="简介"></a>简介</h1><ul>
+<li>spring事务通过这个接口来定义的：TransactionDefinition ，这个接口包含了和事务属性有关的方法和参数定义。</li>
+<li>spring事务里面PlatformTransactionManager这个接口定义了事务的具体执行操作方法。其最终的实现类主要有：DataSourceTransactionManager：适用于使用JDBC和iBatis进行数据持久化操作的情况。<br>HibernateTransactionManager：适用于使用Hibernate进行数据持久化操作的情况。<br>JpaTransactionManager：适用于使用JPA进行数据持久化操作的情况。这个类也可以管理jdbc的事务。ps:（This transaction manager also supports direct DataSource access within a<ul>
+<li>transaction (i.e. plain JDBC code working with the same DataSource).）</li>
+</ul>
+</li>
+</ul>
+<h2 id="事务隔离级别"><a href="#事务隔离级别" class="headerlink" title="事务隔离级别"></a>事务隔离级别</h2><p>　　在这个接口里面定义了一些事务隔离级别，这和mysql的事务隔离界别没区别，都是RU,RC,RR,SE。我们可以使用符合自己业务需求的隔离级别。</p>
+<h2 id="事务传播级别"><a href="#事务传播级别" class="headerlink" title="事务传播级别"></a>事务传播级别</h2><p>　　在接口定义中，下面几个参数代表了不同传播级别。事务的传播就是在开启当前事务之前已经开启了一个事务。</p>
+<pre><code>int PROPAGATION_REQUIRED = 0;
+int PROPAGATION_SUPPORTS = 1;
+int PROPAGATION_MANDATORY = 2;
+int PROPAGATION_REQUIRES_NEW = 3;
+int PROPAGATION_NOT_SUPPORTED = 4;
+int PROPAGATION_NEVER = 5;
+int PROPAGATION_NESTED = 6;
+</code></pre><ul>
+<li>PROPAGATION_REQUIRED：若存在事务，则加入当前事务，否则创建一个新事务。</li>
+<li>PROPAGATION_SUPPORTS：若存在事务，则加入当前事务，否则以无事务的状态运行。</li>
+<li>PROPAGATION_MANDATORY：如果存在事务则加入当前事务，没有则抛出异常。</li>
+<li>PROPAGATION_REQUIRES_NEW：创建一个新事务，以这个新事务为主，把已存在的事务挂起。</li>
+<li>PROPAGATION_NOT_SUPPORTED：以非事务的方式运行，若存在事务，则把当前事务挂起。</li>
+<li>PROPAGATION_NEVER：以非事务的方向运行，若存在事务，则抛出异常。</li>
+<li>PROPAGATION_NESTED：若存在事务，则创建一个事务作为当前事务的嵌套事务来执行，没有则是创建一个新事物和PROPAGATION_REQUIRED类似。内嵌事务并不是一个独立的事务，它依赖于外部事务的存在，只有通过外部的事务提交，才能引起内部事务的提交，嵌套的子事务不能单独提交。</li>
+</ul>
+<h1 id="编程式事务"><a href="#编程式事务" class="headerlink" title="编程式事务"></a>编程式事务</h1><p>　　类似于JDBC编程实现事务管理。Spring框架提供一致的事务抽象，因此对于JDBC还是JTA事务都是采用相同的API进行编程。</p>
+<h1 id="声明式事务"><a href="#声明式事务" class="headerlink" title="声明式事务"></a>声明式事务</h1><p>　　声明式事务实际上是通过aop实现的，我们一般也是采用这个方案，可以有效的减少代码code。并且把公共代码全部抽取了出来。我们一般也是采用这个方案。</p>
+
       
     </div>
     
@@ -392,8 +419,17 @@
       
 
       
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
 
-      <section class="site-overview-wrap sidebar-panel sidebar-panel-active">
+      <section class="site-overview-wrap sidebar-panel">
         <div class="site-overview">
           <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
             
@@ -408,7 +444,7 @@
               
                 <a href="/archives/">
               
-                  <span class="site-state-item-count">113</span>
+                  <span class="site-state-item-count">115</span>
                   <span class="site-state-item-name">日志</span>
                 </a>
               </div>
@@ -437,6 +473,22 @@
         </div>
       </section>
 
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#简介"><span class="nav-number">1.</span> <span class="nav-text">简介</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#事务隔离级别"><span class="nav-number">1.1.</span> <span class="nav-text">事务隔离级别</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#事务传播级别"><span class="nav-number">1.2.</span> <span class="nav-text">事务传播级别</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#编程式事务"><span class="nav-number">2.</span> <span class="nav-text">编程式事务</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#声明式事务"><span class="nav-number">3.</span> <span class="nav-text">声明式事务</span></a></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
       
 
       

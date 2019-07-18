@@ -81,14 +81,14 @@
 
 <meta name="description" content="什么是网关　　网关（英语：Gateway）是转发其他服务器通信数据的服务器，接收从客户端发送来的请求时，它就像自己拥有资源的源服务器一样对请求进行处理。有时客户端可能都不会察觉，自己的通信目标是一个网关。 api网关　　API 网关将各系统对外暴露的服务聚合起来，所有要调用这些服务的系统都需要通过 API 网关进行访问">
 <meta property="og:type" content="article">
-<meta property="og:title" content="网关">
+<meta property="og:title" content="Api网关">
 <meta property="og:url" content="https://skydh.github.io/2019/07/08/网关/index.html">
 <meta property="og:site_name" content="why are you so happy">
 <meta property="og:description" content="什么是网关　　网关（英语：Gateway）是转发其他服务器通信数据的服务器，接收从客户端发送来的请求时，它就像自己拥有资源的源服务器一样对请求进行处理。有时客户端可能都不会察觉，自己的通信目标是一个网关。 api网关　　API 网关将各系统对外暴露的服务聚合起来，所有要调用这些服务的系统都需要通过 API 网关进行访问，基于这种方式网关可以对 API 进行统一管控，例如：认证、鉴权、流量控制、协议">
 <meta property="og:locale" content="zh-Hans">
-<meta property="og:updated_time" content="2019-07-08T13:10:28.087Z">
+<meta property="og:updated_time" content="2019-07-16T05:41:44.538Z">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:title" content="网关">
+<meta name="twitter:title" content="Api网关">
 <meta name="twitter:description" content="什么是网关　　网关（英语：Gateway）是转发其他服务器通信数据的服务器，接收从客户端发送来的请求时，它就像自己拥有资源的源服务器一样对请求进行处理。有时客户端可能都不会察觉，自己的通信目标是一个网关。 api网关　　API 网关将各系统对外暴露的服务聚合起来，所有要调用这些服务的系统都需要通过 API 网关进行访问，基于这种方式网关可以对 API 进行统一管控，例如：认证、鉴权、流量控制、协议">
 
 
@@ -125,7 +125,7 @@
 
 
 
-  <title>网关 | why are you so happy</title>
+  <title>Api网关 | why are you so happy</title>
   
 
 
@@ -249,7 +249,7 @@
 
         
         
-          <h1 class="post-title" itemprop="name headline">网关</h1>
+          <h1 class="post-title" itemprop="name headline">Api网关</h1>
         
 
         <div class="post-meta">
@@ -310,6 +310,11 @@
 <h3 id="面向合作伙伴开放-API"><a href="#面向合作伙伴开放-API" class="headerlink" title="面向合作伙伴开放 API"></a>面向合作伙伴开放 API</h3><p>　　这类场景，主要为了满足业务形态对外开放，与企业外部合作伙伴建立生态圈，此时的 API 网关注重安全认证、权限分级、流量管控、缓存等功能的建设。</p>
 <h3 id="企业内部系统互联互通"><a href="#企业内部系统互联互通" class="headerlink" title="企业内部系统互联互通"></a>企业内部系统互联互通</h3><p>　　对于中大型的企业内部往往有几十、甚至上百个系统，尤其是微服务架构的兴起系统数量更是急剧增加。系统之间相互依赖，逐渐形成网状调用关系不便于管理和维护，需要 API 网关进行统一的认证、鉴权、流量管控、超时熔断、监控告警管理，从而提高系统的稳定性、降低重复建设、运维管理等成本。</p>
 <h3 id="具备的能力"><a href="#具备的能力" class="headerlink" title="具备的能力"></a>具备的能力</h3><h4 id="服务注册和服务接入能力"><a href="#服务注册和服务接入能力" class="headerlink" title="服务注册和服务接入能力"></a>服务注册和服务接入能力</h4><h4 id="网关接入和发布核心功能"><a href="#网关接入和发布核心功能" class="headerlink" title="网关接入和发布核心功能"></a>网关接入和发布核心功能</h4><h4 id="服务安全"><a href="#服务安全" class="headerlink" title="服务安全"></a>服务安全</h4><h4 id="服务管控和治理"><a href="#服务管控和治理" class="headerlink" title="服务管控和治理"></a>服务管控和治理</h4><p>ps:<a href="https://www.infoq.cn/article/api-gateway-architecture-design" target="_blank" rel="noopener">https://www.infoq.cn/article/api-gateway-architecture-design</a></p>
+<h2 id="zuul"><a href="#zuul" class="headerlink" title="zuul"></a>zuul</h2><p>　　我司的api网关服务是基于zuul2实现的。为了搭建一个类似的网关服务，我将详细的搭建一个demo，来跑这个服务。</p>
+<p>　　我先根据网上的教程，搭建了一个简单的eureka注册中心，然后搭建了2个简单的server注册到这个注册中心里面，然后搭建一个简单的基于zuul的网关注册到eureka里面，这个api网关是基于serverId实现的，然后启动一个server，路由访问，成功得到数据。实现这个ZuulFilter这个接口做的效果，默认则是org.springframework.cloud.netflix.zuul.filters这个包下的过滤器的实现。</p>
+<p>　　ps：参考这篇文章</p>
+<pre><code>http://blog.didispace.com/spring-cloud-source-zuul/
+</code></pre><p>　　</p>
 <p>ps(SpringCloud的整体组建包括：Zuul、Ribbon、EureKa、Fein、Hystrix等。其中Zuul就是一个类似APIGateway的组建，Ribbon是类似于Nginx的代理服务器，Eureka用于注册和发现服务，Hystrix可以作为整个架构的断路服务，用于服务降级。Fein可以作为一个Rest服务的提供者，可以供内部服务之间相互调用)</p>
 
       
@@ -335,8 +340,8 @@
         <div class="post-nav">
           <div class="post-nav-next post-nav-item">
             
-              <a href="/2019/06/27/kafka基础-主题和分区/" rel="next" title="kafak入门005 -主题和分区">
-                <i class="fa fa-chevron-left"></i> kafak入门005 -主题和分区
+              <a href="/2019/06/27/kafka基础-主题和分区/" rel="next" title="kafka入门005 -主题和分区">
+                <i class="fa fa-chevron-left"></i> kafka入门005 -主题和分区
               </a>
             
           </div>
@@ -344,6 +349,10 @@
           <span class="post-nav-divider"></span>
 
           <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2019/07/15/简历/" rel="prev" title="">
+                 <i class="fa fa-chevron-right"></i>
+              </a>
             
           </div>
         </div>
@@ -420,7 +429,7 @@
               
                 <a href="/archives/">
               
-                  <span class="site-state-item-count">113</span>
+                  <span class="site-state-item-count">115</span>
                   <span class="site-state-item-name">日志</span>
                 </a>
               </div>
@@ -459,7 +468,7 @@
             
 
             
-              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#什么是网关"><span class="nav-number">1.</span> <span class="nav-text">什么是网关</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#api网关"><span class="nav-number">2.</span> <span class="nav-text">api网关</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#面向-Web-或者移动-App"><span class="nav-number">2.1.</span> <span class="nav-text">面向 Web 或者移动 App</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#面向合作伙伴开放-API"><span class="nav-number">2.2.</span> <span class="nav-text">面向合作伙伴开放 API</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#企业内部系统互联互通"><span class="nav-number">2.3.</span> <span class="nav-text">企业内部系统互联互通</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#具备的能力"><span class="nav-number">2.4.</span> <span class="nav-text">具备的能力</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#服务注册和服务接入能力"><span class="nav-number">2.4.1.</span> <span class="nav-text">服务注册和服务接入能力</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#网关接入和发布核心功能"><span class="nav-number">2.4.2.</span> <span class="nav-text">网关接入和发布核心功能</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#服务安全"><span class="nav-number">2.4.3.</span> <span class="nav-text">服务安全</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#服务管控和治理"><span class="nav-number">2.4.4.</span> <span class="nav-text">服务管控和治理</span></a></li></ol></li></ol></li></ol></div>
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#什么是网关"><span class="nav-number">1.</span> <span class="nav-text">什么是网关</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#api网关"><span class="nav-number">2.</span> <span class="nav-text">api网关</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#面向-Web-或者移动-App"><span class="nav-number">2.1.</span> <span class="nav-text">面向 Web 或者移动 App</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#面向合作伙伴开放-API"><span class="nav-number">2.2.</span> <span class="nav-text">面向合作伙伴开放 API</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#企业内部系统互联互通"><span class="nav-number">2.3.</span> <span class="nav-text">企业内部系统互联互通</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#具备的能力"><span class="nav-number">2.4.</span> <span class="nav-text">具备的能力</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#服务注册和服务接入能力"><span class="nav-number">2.4.1.</span> <span class="nav-text">服务注册和服务接入能力</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#网关接入和发布核心功能"><span class="nav-number">2.4.2.</span> <span class="nav-text">网关接入和发布核心功能</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#服务安全"><span class="nav-number">2.4.3.</span> <span class="nav-text">服务安全</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#服务管控和治理"><span class="nav-number">2.4.4.</span> <span class="nav-text">服务管控和治理</span></a></li></ol></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#zuul"><span class="nav-number">3.</span> <span class="nav-text">zuul</span></a></li></ol></div>
             
 
           </div>

@@ -232,6 +232,262 @@
   
   
   <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="https://skydh.github.io/2018/05/14/虚拟机字节码执行引擎/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="董航">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="why are you so happy">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                <a class="post-title-link" href="/2018/05/14/虚拟机字节码执行引擎/" itemprop="url">虚拟机字节码执行引擎</a></h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2018-05-14T16:07:38+08:00">
+                2018-05-14
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            <h2 id="java到底是解释语言还是编译语言"><a href="#java到底是解释语言还是编译语言" class="headerlink" title="java到底是解释语言还是编译语言"></a>java到底是解释语言还是编译语言</h2><p>　　java他是个混合类型的语言，他解释一行行代码执行，同时将反复执行的热点代码，以方法为单位即时编译。因为一个程序里面执行最多的往往是那20%的代码。</p>
+<h2 id="不同的即时编译器"><a href="#不同的即时编译器" class="headerlink" title="不同的即时编译器"></a>不同的即时编译器</h2><p>　　java有多款即时编译器。C1,C2,Graal,这几款是为了在编译时间和运行效率取个均衡。C1是编译时间短，同时性能差，C2正好和C1相反，编译时间稍长，但是性能更高。<br>　　从 Java 7 开始，HotSpot 默认采用分层编译的方式：热点方法首先会被 C1 编译，而后热点方法中的热点会进一步被 C2 编译。在计算资源充足的情况下，字节码的解释执行和即时编译可同时进行。编译完成后的机器码会在下次调用该方法时启用，以替换原本的解释执行。</p>
+<h2 id="运行时栈帧结构"><a href="#运行时栈帧结构" class="headerlink" title="运行时栈帧结构"></a>运行时栈帧结构</h2><p>　　java代码加载是放到方法区的，但是在运行过程中，每调用一个方法，就生成一个栈帧。栈帧是用于支持虚拟机进行方法调用的和方法执行的数据结构，是虚拟机运行时数据区的虚拟机栈的栈元素，栈帧存储了方法的局部变量表，操作数栈，动态链接，方法返回地址等。<br>　　每一个栈帧需要多大的内存在编译期间就确认了。</p>
+<h3 id="局部变量表"><a href="#局部变量表" class="headerlink" title="局部变量表"></a>局部变量表</h3><p>　　在其，存放方法参数和方法内部定义的局部变量。</p>
+<h3 id="操作数栈"><a href="#操作数栈" class="headerlink" title="操作数栈"></a>操作数栈</h3><p>　　也叫操作栈，是一个后入先出栈，当一个方法开始执行时，操作数栈是空的，在执行过程中，各种字节码指令会往操作数栈写入和提取内容。</p>
+<h3 id="动态连接"><a href="#动态连接" class="headerlink" title="动态连接"></a>动态连接</h3><p>　　每个栈帧都包含一个指向运行时常量池的引用，在Class文件中会有大量符号引用，一部分会在类加载时就直接转换为直接引用，一部分是在运行时转换为直接引用。</p>
+<h3 id="方法返回地址"><a href="#方法返回地址" class="headerlink" title="方法返回地址"></a>方法返回地址</h3><p>　　方法有２个方式退出，第一个是执行引擎遇到返回的字节码指令，正常退出。第二个就是遇到了异常，且没有被处理也会退出，这个是异常完成退出。无论哪种退出都要返回到方法被调用的位置，程序才能继续执行，正常退出时才会有这个值，异常退出时，一般不会保存这个值。</p>
+<h3 id="附加信息"><a href="#附加信息" class="headerlink" title="附加信息"></a>附加信息</h3><p>　　一些不在规范里面描述的信息，例如调试相关的信息，一般吧动态连接，方法返回地址。</p>
+<h2 id="方法调用"><a href="#方法调用" class="headerlink" title="方法调用"></a>方法调用</h2><p>　　在java中没有传统的连接步骤，存放在Class文件的是符号引用。</p>
+<h3 id="解析"><a href="#解析" class="headerlink" title="解析"></a>解析</h3><p>　　在类加载的解析阶段，会将一部分符号引用变成直接引用。这一部分是有要求的，就是方法调用在编译器就确认好了，不会发生变化的调用。<br>　　在java中符合这个规范（编译器可知，运行期不可变的方法）是静态方法属于这个类，私有方法，外部不可访问，这2个类型的方法注定不会被重写或者继承产生其他版本。因此是在编译器就确认好了。</p>
+<h3 id="分派"><a href="#分派" class="headerlink" title="分派"></a>分派</h3><h4 id="静态分派"><a href="#静态分派" class="headerlink" title="静态分派"></a>静态分派</h4><p>　　A a=new B();其中B继承A,其中这个A是静态类型，这个B是实际类型。静态类型编译期间就可以知道确认，而实际类型必须在运行期间在可以确认。编译器不知道一个对象的实际类型是什么，在编译期间。<br>　　在重载中</p>
+<pre><code>public void test(A a){...} ...1
+public void test(B b){...} ...2
+</code></pre><p>　　如果传入A a=new B();把这个对象当参数穿进去，那么调用的是第一个方法，为何？因为这个虚拟机在重载时根据的是参数的静态类型进行判断的，而静态类型却是在编译期间就可以知道的，因此在编译期间就将符号引用确认了。凡是通过静态参数确认的都是静态分配。</p>
+<h4 id="动态分配"><a href="#动态分配" class="headerlink" title="动态分配"></a>动态分配</h4><p>　　动态分配和java中的重写密切相关。动态分配哈java字节码的一些指令相关度很高，他就是更具对象的实际类型类指定的，和对象实际类型相关。这是和java字节码的解析相关的，字节码就是这么解析的。
+　　</p>
+
+          
+        
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="https://skydh.github.io/2018/05/11/jvm类加载器/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="董航">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="why are you so happy">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                <a class="post-title-link" href="/2018/05/11/jvm类加载器/" itemprop="url">jvm类加载器</a></h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2018-05-11T16:55:38+08:00">
+                2018-05-11
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            <h2 id="类与类加载器"><a href="#类与类加载器" class="headerlink" title="类与类加载器"></a>类与类加载器</h2><p>　　对于任意一个类，都是需要加载它的类和其本身确认其在java虚拟机中的唯一性。每一个类加载器都有一个独立的类名称空间。换句话说如果在一个虚拟机中，2个类来源于一个Class文件，但是加载他们的类加载器不一样，那么这2个类也不一样。比如我们自己实现一个类加载器，并且实例化，那么这个对象确实是这个类实例化出来的，但是Class类型却和默认加载出来的Class类型不一样。<br>　　从虚拟机角度讲，虚拟机分为２个，一个是C++语言实现的，是虚拟机的一部分，一部分是java代码实现的。全部继承于java.lang.ClassLoader.<br>　　从开发角度来看，分为３种。<br>　　１．启动类加载器<br>　　这个类加载器是将\lib目录下，或者-Xbootclasspath参数所指定的路径中，且被虚拟机识别的类库加载到虚拟机内存里面。开发者无法直接使用。<br>　　２．扩展类加载器<br>　　这个加载器主要是加载\lib\ext目录下的。开发者可以使用。<br>　　３．应用类加载器<br>　　这个类加载器负责加载Classpath路径下的所指定的类库，也就是用户一般的类，如果代码没有明确定义只用自己的类加载器，那么这个就是程序默认的类加载器。<br>　　４，用户自定义的类加载器<br>　　这个就是开发者自己定义开发的类加载器。</p>
+<h2 id="双亲委派原则"><a href="#双亲委派原则" class="headerlink" title="双亲委派原则"></a>双亲委派原则</h2><p>　　除了启动类加载器外，其余的的类加载器都有自己的父类加载器。加载器的顺序上下就是上面的顺序。其父子关系不是通过继承实现的，而是通过组合实现的。<br>　　该原则是当改类加载收到请求时，他是不会先加载，而是委托给父类加载器，不断委托，当父类加载器无法在其搜索范围内找到这个类时，才会委托给下级加载器。这是个规范，系统的默认是这个，而自定义的类加载器要自己实现。<br>　　使用这个有个好处。就是java类跟随类加载器有了一种优先级的层次关系了，比如Object类存放在\lib目录下，就默认只能是启动类加载器去加载的了，那么这个程序中就只会有一个Object类，程序也更加稳定。</p>
+
+          
+        
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
     <link itemprop="mainEntityOfPage" href="https://skydh.github.io/2018/05/10/jvm类加载机制/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -554,7 +810,7 @@
         
           
             <h2 id="引用"><a href="#引用" class="headerlink" title="引用"></a>引用</h2><p>　　强引用：这个引用在程序代码间很常见，类似于Object a=new Object（），这样直接声明的对象，只要强引用还存在，那么这个对象就不会被gc回收。<br>　　软引用：java用SoftReference类来实现软引用。软引用关联的对象会在系统即将发生内存溢出，也就是内存不够时，将会把这些对象进行回收，如果回收后依旧没有足够的内存才会抛出内存溢出异常。<br>　　弱引用：java用WeakReference类实现弱引用，其强度更弱于软引用，被弱引用的对象会在下次垃圾回收时直接被回收，无论内存是否足够。<br>　　虚引用：java用PhantomReference类来实现虚引用。这个是最弱的一种引用，甚至无法通过虚引用来获取对象。</p>
-<h1 id="判断对象是否被引用"><a href="#判断对象是否被引用" class="headerlink" title="判断对象是否被引用"></a>判断对象是否被引用</h1><h2 id="引用计数算法"><a href="#引用计数算法" class="headerlink" title="引用计数算法"></a>引用计数算法</h2><p>　　给对象加一个引用计数器，每当一个地方引用它时，计数器就加一，当引用失效时，计数器就减一，任何时刻计数器为０时的对象就是不可能再被使用的。但是有ｂｕｇ，２个对象相互引用，那么这个对象就永远无法被回收。</p>
+<h1 id="判断对象是否被引用"><a href="#判断对象是否被引用" class="headerlink" title="判断对象是否被引用"></a>判断对象是否被引用</h1><h2 id="引用计数算法"><a href="#引用计数算法" class="headerlink" title="引用计数算法"></a>引用计数算法</h2><p>　　给对象加一个引用计数器，每当一个地方引用它时，计数器就加一，当引用失效时，计数器就减一，任何时刻计数器为0时的对象就是不可能再被使用的。但是有bug，２个对象相互引用，那么这个对象就永远无法被回收。</p>
 <h2 id="可达性分析算法"><a href="#可达性分析算法" class="headerlink" title="可达性分析算法"></a>可达性分析算法</h2><p>　　这个算法是通过一个叫”GC Roots”的对象作为起始点，从这个节点开始向下搜索，搜索的路径叫做引用链，如果可以通过引用链找到这个对象，那么这个对象时有效的，否则，无效，解决了上面2个对象相互引用但是没有别的对象可达的问题，可以作为”GC Roots”的对象有方法区常量引用的对象，虚拟机栈引用的对象，等。目前java就是这种判断模式。</p>
 <h1 id="gc垃圾回收算法"><a href="#gc垃圾回收算法" class="headerlink" title="gc垃圾回收算法"></a>gc垃圾回收算法</h1><h2 id="标记-清除算法"><a href="#标记-清除算法" class="headerlink" title="标记-清除算法"></a>标记-清除算法</h2><p>　　最基础的算法，就是把要回收的对象标记后进行回收，缺点是容易产生大量不连续的内存碎片，如果产生一个大的对象时，由于全是内存碎片，没有整个的内存，因此内存不够就会提前触发垃圾回收，效率很低。</p>
 <h2 id="复制算法"><a href="#复制算法" class="headerlink" title="复制算法"></a>复制算法</h2><p>　　目前主流虚拟机的收集算法之一主要针对新生态对象，初始化时是一比一的算法，就是把内存分为2部分一样大的部分，平时只使用其中一个部分也就是其一半，当发生垃圾回收时，就会把这个部分存活的对象放到另一个部分，这样子就避免了内存碎片，但是要只使用一半的内存，亏损太大划不来，目前主流虚拟机都是用这个算法来回收新生代。IBM研究发现，９８％的新生态对象生存周期很短的，于是一个新的算法出来了，就是把内存分为3部分，8：1：1，每次使用其中的0.9部分，当发生垃圾回收的时候那就把剩余的对象就放到剩余的0.1那里，当然剩余的0.1可能不够那就可以把一部分对象转化为老年态暂时存到老年态里面，这样子就只浪费0.1的内存了，性价比可以。</p>
@@ -992,6 +1248,11 @@ public class DemoTest {
 <h2 id="方法区"><a href="#方法区" class="headerlink" title="方法区:"></a>方法区:</h2><p>　　各个线程共享的区域，主要存储被虚拟机加载的类信息，常量，静态变量，编译器编译后的代码，和java堆一样逻辑上内存，可扩展的实现大小，这个区域的垃圾回收主要针对常量池的回收和类型的卸载，其中类型的卸载要求比较高，但是必要的垃圾回收是必要的，以前低版本的就出现过严重的内存泄漏。</p>
 <h2 id="运行期常量池"><a href="#运行期常量池" class="headerlink" title="运行期常量池:"></a>运行期常量池:</h2><p>　　这个区域也是方法区的一部分，编译后的Class文件中的类名啊，方法名啊，常量啊被加载到虚拟机后就会放到方法去的运行常量池来保存，当然常量不止可以只是在编译期间放到常量池中，还可以用string.intern()方法（如果常量池中存在当前字符串, 就会直接返回当前字符串. 如果常量池中没有此字符串, 会将此字符串放入常量池中后, 再返回）来在运行期间放到常量池中，当然要是常量池中无法申请到内存时就会报出OutOfMemoryError这个经典错误。</p>
 <h2 id="直接内存"><a href="#直接内存" class="headerlink" title="直接内存"></a>直接内存</h2><p>　　直接内存是一个重要的问题，首先它不是运行数据区的部分也不是java虚拟机规范的一部分，这个的出现主要和java1.4后出现的NIO相关，一个基于通道和缓冲区的io方式，它可以使用Native函数库来直接分配堆外内存，然后通过一个存在java堆中的DirectByteBuffer这个对象来对这个java堆外的内存的引用来进行操作，可以提高相关性能，因为避免了java堆和native堆中的来回复制数据。<br>　　那个那么重点来了，既然这个直接内存不归java堆管理，但是也会受到总内存的限制，如果管理员设置课动态扩展的javajvm时，如果忽略了这个直接内存的，最后实际内存总和大于实际内存，当jvm要动态扩展内存时，就会出现这个outofmemoryerror错误。</p>
+<h2 id="启动参数配置"><a href="#启动参数配置" class="headerlink" title="启动参数配置"></a>启动参数配置</h2><p>　　-Xms    ：初始堆大小    物理内存的1/64(&lt;1GB)    默认(MinHeapFreeRatio参数可以调整)空余堆内存小于40%时，JVM就会增大堆直到-Xmx的最大限制.</p>
+<p>　　-Xmx：最大堆大小    物理内存的1/4(&lt;1GB)    默认(MaxHeapFreeRatio参数可以调整)空余堆内存大于70%时，JVM会减少堆直到 -Xms的最小限制．</p>
+<p>　　-Xmn    年轻代大小(1.4or lator)<br>     注意：此处的大小是（eden+ 2 survivor space).与jmap -heap中显示的New gen是不同的。整个堆大小=年轻代大小 + 年老代大小 + 持久代大小.增大年轻代后,将会减小年老代大小.此值对系统性能影响较大,Sun官方推荐配置为整个堆的3/8．</p>
+<p>　　-XX:PermSize    设置持久代(perm gen)初始值．</p>
+<p>　　-Xss    每个线程的堆栈大小         JDK5.0以后每个线程堆栈大小为1M,以前每个线程堆栈大小为256K.更具应用的线程所需内存大小进行 调整.在相同物理内存下,减小这个值能生成更多的线程.但是操作系统对一个进程内的线程数还是有限制的,不能无限生成,经验值在3000~5000左右，一般小的应用， 如果栈不是很深， 应该是128k够用的 大的应用建议使用256k。这个选项对性能影响比较大，需要严格的测试。（校长）</p>
 
           
         
@@ -1338,264 +1599,6 @@ public class DemoTest {
 
 
     
-      
-
-  
-
-  
-  
-  
-
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-  
-  
-  
-  <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="https://skydh.github.io/2018/04/22/缓冲为何提高效率/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="董航">
-      <meta itemprop="description" content="">
-      <meta itemprop="image" content="/images/avatar.gif">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="why are you so happy">
-    </span>
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-                
-                <a class="post-title-link" href="/2018/04/22/缓冲为何提高效率/" itemprop="url">io缓冲为何可以提高效率</a></h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">发表于</span>
-              
-              <time title="创建于" itemprop="dateCreated datePublished" datetime="2018-04-22T18:02:31+08:00">
-                2018-04-22
-              </time>
-            
-
-            
-
-            
-          </span>
-
-          
-
-          
-            
-          
-
-          
-          
-
-          
-
-          
-
-          
-
-        </div>
-      </header>
-    
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          
-            <h2 id="问题"><a href="#问题" class="headerlink" title="问题"></a>问题</h2><p>  据我了解，运用FileInputStream读写一段数据是一个字节一个字节的读取，如果有10个字节大小的文件，就要调用10次系统调用，每次将读取的数据赋值给变量，然后程序使用变量。<br>  缓冲区可以看作是一个放在内存中的数组，但是从硬盘中读取数据仍然要使用系统调用，系统调用的读取仍然是每次一个，只是每调用一次之后，将所得到的数据放入缓冲区中的，<br>  然后程序一次性使用10个数据。<br>  我是这样理解的，但是不管用与不用缓冲区，使用的系统调用是一样多的。（不知我的理解正确与否，请指出）如果我理解的是正确的，那么为什么使用缓冲区读写的效率要高呢？？谢谢！</p>
-<h2 id="回答"><a href="#回答" class="headerlink" title="回答"></a>回答</h2><p>  理解是对的。<br>  调用I\O操作的时候，实际上还是一个一个的读或者写，关键就在，CPU只有一个，不论是几个核心。CPU在系统调用时，会不会还要参与主要操作？参与多次就会花更多的时间。 系统调用时，<br>  若不用缓冲，CPU会酌情考虑使用 中断。此时CPU是主动地，每个周期中都要花去一部分去询问I\O设备是否读完数据，这段时间CPU不能做任何其他的事情（至少负责执行这段模块的核不能）。所以，调用一次读了一个字，通报一次，CPU腾出时间处理一次。而设置缓冲，CPU通常会使用 DMA 方式去执行 I\O 操作。CPU 将这个工作交给DMA控制器来做，自己腾出时间做其他的事，当DMA完成工作时，DMA会主动告诉CPU“操作完成”。<br>  这时，CPU接管后续工作。在此，CPU 是被动的。DMA是专门 做 I＼O 与 内存 数据交换的，不仅自身效率高，也节约了CPU时间，CPU在DMA开始和结束时做了一些设置罢了。<br>  所以，调用一次，不必通报CPU，等缓冲区满了，DMA 会对C PU 说 “嘿，伙计！快过来看看，把他们都搬走吧”。综上，设置缓冲，就建立了数据块，使得DMA执行更方便，CPU也有空闲，而不是呆呆地候着I\O数据读来。从微观角度来说，设置缓冲效率要高很多。尽管，不能从这个程序上看出来。 几万字的读写\就能看到差距。</p>
-<p> 转载自 <a href="http://blog.csdn.net/vic1990/article/details/46236837" target="_blank" rel="noopener">http://blog.csdn.net/vic1990/article/details/46236837</a></p>
-
-          
-        
-      
-    </div>
-    
-    
-    
-
-    
-
-    
-
-    
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </div>
-  
-  
-  
-  </article>
-
-
-    
-      
-
-  
-
-  
-  
-  
-
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-  
-  
-  
-  <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="https://skydh.github.io/2018/04/22/lombok/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="董航">
-      <meta itemprop="description" content="">
-      <meta itemprop="image" content="/images/avatar.gif">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="why are you so happy">
-    </span>
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-                
-                <a class="post-title-link" href="/2018/04/22/lombok/" itemprop="url">lombok 配置使用以及优势</a></h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">发表于</span>
-              
-              <time title="创建于" itemprop="dateCreated datePublished" datetime="2018-04-22T17:50:48+08:00">
-                2018-04-22
-              </time>
-            
-
-            
-
-            
-          </span>
-
-          
-
-          
-            
-          
-
-          
-          
-
-          
-
-          
-
-          
-
-        </div>
-      </header>
-    
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          
-            <h2 id="maven依赖"><a href="#maven依赖" class="headerlink" title="maven依赖"></a>maven依赖</h2><p>　　<pre></pre></p>
-<pre><code>&lt;dependencies&gt;
-    &lt;dependency&gt;
-        &lt;groupId&gt;org.projectlombok&lt;/groupId&gt;
-        &lt;artifactId&gt;lombok&lt;/artifactId&gt;
-        &lt;version&gt;1.16.20&lt;/version&gt;
-        &lt;scope&gt;provided&lt;/scope&gt;
-    &lt;/dependency&gt;
-&lt;/dependencies&gt;
-</code></pre><p></p>
-<h2 id="让你的IDE不报错"><a href="#让你的IDE不报错" class="headerlink" title="让你的IDE不报错"></a>让你的IDE不报错</h2><p>　　更新maven仓库，把lombok的文件拉下来，cmd进入那个目录，然后java -jar  对应jar包，让其运行安装在你的IDE里面。<br>　　在你的eclipse安装目录下的eclipse.ini文件中加入<br>　　-javaagent:lombok.jar<br>　　-Xbootclasspath/a:lombok.jar<br>　　重启eclipse，lombok即可生效</p>
-<h2 id="为什么使用？"><a href="#为什么使用？" class="headerlink" title="为什么使用？"></a>为什么使用？</h2><p>　　1,  使得代码整洁许多，大部分entity的get和set方法都是固定不变的，我们使用lombok可以有效的减少源代码的量，只关注最重要的属性。</p>
-<p>　　2，曾经遇到一个变态的entity，足足1800行代码，使用lombok后就只用400多行了，这个entity的可读性多了很多</p>
-<p>　　3，有些代码没有把属性和方法分隔，可能是遗留代码，也可能是忘了修改，也可能水品和我一样比较差的，导致代码可读性变得弱了好多，如果我们使用了lombok就不会出现这种情况</p>
-<p>　　4，还有就是有些情况，有人修改了属性，但是没有修改方法，而且没有报错的那种，等等一系列情况，使用了lombok就可以避免。</p>
-<p>　　5，还有就是我们的代码自动生成工具生成的vo也是不够工整，可能是由于某些原因导致的，如果我们使用了这个lombok就可以避免这个问题．</p>
-<h2 id="原理"><a href="#原理" class="headerlink" title="原理"></a>原理</h2><p>   就是元注解出现后注解运行生命周期里面的编译周期，这个就是 JSR 269 Pluggable Annotation Processing API，就是源代码在编译成字节码的时候修改了语法树的节点规则进行了加强生成</p>
-
-          
-        
-      
-    </div>
-    
-    
-    
-
-    
-
-    
-
-    
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </div>
-  
-  
-  
-  </article>
-
-
-    
   </section>
 
   
@@ -1646,7 +1649,7 @@ public class DemoTest {
               
                 <a href="/archives/">
               
-                  <span class="site-state-item-count">113</span>
+                  <span class="site-state-item-count">115</span>
                   <span class="site-state-item-name">日志</span>
                 </a>
               </div>

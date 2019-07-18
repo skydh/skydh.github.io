@@ -232,6 +232,339 @@
   
   
   <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="https://skydh.github.io/2019/07/15/kafaka基本概念入门/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="董航">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="why are you so happy">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                <a class="post-title-link" href="/2019/07/15/kafaka基本概念入门/" itemprop="url">kafka入门001 -基本概念</a></h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2019-07-15T21:13:38+08:00">
+                2019-07-15
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            <p>读书笔记系列，一章一篇。<br>取自深入理解kafka和kafka专栏（极客时间）</p>
+<h2 id="基本概念"><a href="#基本概念" class="headerlink" title="基本概念"></a>基本概念</h2><h3 id="特点"><a href="#特点" class="headerlink" title="特点"></a>特点</h3><h4 id="消息系统"><a href="#消息系统" class="headerlink" title="消息系统"></a>消息系统</h4><p>　　和传统的消息系统一样，但是额外提供，顺序消费，回溯消费。</p>
+<h4 id="存储系统"><a href="#存储系统" class="headerlink" title="存储系统"></a>存储系统</h4><p>　　消息是持久化存储的。</p>
+<h3 id="流式平台处理"><a href="#流式平台处理" class="headerlink" title="流式平台处理"></a>流式平台处理</h3><p>　　kafka不仅为多个流行的流式处理框架提供了可靠的数据来源，还提供了完整的流式处理类库。</p>
+<h2 id="概念"><a href="#概念" class="headerlink" title="概念"></a>概念</h2><h3 id="producer"><a href="#producer" class="headerlink" title="producer"></a>producer</h3><p>　　生产者：生产消息发送给kakfa实例。</p>
+<h3 id="Consumer"><a href="#Consumer" class="headerlink" title="Consumer"></a>Consumer</h3><p>　　消费者：负责消费kafka上面的消息。消费者端采用pull的方式拉去消息，保存了数据的偏移量，当消费者宕机后重新上线，可以更具之前保存的消费位置重新进行消费。
+　</p>
+<h3 id="Broker"><a href="#Broker" class="headerlink" title="Broker"></a>Broker</h3><p>　　一个kafka实例，一个kafka集群里面有多个Broker，也就是多个kafka实例</p>
+<h3 id="ZooKeeper"><a href="#ZooKeeper" class="headerlink" title="ZooKeeper"></a>ZooKeeper</h3><p>　　Zk负责管理kafka集群的的元数据，控制器的选举等。它是一个分布式协调框架，负责协调管理并保存Kafka集群的所有元数据信息，比如集群都有哪些Broker在运行、创建了哪些Topic，每个Topic都有多少分区以及这些分区的Leader副本都在哪些机器上等信息。</p>
+<h3 id="主题"><a href="#主题" class="headerlink" title="主题"></a>主题</h3><p>　　kafka的消息是根据主题来分类。生产者发送的消息都要指定一个主题，消费者消费消息也是订阅主题。</p>
+<h3 id="分区"><a href="#分区" class="headerlink" title="分区"></a>分区</h3><p>　　主题是逻辑上的概念，一个主题可能是多个分区组成的，一个分区只可能会是一个主题的。分区可以看做是一个可追加的日志文件，每个消息在分区里面都有一个偏移量，kafka通过这个偏移量保证顺序消费，但是kafka保证的是分区顺序消费，而不是主题顺序消费。</p>
+<h3 id="副本"><a href="#副本" class="headerlink" title="副本"></a>副本</h3><p>　　一个分区有多个副本，其中一个是lead副本，其余是follow副本，分布在不同的broker里面，lead副本负责读写，其余副本负责和lead副本消息同步，当lead副本故障时，可以选举follow副本继续提供服务。由于副本的同步是异步的，因此可能不一致，所有副本统称为AR，所有和lead副本保持一致的是统称为ISR，与lead副本滞后的副本则统称为osr副本。这2个集合的副本是动态的，当ISR不满足时则将其提到OSR,当OSR更上时，则将其丢到ISR,副本数据的限制和你的当前borker相关，因为多个副本放在一台broken上毫无意思，因此，每个副本在不同的broken上。</p>
+<h3 id="HW"><a href="#HW" class="headerlink" title="HW"></a>HW</h3><p>　　高水位。这个是消费者目前只能拉倒的消息偏移量。这个值是所有副本AR里面保存数据最小值offset。</p>
+<h3 id="LEO"><a href="#LEO" class="headerlink" title="LEO"></a>LEO</h3><p>　　则是记录当前下一条数据写入的offset.</p>
+<h3 id="版本号"><a href="#版本号" class="headerlink" title="版本号"></a>版本号</h3><p>　　kafka-2.11-2.1.1，这个里面2.11是scala的编译器版本，2.1.1是kafka真实的版本。2是大版本，第一个1是小版本号，第二个1是修订号。<br>　　0.7远古版本。<br>　　0.8加了副本机制，但是api是远古版本客户端api，且和新版本不兼容。<br>　　0.9加入了安全认证，权限的功能，新版本生产者api稳定，但是消费者api极其不稳定。<br>　　0.10:加了了kafka Streams。消费者api较为稳定。<br>　　0.11提供幂等性produceapi和事务api.以及对消息做了重构。<br>　　1.0和2.0对stream做了优化，消息没有什么变化。</p>
+<h3 id="简单java代码"><a href="#简单java代码" class="headerlink" title="简单java代码"></a>简单java代码</h3><p>　　ps:注意kafka的server.properrties的listeners要开放出来，其格式为protocoll://hostname:port1。协议+域名ip+端口。第一个协议有很多，默认是PLAINTEXT不开启安全校验，域名要写出来，不写则是默认网卡，但是可能为127.0.0.1导致外部无法访问。还有advertised.listeners作用和listeners类似，主要用于IaaS环境，比如公有云上配备多个网卡，包含了私网网卡和公网网卡。对于这种情况，可以设置advertised.listeners绑定公网ip对外客户端使用。使用listeners绑定私网ip给broker之间通信。</p>
+<p>　　maven依赖</p>
+<pre><code>&lt;dependency&gt;
+    &lt;groupId&gt;org.apache.kafka&lt;/groupId&gt;
+    &lt;artifactId&gt;kafka-clients&lt;/artifactId&gt;
+&lt;/dependency&gt;
+</code></pre><p>　　生产者：</p>
+<pre><code>package com.dh.kafka;
+import java.util.Properties;
+import org.apache.kafka.clients.producer.KafkaProducer;
+import org.apache.kafka.clients.producer.ProducerRecord;
+/**
+ * 
+ * @author Lenovo
+  *
+ */
+public class SimpleKafkaProducer {
+    public static void main(String[] args) {
+        Properties props = new Properties();
+        // broker地址
+        props.put(&quot;bootstrap.servers&quot;, &quot;192.168.147.131:9092&quot;);
+        // 指定消息key序列化方式
+        props.put(&quot;key.serializer&quot;, &quot;org.apache.kafka.common.serialization.StringSerializer&quot;);
+        // 指定消息本身的序列化方式
+        props.put(&quot;value.serializer&quot;, &quot;org.apache.kafka.common.serialization.StringSerializer&quot;);
+        KafkaProducer&lt;String, String&gt; producer = new KafkaProducer&lt;&gt;(props);
+        ProducerRecord&lt;String, String&gt; record = new ProducerRecord&lt;&gt;(&quot;topic-demo111&quot;, &quot;hello, kafka&quot;);
+        try {
+            producer.send(record);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        System.out.println(&quot;Message sent successfully&quot;);
+        producer.close();
+    }
+}
+</code></pre><p>　　消费者：</p>
+<pre><code>package com.dh.kafka;
+import java.time.Duration;
+import java.util.Collections;
+import java.util.Properties;
+import org.apache.kafka.clients.consumer.ConsumerRecord;
+import org.apache.kafka.clients.consumer.ConsumerRecords;
+import org.apache.kafka.clients.consumer.KafkaConsumer;
+public class SimpleKafkaConsumer {
+    public static void main(String[] args) {
+        Properties props = new Properties();
+        props.put(&quot;bootstrap.servers&quot;, &quot;192.168.147.131:9092&quot;);
+        // 每个消费者分配独立的组号
+        props.put(&quot;group.id&quot;, &quot;group.demo&quot;);
+        // 设置多久一次更新被消费消息的偏移量
+        props.put(&quot;auto.commit.interval.ms&quot;, &quot;1000&quot;);
+        props.put(&quot;key.deserializer&quot;, &quot;org.apache.kafka.common.serialization.StringDeserializer&quot;);
+        props.put(&quot;value.deserializer&quot;, &quot;org.apache.kafka.common.serialization.StringDeserializer&quot;);
+        @SuppressWarnings(&quot;resource&quot;)
+        KafkaConsumer&lt;String, String&gt; consumer = new KafkaConsumer&lt;&gt;(props);
+        consumer.subscribe(Collections.singletonList(&quot;topic-demo111&quot;));
+        System.out.println(&quot;Subscribed to topic &quot; + &quot;topic-demo111&quot;);
+        while (true) {
+            ConsumerRecords&lt;String, String&gt; records = consumer.poll(Duration.ofMillis(1000));
+            for (ConsumerRecord&lt;String, String&gt; record : records)
+                System.out.printf(record.value());
+        }
+    }
+}
+</code></pre>
+          
+        
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="https://skydh.github.io/2019/07/15/简历/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="董航">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="why are you so happy">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                <a class="post-title-link" href="/2019/07/15/简历/" itemprop="url">未命名</a></h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2019-07-15T16:29:10+08:00">
+                2019-07-15
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            <h1 id="个人信息"><a href="#个人信息" class="headerlink" title="个人信息"></a>个人信息</h1><ul>
+<li>董航/java后端</li>
+<li>本科/武汉科技大学</li>
+<li>工作年限:2年</li>
+<li>联系方式:donghang4@foxmail.com/13100725983</li>
+<li>Github: <a href="https://github.com/skydh/" target="_blank" rel="noopener">https://github.com/skydh</a></li>
+<li>博客地址:<a href="https://skydh.github.io/">https://skydh.github.io</a></li>
+</ul>
+<h1 id="工作经历"><a href="#工作经历" class="headerlink" title="工作经历"></a>工作经历</h1><h2 id="平安城科-2018-9-至今-java后端"><a href="#平安城科-2018-9-至今-java后端" class="headerlink" title="平安城科(2018.9-至今)(java后端)"></a>平安城科(2018.9-至今)(java后端)</h2><h3 id="工作职责"><a href="#工作职责" class="headerlink" title="工作职责"></a>工作职责</h3><ul>
+<li>编写高质量的后端java代码，偶尔负责review代码。</li>
+</ul>
+<h2 id="用友建筑云-2016-6-2018-7-java后端"><a href="#用友建筑云-2016-6-2018-7-java后端" class="headerlink" title="用友建筑云(2016.6-2018.7)(java后端)"></a>用友建筑云(2016.6-2018.7)(java后端)</h2><h3 id="工作职责-1"><a href="#工作职责-1" class="headerlink" title="工作职责"></a>工作职责</h3><p>#项目经验</p>
+<p>##</p>
+<h3 id="项目描述"><a href="#项目描述" class="headerlink" title="项目描述"></a>项目描述</h3><h3 id="项目职责"><a href="#项目职责" class="headerlink" title="项目职责"></a>项目职责</h3><h3 id="项目总结"><a href="#项目总结" class="headerlink" title="项目总结"></a>项目总结</h3><p>#技能信息</p>
+<p>#自我评价</p>
+
+          
+        
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
     <link itemprop="mainEntityOfPage" href="https://skydh.github.io/2019/07/08/网关/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -251,7 +584,7 @@
         
           <h1 class="post-title" itemprop="name headline">
                 
-                <a class="post-title-link" href="/2019/07/08/网关/" itemprop="url">网关</a></h1>
+                <a class="post-title-link" href="/2019/07/08/网关/" itemprop="url">Api网关</a></h1>
         
 
         <div class="post-meta">
@@ -309,6 +642,11 @@
 <h3 id="面向合作伙伴开放-API"><a href="#面向合作伙伴开放-API" class="headerlink" title="面向合作伙伴开放 API"></a>面向合作伙伴开放 API</h3><p>　　这类场景，主要为了满足业务形态对外开放，与企业外部合作伙伴建立生态圈，此时的 API 网关注重安全认证、权限分级、流量管控、缓存等功能的建设。</p>
 <h3 id="企业内部系统互联互通"><a href="#企业内部系统互联互通" class="headerlink" title="企业内部系统互联互通"></a>企业内部系统互联互通</h3><p>　　对于中大型的企业内部往往有几十、甚至上百个系统，尤其是微服务架构的兴起系统数量更是急剧增加。系统之间相互依赖，逐渐形成网状调用关系不便于管理和维护，需要 API 网关进行统一的认证、鉴权、流量管控、超时熔断、监控告警管理，从而提高系统的稳定性、降低重复建设、运维管理等成本。</p>
 <h3 id="具备的能力"><a href="#具备的能力" class="headerlink" title="具备的能力"></a>具备的能力</h3><h4 id="服务注册和服务接入能力"><a href="#服务注册和服务接入能力" class="headerlink" title="服务注册和服务接入能力"></a>服务注册和服务接入能力</h4><h4 id="网关接入和发布核心功能"><a href="#网关接入和发布核心功能" class="headerlink" title="网关接入和发布核心功能"></a>网关接入和发布核心功能</h4><h4 id="服务安全"><a href="#服务安全" class="headerlink" title="服务安全"></a>服务安全</h4><h4 id="服务管控和治理"><a href="#服务管控和治理" class="headerlink" title="服务管控和治理"></a>服务管控和治理</h4><p>ps:<a href="https://www.infoq.cn/article/api-gateway-architecture-design" target="_blank" rel="noopener">https://www.infoq.cn/article/api-gateway-architecture-design</a></p>
+<h2 id="zuul"><a href="#zuul" class="headerlink" title="zuul"></a>zuul</h2><p>　　我司的api网关服务是基于zuul2实现的。为了搭建一个类似的网关服务，我将详细的搭建一个demo，来跑这个服务。</p>
+<p>　　我先根据网上的教程，搭建了一个简单的eureka注册中心，然后搭建了2个简单的server注册到这个注册中心里面，然后搭建一个简单的基于zuul的网关注册到eureka里面，这个api网关是基于serverId实现的，然后启动一个server，路由访问，成功得到数据。实现这个ZuulFilter这个接口做的效果，默认则是org.springframework.cloud.netflix.zuul.filters这个包下的过滤器的实现。</p>
+<p>　　ps：参考这篇文章</p>
+<pre><code>http://blog.didispace.com/spring-cloud-source-zuul/
+</code></pre><p>　　</p>
 <p>ps(SpringCloud的整体组建包括：Zuul、Ribbon、EureKa、Fein、Hystrix等。其中Zuul就是一个类似APIGateway的组建，Ribbon是类似于Nginx的代理服务器，Eureka用于注册和发现服务，Hystrix可以作为整个架构的断路服务，用于服务降级。Fein可以作为一个Rest服务的提供者，可以供内部服务之间相互调用)</p>
 
           
@@ -377,7 +715,7 @@
         
           <h1 class="post-title" itemprop="name headline">
                 
-                <a class="post-title-link" href="/2019/06/27/kafka基础-主题和分区/" itemprop="url">kafak入门005 -主题和分区</a></h1>
+                <a class="post-title-link" href="/2019/06/27/kafka基础-主题和分区/" itemprop="url">kafka入门005 -主题和分区</a></h1>
         
 
         <div class="post-meta">
@@ -486,6 +824,17 @@ val shift = 1 + (secondReplicaShift + replicaIndex) % (nBrokers - 1)
 }
 </code></pre><p>　　这个算法使得分区副本分配的很均匀。差不多正好。<br>　　指定机架信息和没指定机架信息本质上差不多。一个机架可以分配多个broker节点，但是满足下面条件的broker不可哟添加到当前分区的副本列表里面。<br>　　１.此broker所在机架已经有一个broker在这个分区的副本列表里面，且其他机架中没有任何的broken在该分区的副本列表里面。</p>
 <p>　　２.此broker已经在在列表，且其他broker不在。创建主题时实质上是在zookeeper中的/kafka/brokers/topics节点下创建和该主题对应的子节点，并且写入副本分配信息，且在/config/topics节点下创建该节点对应的子节点并且主题配置信息。kafka创建主题的实质上动作是交给控制器异步完成的。<br>　　因此我们可以直接通过创建规则下的节点，来直接创建一个新的主题。这样我们可以绕过一些规则，比如我们创建主题分区的时候都是从０开始计数。我们通过创建zookeeper节点就不用从0开始累加了。</p>
+<h2 id="查看主题"><a href="#查看主题" class="headerlink" title="查看主题"></a>查看主题</h2><p>　　kafka-topics.sh这个命令有５个指令类型：create,list,describe,alter和delete。其中list和describe是查看主题信息的。</p>
+<pre><code>./bin/kafka-topics.sh --zookeeper localhost:2181/kafka -list
+</code></pre><p>　　这个命令是查看当前kafka当前所有可用主题。</p>
+<pre><code>./bin/kafka-topics.sh --zookeeper localhost:2181/kafka --describe --topic topic-create 
+</code></pre><p>　　这个是查看topic-create这个主题的详细信息，可以接多个主题，一次查看多个主题信息。如果没有–topic这个参数则是查看所有主题信息。</p>
+<pre><code>./bin/kafka-topics.sh --zookeeper localhost:2181/kafka --describe  --topics-with-overrides
+</code></pre><p>　　–topics-with-overrides加这个参数则是查看所有使用了覆盖配置的主题。</p>
+<pre><code>./bin/kafka-topics.sh --zookeeper localhost:2181/kafka --describe --topic topic-create --under-replicated-partitions
+</code></pre><p>　　这个参数是查询当前主题所有包含失效副本的分区</p>
+<pre><code>./bin/kafka-topics.sh --zookeeper localhost:2181/kafka --describe --topic topic-create -unavaliable-partitions 
+</code></pre><p> 　　这个参数查看主题中没有lead副本的分区。</p>
 
           
         
@@ -553,7 +902,7 @@ val shift = 1 + (secondReplicaShift + replicaIndex) % (nBrokers - 1)
         
           <h1 class="post-title" itemprop="name headline">
                 
-                <a class="post-title-link" href="/2019/06/25/kafka基础-消费者/" itemprop="url">kafak入门003 -消费者</a></h1>
+                <a class="post-title-link" href="/2019/06/25/kafka基础-消费者/" itemprop="url">kafka入门003 -消费者</a></h1>
         
 
         <div class="post-meta">
@@ -870,7 +1219,7 @@ public void onPartitionsRevoked(Collection&lt;TopicPartition&gt; partitions) {}
         
           <h1 class="post-title" itemprop="name headline">
                 
-                <a class="post-title-link" href="/2019/06/24/kafka集群配置/" itemprop="url">kafak入门004 -集群配置</a></h1>
+                <a class="post-title-link" href="/2019/06/24/kafka集群配置/" itemprop="url">kafka入门004 -集群配置</a></h1>
         
 
         <div class="post-meta">
@@ -1001,7 +1350,7 @@ public void onPartitionsRevoked(Collection&lt;TopicPartition&gt; partitions) {}
         
           <h1 class="post-title" itemprop="name headline">
                 
-                <a class="post-title-link" href="/2019/06/20/kafka基础-生产者/" itemprop="url">kafak入门002 -生产者</a></h1>
+                <a class="post-title-link" href="/2019/06/20/kafka基础-生产者/" itemprop="url">kafka入门002 -生产者</a></h1>
         
 
         <div class="post-meta">
@@ -1495,7 +1844,7 @@ public void close() {
   
   
   <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="https://skydh.github.io/2019/06/03/kafaka基本概念入门/">
+    <link itemprop="mainEntityOfPage" href="https://skydh.github.io/2019/06/03/kafka基本概念入门/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="name" content="董航">
@@ -1514,7 +1863,7 @@ public void close() {
         
           <h1 class="post-title" itemprop="name headline">
                 
-                <a class="post-title-link" href="/2019/06/03/kafaka基本概念入门/" itemprop="url">kafak入门001 -基本概念</a></h1>
+                <a class="post-title-link" href="/2019/06/03/kafka基本概念入门/" itemprop="url">kafka入门001 -基本概念</a></h1>
         
 
         <div class="post-meta">
@@ -1681,266 +2030,6 @@ public class SimpleKafkaConsumer {
 
 
     
-      
-
-  
-
-  
-  
-  
-
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-  
-  
-  
-  <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="https://skydh.github.io/2019/05/28/内部临时表/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="董航">
-      <meta itemprop="description" content="">
-      <meta itemprop="image" content="/images/avatar.gif">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="why are you so happy">
-    </span>
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-                
-                <a class="post-title-link" href="/2019/05/28/内部临时表/" itemprop="url">mysql内部临时表</a></h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">发表于</span>
-              
-              <time title="创建于" itemprop="dateCreated datePublished" datetime="2019-05-28T19:03:28+08:00">
-                2019-05-28
-              </time>
-            
-
-            
-
-            
-          </span>
-
-          
-
-          
-            
-          
-
-          
-          
-
-          
-
-          
-
-          
-
-        </div>
-      </header>
-    
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          
-            <h2 id="简介"><a href="#简介" class="headerlink" title="简介"></a>简介</h2><p>　　在mysql里面，join_buffer，sort_buffer,内部临时表这3个都是在执行sql时暂存数据用的。前面2个前面文章都有介绍，本文主要介绍内部临时表。</p>
-<h2 id="union"><a href="#union" class="headerlink" title="union"></a>union</h2><pre><code>(select 1000 as f) union (select id from t1 order by id desc limit 2);
-</code></pre><p>　　比如这个sql，就是用到了内部临时表。这个sql就是查询2个子查询的并集，去重，若是不要去重，则是union all。<br>　　这个语句的操作流程是先创建一个临时表把第一个子查询的数据丢进去，然后再把第二个查询的数据丢进去。如果用union all则不涉及到去重，那么就不会创建临时表，只是直接拼装结果返回。</p>
-<h2 id="group-by"><a href="#group-by" class="headerlink" title="group by"></a>group by</h2><p>　　１．select id%10 as m, count(*) as c from t1 group by m;<br>　　其操作流程为，先创建一个内部临时表，存放2个字段，m,c然后遍历主键，将计算出来的值丢到m，判断是否存在，若存在则+1，然后输出。</p>
-<h2 id="大小参数"><a href="#大小参数" class="headerlink" title="大小参数"></a>大小参数</h2><p>　　默认16m，由这个参数tmp_table_size确认。</p>
-<h2 id="优化"><a href="#优化" class="headerlink" title="优化　"></a>优化　</h2><p>　　select SQL_BIG_RESULT id%100 as m, count(*) as c from t1 group by m;<br>　　如此，可以直接省去其中某些步骤，这是针对数据量大的情况直接执行走磁盘临时表。</p>
-
-          
-        
-      
-    </div>
-    
-    
-    
-
-    
-
-    
-
-    
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </div>
-  
-  
-  
-  </article>
-
-
-    
-      
-
-  
-
-  
-  
-  
-
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-  
-  
-  
-  <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="https://skydh.github.io/2019/05/28/maven一更新jdk版本就变化/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="董航">
-      <meta itemprop="description" content="">
-      <meta itemprop="image" content="/images/avatar.gif">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="why are you so happy">
-    </span>
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-                
-                <a class="post-title-link" href="/2019/05/28/maven一更新jdk版本就变化/" itemprop="url">maven一更新jdk版本就变化</a></h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">发表于</span>
-              
-              <time title="创建于" itemprop="dateCreated datePublished" datetime="2019-05-28T14:25:09+08:00">
-                2019-05-28
-              </time>
-            
-
-            
-
-            
-          </span>
-
-          
-
-          
-            
-          
-
-          
-          
-
-          
-
-          
-
-          
-
-        </div>
-      </header>
-    
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          
-            <h2 id="问题"><a href="#问题" class="headerlink" title="问题"></a>问题</h2><p>　　每次更新maven，项目的jdk版本，编译版本就会变成1.5，很奇怪。</p>
-<h2 id="背景"><a href="#背景" class="headerlink" title="背景"></a>背景</h2><p>　　由于公司私服没有某个jar，只能切换为默认配置，从中央仓库下载后上传到私服，结果更新maven后，编译环境就变化。</p>
-<h2 id="方案"><a href="#方案" class="headerlink" title="方案"></a>方案</h2><p>　　发现是setting文件出现问题，需要添加</p>
-<pre><code>&lt;profile&gt;
-        &lt;id&gt;jdk&lt;/id&gt;
-        &lt;activation&gt;
-            &lt;activeByDefault&gt;true&lt;/activeByDefault&gt;
-            &lt;jdk&gt;1.8&lt;/jdk&gt;
-        &lt;/activation&gt;
-        &lt;properties&gt;
-            &lt;maven.compiler.source&gt;1.8&lt;/maven.compiler.source&gt;
-            &lt;maven.compiler.target&gt;1.8&lt;/maven.compiler.target&gt;
-            &lt;maven.compiler.compilerVersion&gt;1.8&lt;/maven.compiler.compilerVersion&gt;
-        &lt;/properties&gt;
-    &lt;/profile&gt;
-</code></pre><p>　　进入默认的配置文件即可。</p>
-
-          
-        
-      
-    </div>
-    
-    
-    
-
-    
-
-    
-
-    
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </div>
-  
-  
-  
-  </article>
-
-
-    
   </section>
 
   
@@ -1991,7 +2080,7 @@ public class SimpleKafkaConsumer {
               
                 <a href="/archives/">
               
-                  <span class="site-state-item-count">113</span>
+                  <span class="site-state-item-count">115</span>
                   <span class="site-state-item-name">日志</span>
                 </a>
               </div>

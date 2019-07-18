@@ -232,6 +232,317 @@
   
   
   <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="https://skydh.github.io/2018/09/10/redis限流/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="董航">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="why are you so happy">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                <a class="post-title-link" href="/2018/09/10/redis限流/" itemprop="url">redis之简单限流</a></h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2018-09-10T09:31:48+08:00">
+                2018-09-10
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            <h2 id="什么是接口限流"><a href="#什么是接口限流" class="headerlink" title="什么是接口限流"></a>什么是接口限流</h2><p>　　为什么要有接口限流？场景如下：１．接口限流，比如我们对外一个接口，我们要限制一个用户单位时间访问次数？２．系统要限定用户的某个行为在指定的时间A里只能允许发生 N 次。</p>
+<h2 id="实现方式"><a href="#实现方式" class="headerlink" title="实现方式"></a>实现方式</h2><p>　　我们用zset来实现这个方案。我们将用户id和事件id生成这个zset的容器id,当发生一次时，我们将当前时间作为score,同时也作为value,放到集合里面。然后删除这个元素加入前限定时间A之外的数据。然后将集合的所有数据设置为过了A时间就过期.然后取出这个集合有多少数据，判断是否超标。</p>
+<pre><code>public boolean isActionAllowed(String userId, String     actionKey, int period, int maxCount) {
+    String key = String.format(&quot;hist:%s:%s&quot;, userId, actionKey);
+    long nowTs = System.currentTimeMillis();
+    Pipeline pipe = jedis.pipelined();
+    pipe.multi();
+    pipe.zadd(key, nowTs, &quot;&quot; + nowTs);
+    pipe.zremrangeByScore(key, 0, nowTs - period * 1000);
+    Response&lt;Long&gt; count = pipe.zcard(key);
+    pipe.expire(key, period + 1);
+    pipe.exec();
+    pipe.close();
+    return count.get() &lt;= maxCount;
+</code></pre><p>  }</p>
+<h2 id="漏斗限流策略"><a href="#漏斗限流策略" class="headerlink" title="漏斗限流策略"></a>漏斗限流策略</h2><pre><code>public class FunnelRateLimiter {
+static class Funnel {
+int capacity;//容量
+float leakingRate;//漏水速度
+int leftQuota;//剩余容量
+long leakingTs;//上次漏水时间
+
+public Funnel(int capacity, float leakingRate) {
+  this.capacity = capacity;
+  this.leakingRate = leakingRate;
+  this.leftQuota = capacity;
+  this.leakingTs = System.currentTimeMillis();
+}
+
+void makeSpace() {
+  long nowTs = System.currentTimeMillis();
+  long deltaTs = nowTs - leakingTs;
+  int deltaQuota = (int) (deltaTs * leakingRate);
+  if (deltaQuota &lt; 0) { // 间隔时间太长，整数数字过大溢出
+    this.leftQuota = capacity;
+    this.leakingTs = nowTs;
+    return;
+  }
+  if (deltaQuota &lt; 1) { // 腾出空间太小，最小单位是1
+    return;
+  }
+  this.leftQuota += deltaQuota;
+  this.leakingTs = nowTs;
+  if (this.leftQuota &gt; this.capacity) {
+    this.leftQuota = this.capacity;
+  }
+}
+boolean watering(int quota) {
+  makeSpace();
+  if (this.leftQuota &gt;= quota) {
+    this.leftQuota -= quota;
+    return true;
+  }
+  return false;
+}
+}
+private Map&lt;String, Funnel&gt; funnels = new HashMap&lt;&gt;();
+public boolean isActionAllowed(String userId, String actionKey, int capacity, float leakingRate) {
+String key = String.format(&quot;%s:%s&quot;, userId, actionKey);
+Funnel funnel = funnels.get(key);
+if (funnel == null) {
+  funnel = new Funnel(capacity, leakingRate);
+  funnels.put(key, funnel);
+}
+return funnel.watering(1); // 需要1个quota
+}
+}
+</code></pre><p>　　<br>　　Funnel 对象的 make_space 方法是漏斗算法的核心，其在每次灌水前都会被调用以触发漏水，给漏斗腾出空间来。能腾出多少空间取决于过去了多久以及流水的速率。Funnel 对象占据的空间大小不再和行为的频率成正比，它的空间占用是一个常量。<br>　　我们观察 Funnel 对象的几个字段，我们发现可以将 Funnel 对象的内容按字段存储到一个 hash 结构中，灌水的时候将 hash 结构的字段取出来进行逻辑运算后，再将新值回填到 hash 结构中就完成了一次行为频度的检测。</p>
+<h2 id="新方案"><a href="#新方案" class="headerlink" title="新方案"></a>新方案</h2><p>　　redis4.0出了一个新的模块。叫redis-cell。该模块也使用了漏斗算法，且提供了限流指令。<br>　　cl.throttle sd:sd 15 30 60<br>　　意思是15的容量，每60秒就丢弃30个元素。</p>
+
+          
+        
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="https://skydh.github.io/2018/09/06/redis布隆过滤器/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="董航">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="why are you so happy">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                <a class="post-title-link" href="/2018/09/06/redis布隆过滤器/" itemprop="url">redis之布隆过滤器</a></h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2018-09-06T11:06:22+08:00">
+                2018-09-06
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            <h2 id="由来"><a href="#由来" class="headerlink" title="由来"></a>由来</h2><p>　　情景：当我们使用新闻客户端看新闻时，他会不断推送新的内容，他每次推荐时都要去重，那么问题来了，客户端如何实现推送去重呢？<br>　　当然不会采用记录用户看过的内容，第一数据量大，第二不断exists消耗性能太多。缓存也不行，时间久了数据量太大。<br>　　这个时候布隆过滤器出现了。</p>
+<h2 id="什么是布隆过滤器"><a href="#什么是布隆过滤器" class="headerlink" title="什么是布隆过滤器"></a>什么是布隆过滤器</h2><p>　　这是一个不怎么精确地set结构，当你使用它的contains方法判断某个数据是否存在时，他可能误判，布隆过滤器是不精确的。只要参数设置合理，那么其精确度是可控的。其判断一个值存在时，其可能不存在，判断一个值不存在时，那么一定不存在。</p>
+<h2 id="用法"><a href="#用法" class="headerlink" title="用法"></a>用法</h2><p>　　bf.add 添加元素，bf.exists,查询元素是否存在，其用法和set集合差不多，批量命令是bf.madd指令，批量查询则是bf.mexists指令。我们创建的布隆过滤器都是默认的过滤器，在我们第一次add的时候自动创建。，但是为了提供高精确率。我们可以用bf.reserve指令来修改其参数即可。第一个为其名字，第二个为<br>     client.createFilter(“codehole”, 50000, 0.001);第二个参数为预计存放数据量，第三个为误差率。误差率越低，需要空间越大。</p>
+<h2 id="实现原理"><a href="#实现原理" class="headerlink" title="实现原理"></a>实现原理</h2><p>　　底层是一个大型的位数组，和几个无偏的hash函数（无偏就是让hash值分布均匀）。添加值的时候，会用多个hash函数对key进行hash运算，然后对应数组上不同点，再把这些点全部置为1。询问key是否存在时，和add一样，也是用hash算法吧这些位置都计算出来，看看是否都为1，只要有一个为0，那么这个值不存在。当然如果都是1，也不一定都存在，可能是其他计算的点正好都覆盖了。</p>
+
+          
+        
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
     <link itemprop="mainEntityOfPage" href="https://skydh.github.io/2018/09/05/HypeLogLog/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -1544,320 +1855,6 @@ public class Test {
 
 
     
-      
-
-  
-
-  
-  
-  
-
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-  
-  
-  
-  <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="https://skydh.github.io/2018/07/02/spring mvc流程分析 /">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="董航">
-      <meta itemprop="description" content="">
-      <meta itemprop="image" content="/images/avatar.gif">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="why are you so happy">
-    </span>
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-                
-                <a class="post-title-link" href="/2018/07/02/spring mvc流程分析 /" itemprop="url">spring mvc 流程</a></h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">发表于</span>
-              
-              <time title="创建于" itemprop="dateCreated datePublished" datetime="2018-07-02T10:21:42+08:00">
-                2018-07-02
-              </time>
-            
-
-            
-
-            
-          </span>
-
-          
-
-          
-            
-          
-
-          
-          
-
-          
-
-          
-
-          
-
-        </div>
-      </header>
-    
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          
-            <h2 id="什么是spring-mvc"><a href="#什么是spring-mvc" class="headerlink" title="什么是spring mvc"></a>什么是spring mvc</h2><p>　　Spring MVC本质上还是一个Servlet,他封装了一套通用的方案，使得我们开发时只需要写核心的业务逻辑，不需要写Servlet。而Servlet也是对底层Socket的封装，使得我们开发变得简单。</p>
-
-          
-        
-      
-    </div>
-    
-    
-    
-
-    
-
-    
-
-    
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </div>
-  
-  
-  
-  </article>
-
-
-    
-      
-
-  
-
-  
-  
-  
-
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-  
-  
-  
-  <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="https://skydh.github.io/2018/06/25/es入门/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="董航">
-      <meta itemprop="description" content="">
-      <meta itemprop="image" content="/images/avatar.gif">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="why are you so happy">
-    </span>
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-                
-                <a class="post-title-link" href="/2018/06/25/es入门/" itemprop="url">Elasticsearch入门</a></h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">发表于</span>
-              
-              <time title="创建于" itemprop="dateCreated datePublished" datetime="2018-06-25T09:31:00+08:00">
-                2018-06-25
-              </time>
-            
-
-            
-
-            
-          </span>
-
-          
-
-          
-            
-          
-
-          
-          
-
-          
-
-          
-
-          
-
-        </div>
-      </header>
-    
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          
-            <h2 id="Elasticsearch-和-solr"><a href="#Elasticsearch-和-solr" class="headerlink" title="Elasticsearch 和 solr"></a>Elasticsearch 和 solr</h2><p>　　Elasticsearch更加精简，大多高级功能是依靠插件完成的。而solr很全面，包含了大部分的高级功能，可以从下载大小就可以看出来。<br>　　２者都是基于Lucene这个基于java的搜索类库。<br>　　根据文档（未测试）Elasticsearch的实时搜索效率明显高于solr。<br>　　由于小且精简，因此入门简单。</p>
-<h2 id="Elasticsearch-安装"><a href="#Elasticsearch-安装" class="headerlink" title="Elasticsearch 安装"></a>Elasticsearch 安装</h2><p>　　本次安装基于Windows10。<br>　　官网下载：<a href="https://www.elastic.co/downloads/elasticsearch" target="_blank" rel="noopener">https://www.elastic.co/downloads/elasticsearch</a>。<br>　　下载的zip包，下载解压，然后运行bin\elasticsearch.bat这个Windows批处理文件。<br>　　然后打开浏览器输入　<a href="http://localhost:9200/" target="_blank" rel="noopener">http://localhost:9200/</a>。看看是否返回了有效信息。<br>　　安装node.js，grunt(网上搜索)。<br>　　下载head插件。<a href="https://github.com/mobz/elasticsearch-head" target="_blank" rel="noopener">https://github.com/mobz/elasticsearch-head</a><br>　　修改Elasticsearch的配置文件config/elasticsearch.yml<br>　　修改一下ES的监听地址，这样别的机器也可以访问<br>　　network.host: 0.0.0.0<br>　　增加新的参数，这样head插件可以访问es<br>　　http.cors.enabled: true<br>　　http.cors.allow-origin: “*”<br>　　然后在下载的head插件的解压文件夹的根路径下，运行，npm install 安装其所依赖的各种插件。<br>　　最后启动　grunt server。访问<a href="http://localhost:9100/" target="_blank" rel="noopener">http://localhost:9100/</a><br>　　安装完毕。</p>
-<h2 id="面向文档（Nosql）"><a href="#面向文档（Nosql）" class="headerlink" title="面向文档（Nosql）"></a>面向文档（Nosql）</h2><p>　　Elasticsearch 是 面向文档 的，意味着它是以文档来进行存储数据的。Elasticsearch 不仅存储文档，而且能索引每个文档的内容使之可以被检索。在 Elasticsearch 中，你是对文档进行索引、检索、排序和过滤–而不是对行列数据（关系数据库）。这是一种完全不同的思考数据的方式，也是 Elasticsearch 能支持复杂全文检索的原因。</p>
-<h2 id="索引"><a href="#索引" class="headerlink" title="索引"></a>索引</h2><p>　　在Elasticsearch里面，索引有很多个意思。<br>　　１．名词：一个索引就是类似于关系数据库的一个数据库，是一个存储关系型文档的地方。<br>　　２．动词：索引一个文档就是存储一个文档到索引（名词）中以便于它可以被检索和查询到，类似于关系数据库的insert关键字。<br>　　３．倒排索引：如果说关系数据库的索引的数据结构是B+树，那么Elasticsearch采用了一个叫倒排索引的结构达到相同的目的。</p>
-<h2 id="创建和基本查询"><a href="#创建和基本查询" class="headerlink" title="创建和基本查询"></a>创建和基本查询</h2><p>　　打开Elasticsearch的head插件，然后连接Elasticsearch。在复合查询中，输入url <a href="http://localhost:9200/megacorp/employee/3/,提交方式选择put,内容：{}(json)。即可创建一个索引文档。其中" target="_blank" rel="noopener">http://localhost:9200/megacorp/employee/3/,提交方式选择put,内容：{}(json)。即可创建一个索引文档。其中</a> <a href="http://localhost:9200" target="_blank" rel="noopener">http://localhost:9200</a> 是Elasticsearch的地址。而megacorp上上面提到的名词索引。employee是类型。3为该数据的特定id。<br>　　插入成功后，可以GET /megacorp/employee/３　查询出你插入的数据。<br>　　往里面多插入几条数据，以便于学习测试。<br>　　 /megacorp/employee/_search　这个就是查出这个索引这个类型的所有数据。<br>　　在head这个插件的复合查询里面，有2个行，第一行就是输入上面的url,下面的行，加入查询参数：?q=last_name:Smith<br>　　后面有更加复杂的ELS查询：<br>　　<a href="http://localhost:9200/" target="_blank" rel="noopener">http://localhost:9200/</a><br>　　megacorp/employee/_search/<br>　　post<br>　　{<br>    “query” : {<br>        “bool”: {<br>            “must”: {<br>                “match” : {<br>                    “last_name” : “smith”<br>                }<br>            },<br>            “filter”: {<br>                “range” : {<br>                    “age” : { “gt” : 30 }<br>                }<br>            }<br>        }<br>    }<br>}<br>　　也可以用上面的方式(match)实现全文检索。结果会按照匹配度按顺序排下来。但是想要不全文检索，具体查询，那么就用这个（match_phrase）</p>
-<h2 id="文档的更新"><a href="#文档的更新" class="headerlink" title="文档的更新"></a>文档的更新</h2><p>  在 Elasticsearch 中文档是 不可改变 的，不能修改它们。 相反，如果想要更新现有的文档，需要 重建索引 或者进行替换，在内部，Elasticsearch 已将旧文档标记为已删除，并增加一个全新的文档。 尽管你不能再对旧版本的文档进行访问，但它并不会立即消失。当继续索引更多的数据，Elasticsearch 会在后台清理这些已删除文档。删除逻辑也是。这点和mysql的删除很类似，都是逻辑删除！但是意义不一样~~~</p>
-<h2 id="冲突处理"><a href="#冲突处理" class="headerlink" title="冲突处理"></a>冲突处理</h2><p>　　当多个端同时处理一个文档的值的时候，可能出现值丢失的情况。因此我们需要加锁，就像对mysql的处理一样。有2个方式，第一个就是悲观加锁，要获取这个数据，那么你要先获得锁，但是效率存在问题，第二个就是用乐观锁，类似java原子类的CAS的思想，我假设你没有变化。有变化，我就重新获取值进行处理，而我们的文档存在一个叫version的字段，可以用来判断。我们可以通过api来指定version来确认。</p>
-<pre><code>PUT /website/blog/1?version=1 
-{
-  &quot;title&quot;: &quot;My first blog entry&quot;,
-  &quot;text&quot;:  &quot;Starting to get the hang of this...&quot;
-}
-</code></pre><p>　　当然大部分情况下，我们使用mysql作为主要的数据存储，而Elasticsearch主要作为检索用的，如果多个进程进行数据同步，就会出现那个问题。我们在数据库里面就有了版本号，那么我们也可以用这个版本号作为判断条件，是否更新。</p>
-<h2 id="请求合并"><a href="#请求合并" class="headerlink" title="请求合并"></a>请求合并</h2><p>　　es可以将多个请求合并成一个，避免单独处理每个请求花费的网络延时和开销。 如果你需要从 Elasticsearch 检索很多文档，那么使用 multi-get 或者 mget API 来将这些检索请求放在一个请求中，将比逐个文档请求更快地检索到全部文档。</p>
-<pre><code>_mget
-{
-       &quot;docs&quot; : [
-  {
-     &quot;_index&quot; : &quot;website&quot;,
-     &quot;_type&quot; :  &quot;blog&quot;,
-     &quot;_id&quot; :    2
-  },
-  {
-     &quot;_index&quot; : &quot;website&quot;,
-     &quot;_type&quot; :  &quot;pageviews&quot;,
-     &quot;_id&quot; :    1,
-     &quot;_source&quot;: &quot;views&quot;
-  }
-       ]
-}
-</code></pre><h2 id="分布式存储"><a href="#分布式存储" class="headerlink" title="分布式存储"></a>分布式存储</h2><p>　　我们知道我们一个索引对应多个分片，每个分片又有多个副本，那么我们索引一个文档时，文档会被存储到主分片里面，但是应该存到具体哪个分片里面呢？是有个hash算法，根据id计算出一个值，然后对分片数取模，即可。</p>
-<p>　　以下是在主副分片和任何副本分片上面 成功新建，索引和删除文档所需要的步骤顺序：<br>　　１．客户端向 Node 1 发送新建、索引或者删除请求。<br>　　２．节点使用文档的 _id 确定文档属于分片 0 。请求会被转发到 Node 3<code>，因为分片 0 的主分片目前被分配在</code>Node 3 上。<br>　　３．Node 3 在主分片上面执行请求。如果成功了，它将请求并行转发到 Node 1 和 Node 2 的副本分片上。一旦所有的副本分片都报告成功, Node 3 将向协调节点报告成功，协调节点向客户端报告成功。</p>
-<p>　　以下是从主分片或者副本分片检索文档的步骤顺序：</p>
-<p>　　1、客户端向 Node 1 发送获取请求。</p>
-<p>　　2、节点使用文档的 _id 来确定文档属于分片 0 。分片 0 的副本分片存在于所有的三个节点上。 在这种情况下，它将请求转发到 Node2 。</p>
-<p>　　3、Node 2 将文档返回给 Node 1 ，然后将文档返回给客户端。</p>
-<p>　　在处理读取请求时，协调结点在每次请求的时候都会通过轮询所有的副本分片来达到负载均衡。</p>
-<p>　　在文档被检索时，已经被索引的文档可能已经存在于主分片上但是还没有复制到副本分片。 在这种情况下，副本分片可能会报告文档不存在，但是主分片可能成功返回文档。 一旦索引请求成功返回给用户，文档在主分片和副本分片都是可用的。</p>
-<p>　　以下是部分更新一个文档的步骤：</p>
-<p>　　１．客户端向 Node 1 发送更新请求。<br>　　２．它将请求转发到主分片所在的 Node 3 。<br>　　３．Node 3 从主分片检索文档，修改 _source 字段中的 JSON ，并且尝试重新索引主分片的文档。 如果文档已经被另一个进程修改，它会重试步骤 3 ，超过 retry_on_conflict 次后放弃。<br>　　４．如果 Node 3 成功地更新文档，它将新版本的文档并行转发到 Node 1 和 Node 2 上的副本分片，重新建立索引。 一旦所有副本分片都返回成功， Node 3 向协调节点也返回成功，协调节点向客户端返回成功。</p>
-<h2 id="集群"><a href="#集群" class="headerlink" title="集群"></a>集群</h2><p>　　Elasticsearch可以垂直扩展（购买性能更好的机器），也可以水平扩展（扩展多个节点），一个运行中的Elasticsearch实例就是一个节点，具有多个相同cluster.name配置的节点组成。其共同承担数据和负载的压力。<br>　　集群有个叫集群健康的值，3个状态。<br>　　green：所有主分片和副分片都正常。<br>　　yellow:所有主分片正常，但是副分片有的不正常。<br>　　red:存在主分片不正常。<br>　　我们上面提到的名词索引实际上指向一个或者多个分片。一个分片是底层的工作单元，保存了全部数据的一部分，Elasticsearch利用分片将数据分发到集群各处的，分片是数据的容器，文档保存在分片中。分片分配到集群的各个节点里面。<br>　　一个分片可以是主分片和副本分片，索引内的任何一个文档都是属于主分片的，所以主分片决定了索引能保存的最大数据量。副本分片是主分片的copy，为了保障数据安全的。<br>　　水平扩容后，分片后自动重新分配的。<br>　　一个Elasticsearch实例就是一个节点。一个索引默认五个主分片，五个副分片。<br>　　当你只有一个节点的时候，创建一个索引的集群健康值一定是黄色。因为副本分片都是 unassigned —— 它们都没有被分配到任何节点。 在同一个节点上既保存原始数据又保存副本是没有意义的，因为一旦失去了那个节点，我们也将丢失该节点上的所有副本数据。当你再启动一个名字一样的节点的时候，集群健康值就是绿色了。<br>　　然后我们在启动第三个节点，发现一个索引的１０个分片均匀分配到３个节点里面了。<br>   因此我们发现Elasticsearch的动态扩展能力极强。<br>　　写操作我们只能通过主分片进行，读操作我们可以从主副分片都可以。当我们创建的节点吵过１０个后，我们可以将副本重新设置，来获取更大的并发量。</p>
-<h2 id="java-操作-Elasticsearch"><a href="#java-操作-Elasticsearch" class="headerlink" title="java 操作 Elasticsearch"></a>java 操作 Elasticsearch</h2><p>　　代码如下：<br>　　maven依赖：</p>
-<pre><code>&lt;dependency&gt;
-    &lt;groupId&gt;org.elasticsearch.client&lt;/groupId&gt;
-    &lt;artifactId&gt;transport&lt;/artifactId&gt;
-    &lt;version&gt;6.3.0&lt;/version&gt;
-&lt;/dependency&gt;
-</code></pre><p>　　代码：</p>
-<pre><code>import java.net.InetAddress;
-import org.elasticsearch.action.get.GetResponse;
-import org.elasticsearch.client.transport.TransportClient;
-import org.elasticsearch.common.settings.Settings;
-import org.elasticsearch.common.transport.TransportAddress;
-import org.elasticsearch.transport.client.PreBuiltTransportClient;
-public class TestEsClient {
-    public static void main(String[] args) {
-        try {
-            Settings settings = Settings.builder().put(&quot;cluster.name&quot;, &quot;elasticsearch&quot;).build();
-            // 创建client
-            TransportClient client = new PreBuiltTransportClient(settings)
-                    .addTransportAddress(new TransportAddress(InetAddress.getByName(&quot;127.0.0.1&quot;), 9300));
-            // 搜索数据
-            GetResponse response = client.prepareGet(&quot;megacorp&quot;, &quot;employee&quot;, &quot;1&quot;).execute().actionGet();
-            // 输出结果
-            System.out.println(response.getSourceAsString());
-            // 关闭client
-            client.close();
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
-}
-</code></pre><p>　　结果输出：</p>
-<pre><code>{&quot;first_name&quot;:&quot;John&quot;,&quot;last_name&quot;:&quot;Smith&quot;,&quot;age&quot;:25,&quot;about&quot;:&quot;I love to go rock climbing&quot;,&quot;interests&quot;:[&quot;sports&quot;,&quot;music&quot;]}
-</code></pre><h2 id="小结"><a href="#小结" class="headerlink" title="小结"></a>小结</h2><p>　　大致这样，具体要用的时候细看吧。ps:关于java代码操作Elasticsearch，要切记，maven版本和Elasticsearch版本不能差距太大哦，不然是连不上的</p>
-
-          
-        
-      
-    </div>
-    
-    
-    
-
-    
-
-    
-
-    
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </div>
-  
-  
-  
-  </article>
-
-
-    
   </section>
 
   
@@ -1908,7 +1905,7 @@ public class TestEsClient {
               
                 <a href="/archives/">
               
-                  <span class="site-state-item-count">113</span>
+                  <span class="site-state-item-count">115</span>
                   <span class="site-state-item-name">日志</span>
                 </a>
               </div>

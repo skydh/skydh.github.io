@@ -232,6 +232,264 @@
   
   
   <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="https://skydh.github.io/2018/04/22/缓冲为何提高效率/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="董航">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="why are you so happy">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                <a class="post-title-link" href="/2018/04/22/缓冲为何提高效率/" itemprop="url">io缓冲为何可以提高效率</a></h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2018-04-22T18:02:31+08:00">
+                2018-04-22
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            <h2 id="问题"><a href="#问题" class="headerlink" title="问题"></a>问题</h2><p>  据我了解，运用FileInputStream读写一段数据是一个字节一个字节的读取，如果有10个字节大小的文件，就要调用10次系统调用，每次将读取的数据赋值给变量，然后程序使用变量。<br>  缓冲区可以看作是一个放在内存中的数组，但是从硬盘中读取数据仍然要使用系统调用，系统调用的读取仍然是每次一个，只是每调用一次之后，将所得到的数据放入缓冲区中的，<br>  然后程序一次性使用10个数据。<br>  我是这样理解的，但是不管用与不用缓冲区，使用的系统调用是一样多的。（不知我的理解正确与否，请指出）如果我理解的是正确的，那么为什么使用缓冲区读写的效率要高呢？？谢谢！</p>
+<h2 id="回答"><a href="#回答" class="headerlink" title="回答"></a>回答</h2><p>  理解是对的。<br>  调用I\O操作的时候，实际上还是一个一个的读或者写，关键就在，CPU只有一个，不论是几个核心。CPU在系统调用时，会不会还要参与主要操作？参与多次就会花更多的时间。 系统调用时，<br>  若不用缓冲，CPU会酌情考虑使用 中断。此时CPU是主动地，每个周期中都要花去一部分去询问I\O设备是否读完数据，这段时间CPU不能做任何其他的事情（至少负责执行这段模块的核不能）。所以，调用一次读了一个字，通报一次，CPU腾出时间处理一次。而设置缓冲，CPU通常会使用 DMA 方式去执行 I\O 操作。CPU 将这个工作交给DMA控制器来做，自己腾出时间做其他的事，当DMA完成工作时，DMA会主动告诉CPU“操作完成”。<br>  这时，CPU接管后续工作。在此，CPU 是被动的。DMA是专门 做 I＼O 与 内存 数据交换的，不仅自身效率高，也节约了CPU时间，CPU在DMA开始和结束时做了一些设置罢了。<br>  所以，调用一次，不必通报CPU，等缓冲区满了，DMA 会对C PU 说 “嘿，伙计！快过来看看，把他们都搬走吧”。综上，设置缓冲，就建立了数据块，使得DMA执行更方便，CPU也有空闲，而不是呆呆地候着I\O数据读来。从微观角度来说，设置缓冲效率要高很多。尽管，不能从这个程序上看出来。 几万字的读写\就能看到差距。</p>
+<p> 转载自 <a href="http://blog.csdn.net/vic1990/article/details/46236837" target="_blank" rel="noopener">http://blog.csdn.net/vic1990/article/details/46236837</a></p>
+
+          
+        
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="https://skydh.github.io/2018/04/22/lombok/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="董航">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="why are you so happy">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                <a class="post-title-link" href="/2018/04/22/lombok/" itemprop="url">lombok 配置使用以及优势</a></h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2018-04-22T17:50:48+08:00">
+                2018-04-22
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            <h2 id="maven依赖"><a href="#maven依赖" class="headerlink" title="maven依赖"></a>maven依赖</h2><p>　　<pre></pre></p>
+<pre><code>&lt;dependencies&gt;
+    &lt;dependency&gt;
+        &lt;groupId&gt;org.projectlombok&lt;/groupId&gt;
+        &lt;artifactId&gt;lombok&lt;/artifactId&gt;
+        &lt;version&gt;1.16.20&lt;/version&gt;
+        &lt;scope&gt;provided&lt;/scope&gt;
+    &lt;/dependency&gt;
+&lt;/dependencies&gt;
+</code></pre><p></p>
+<h2 id="让你的IDE不报错"><a href="#让你的IDE不报错" class="headerlink" title="让你的IDE不报错"></a>让你的IDE不报错</h2><p>　　更新maven仓库，把lombok的文件拉下来，cmd进入那个目录，然后java -jar  对应jar包，让其运行安装在你的IDE里面。<br>　　在你的eclipse安装目录下的eclipse.ini文件中加入<br>　　-javaagent:lombok.jar<br>　　-Xbootclasspath/a:lombok.jar<br>　　重启eclipse，lombok即可生效</p>
+<h2 id="为什么使用？"><a href="#为什么使用？" class="headerlink" title="为什么使用？"></a>为什么使用？</h2><p>　　1,  使得代码整洁许多，大部分entity的get和set方法都是固定不变的，我们使用lombok可以有效的减少源代码的量，只关注最重要的属性。</p>
+<p>　　2，曾经遇到一个变态的entity，足足1800行代码，使用lombok后就只用400多行了，这个entity的可读性多了很多</p>
+<p>　　3，有些代码没有把属性和方法分隔，可能是遗留代码，也可能是忘了修改，也可能水品和我一样比较差的，导致代码可读性变得弱了好多，如果我们使用了lombok就不会出现这种情况</p>
+<p>　　4，还有就是有些情况，有人修改了属性，但是没有修改方法，而且没有报错的那种，等等一系列情况，使用了lombok就可以避免。</p>
+<p>　　5，还有就是我们的代码自动生成工具生成的vo也是不够工整，可能是由于某些原因导致的，如果我们使用了这个lombok就可以避免这个问题．</p>
+<h2 id="原理"><a href="#原理" class="headerlink" title="原理"></a>原理</h2><p>   就是元注解出现后注解运行生命周期里面的编译周期，这个就是 JSR 269 Pluggable Annotation Processing API，就是源代码在编译成字节码的时候修改了语法树的节点规则进行了加强生成</p>
+
+          
+        
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
     <link itemprop="mainEntityOfPage" href="https://skydh.github.io/2018/04/22/spring post乱码/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -1287,7 +1545,34 @@ ctorInstance(memory);  //2：初始化对象
       
         
           
-            
+            <h1 id="简介"><a href="#简介" class="headerlink" title="简介"></a>简介</h1><ul>
+<li>spring事务通过这个接口来定义的：TransactionDefinition ，这个接口包含了和事务属性有关的方法和参数定义。</li>
+<li>spring事务里面PlatformTransactionManager这个接口定义了事务的具体执行操作方法。其最终的实现类主要有：DataSourceTransactionManager：适用于使用JDBC和iBatis进行数据持久化操作的情况。<br>HibernateTransactionManager：适用于使用Hibernate进行数据持久化操作的情况。<br>JpaTransactionManager：适用于使用JPA进行数据持久化操作的情况。这个类也可以管理jdbc的事务。ps:（This transaction manager also supports direct DataSource access within a<ul>
+<li>transaction (i.e. plain JDBC code working with the same DataSource).）</li>
+</ul>
+</li>
+</ul>
+<h2 id="事务隔离级别"><a href="#事务隔离级别" class="headerlink" title="事务隔离级别"></a>事务隔离级别</h2><p>　　在这个接口里面定义了一些事务隔离级别，这和mysql的事务隔离界别没区别，都是RU,RC,RR,SE。我们可以使用符合自己业务需求的隔离级别。</p>
+<h2 id="事务传播级别"><a href="#事务传播级别" class="headerlink" title="事务传播级别"></a>事务传播级别</h2><p>　　在接口定义中，下面几个参数代表了不同传播级别。事务的传播就是在开启当前事务之前已经开启了一个事务。</p>
+<pre><code>int PROPAGATION_REQUIRED = 0;
+int PROPAGATION_SUPPORTS = 1;
+int PROPAGATION_MANDATORY = 2;
+int PROPAGATION_REQUIRES_NEW = 3;
+int PROPAGATION_NOT_SUPPORTED = 4;
+int PROPAGATION_NEVER = 5;
+int PROPAGATION_NESTED = 6;
+</code></pre><ul>
+<li>PROPAGATION_REQUIRED：若存在事务，则加入当前事务，否则创建一个新事务。</li>
+<li>PROPAGATION_SUPPORTS：若存在事务，则加入当前事务，否则以无事务的状态运行。</li>
+<li>PROPAGATION_MANDATORY：如果存在事务则加入当前事务，没有则抛出异常。</li>
+<li>PROPAGATION_REQUIRES_NEW：创建一个新事务，以这个新事务为主，把已存在的事务挂起。</li>
+<li>PROPAGATION_NOT_SUPPORTED：以非事务的方式运行，若存在事务，则把当前事务挂起。</li>
+<li>PROPAGATION_NEVER：以非事务的方向运行，若存在事务，则抛出异常。</li>
+<li>PROPAGATION_NESTED：若存在事务，则创建一个事务作为当前事务的嵌套事务来执行，没有则是创建一个新事物和PROPAGATION_REQUIRED类似。内嵌事务并不是一个独立的事务，它依赖于外部事务的存在，只有通过外部的事务提交，才能引起内部事务的提交，嵌套的子事务不能单独提交。</li>
+</ul>
+<h1 id="编程式事务"><a href="#编程式事务" class="headerlink" title="编程式事务"></a>编程式事务</h1><p>　　类似于JDBC编程实现事务管理。Spring框架提供一致的事务抽象，因此对于JDBC还是JTA事务都是采用相同的API进行编程。</p>
+<h1 id="声明式事务"><a href="#声明式事务" class="headerlink" title="声明式事务"></a>声明式事务</h1><p>　　声明式事务实际上是通过aop实现的，我们一般也是采用这个方案，可以有效的减少代码code。并且把公共代码全部抽取了出来。我们一般也是采用这个方案。</p>
+
           
         
       
@@ -1506,253 +1791,6 @@ KeySpace 键值对统计数量信息
 
 
     
-      
-
-  
-
-  
-  
-  
-
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-  
-  
-  
-  <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="https://skydh.github.io/2018/03/12/mybatis简介/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="董航">
-      <meta itemprop="description" content="">
-      <meta itemprop="image" content="/images/avatar.gif">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="why are you so happy">
-    </span>
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-                
-                <a class="post-title-link" href="/2018/03/12/mybatis简介/" itemprop="url">mybatis简介</a></h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">发表于</span>
-              
-              <time title="创建于" itemprop="dateCreated datePublished" datetime="2018-03-12T11:26:20+08:00">
-                2018-03-12
-              </time>
-            
-
-            
-
-            
-          </span>
-
-          
-
-          
-            
-          
-
-          
-          
-
-          
-
-          
-
-          
-
-        </div>
-      </header>
-    
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          
-            <h2 id="优点和缺点"><a href="#优点和缺点" class="headerlink" title="优点和缺点"></a>优点和缺点</h2><p>　　sql和代码分离，利于管理和优化，但是sql代码量大，有些不好处理。MyBatis支持普通sql查询，存储过程，高级映射，其消除了所有的JDBC代码和参数的手工设置以及结果集的检索，使用简单的XML和注解来配置映射关系。恩，还有动态sql,避免了sql注入。</p>
-<h2 id="mybatis缓存机制"><a href="#mybatis缓存机制" class="headerlink" title="mybatis缓存机制"></a>mybatis缓存机制</h2><p>　　Mybatis缓存是分为2级缓存。<br>　　一级缓存是一个sqlSession级别的。就是一个sqlSession里面sql和参数一样的sql就会从从缓存里面取出来，默认开启。<br>　　二级缓存：，多个SqlSession使用同一个Mapper的sql语句去操作数据库，得到的数据会存在二级缓存区域，它同样是使用HashMapper进行数据存储，相比一级缓存SqlSession，二级缓存的范围更大，多个SqlSession可以共用二级缓存，二级缓存是跨SqlSession的。默认不开启</p>
-<p><pre><br>    mybatis-config<br>    <settings><br>        <setting name="cacheEnabled" value="true"><br>    </setting></settings><br>    <!-- 开启当前mapper的namespace下的二级缓存 --><br>    <cache eviction="LRU" flushinterval="60000" size="512" readonly="true"><br></cache></pre><br>　　对于缓存数据更新机制，当某一个作用域(一级缓存Session/二级缓存Namespaces)的进行了 C/U/D 操作后，默认该作用域下所有 select 中的缓存将被clear。</p>
-<h2 id="和-的区别是什么？"><a href="#和-的区别是什么？" class="headerlink" title="#{}和${}的区别是什么？"></a>#{}和${}的区别是什么？</h2><p>   第一个是解析传递进来的参数数据，是预编译处理，<br>第二个是对传递进来的参数原样拼接在SQL中，是字符串替换。<br>使用#{}可以有效的防止SQL注入，提高系统安全性。<br>看看案例实现</p>
-
-          
-        
-      
-    </div>
-    
-    
-    
-
-    
-
-    
-
-    
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </div>
-  
-  
-  
-  </article>
-
-
-    
-      
-
-  
-
-  
-  
-  
-
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-  
-  
-  
-  <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="https://skydh.github.io/2018/03/11/spring mvc简介/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="董航">
-      <meta itemprop="description" content="">
-      <meta itemprop="image" content="/images/avatar.gif">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="why are you so happy">
-    </span>
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-                
-                <a class="post-title-link" href="/2018/03/11/spring mvc简介/" itemprop="url">spring mvc介绍和demo</a></h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">发表于</span>
-              
-              <time title="创建于" itemprop="dateCreated datePublished" datetime="2018-03-11T15:07:15+08:00">
-                2018-03-11
-              </time>
-            
-
-            
-
-            
-          </span>
-
-          
-
-          
-            
-          
-
-          
-          
-
-          
-
-          
-
-          
-
-        </div>
-      </header>
-    
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          
-            <h2 id="基本概念"><a href="#基本概念" class="headerlink" title="基本概念"></a>基本概念</h2><p>　　DispatcherServlet:这个就类似于前端分发器。用于分发前端的请求到具体的Controller。然后获取数据到前端。<br>　　Controller:就是控制层。<br>　　HandlerAdapter:Handler是DispacherServlet使用的，是controller的一个表现形式。我们的DispatcherServlet调用Controller就是以调用Handle来调用的，而HanDlerAdapter则是将不同类型的类适配为我们这个DispacherServlet可以使用的类。<br>　　handleInterceptor:就是拦截器，就是在Handle上加上一些拦截器。<br>　　HandleMapping：顾名思义，Handle是DispacherServlet调用Controller的一个过渡中间对象，那么这个就是前段访问对应那个Controller。以及这个Controller的拦截器。<br>　　HandlerExecutionChain:调用的Controller按照拦截器的模式前置拦截，以及后置拦截器等拦截器的链条。<br>　　ModelAndView:这就是model的显示类型。<br>　　ViewResolve：视图解析器。根据配置找到确切的视图对象告诉DispacherServlet。<br>　　View：界面显示。<br><img src="https://raw.githubusercontent.com/skydh/picture/master/springmvc.png" alt="aaa"><br><img src="https://raw.githubusercontent.com/skydh/picture/master/springmvc2.png" alt="aaa"><br>　　请求从浏览器发送经过DispacherServlet的HandleMapping找到对应的Controller以及其拦截器。从而生成一个Handle给DispacherServlet，让其调用，生成一个model就是数据模型，然后DispacherServlet调用ViewResolve找到view，吧数据model注入进去，并且把这个view返回给Response。</p>
-<h2 id="配置解析"><a href="#配置解析" class="headerlink" title="配置解析"></a>配置解析</h2><p>　　web.xml文件解析。<br>　　这个文件是用来加载初始化信息的，当服务容器开始启动时，先加载web.xml文件。里面的元素配置信息加载顺序为：context-param&gt;listener&gt;filter&gt;servlet<br>　　第一步，获取到context-param的值，然后创建这个web项目的上下文，然后创建listener的实例，从而获取到相关信息。最后则是加载filter的实例。<br>　　web.xml文件启动大致分为2个部分。<br>　　ContextLoad而Listener的初始化，实例化话ioc,并且将这个ioc注册到application中。<br>　　DispacherServlet的初始化。<br>　　我们知道Spring容器加载配置文件后，会生成一个上下文，而springmvc加载配置文件后也会生成一个上下文，为什么这样划分呢？？？这样的，我们的应用可能给不同类型的人分发请求，那么就会有多个DispacherServlet，呢么就有多个上下文，而spring的上下文则是公共的，那么就会少加载初始化一些类。</p>
-<h2 id="拦截器"><a href="#拦截器" class="headerlink" title="拦截器"></a>拦截器</h2><p><img src="https://raw.githubusercontent.com/skydh/picture/master/spring-mvc.png" alt="aaa"><br>　　这里配置多个拦截器如下所示。<br><img src="https://raw.githubusercontent.com/skydh/picture/master/spring-mvc1.png" alt="aaa"></p>
-<h2 id="demo样例"><a href="#demo样例" class="headerlink" title="demo样例"></a>demo样例</h2><p>　　可以自己下载运行调试。<br>　　<a href="https://github.com/skydh/spring-mvc-test.git" target="_blank" rel="noopener">点我一下就到了</a></p>
-<p>　　</p>
-
-          
-        
-      
-    </div>
-    
-    
-    
-
-    
-
-    
-
-    
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </div>
-  
-  
-  
-  </article>
-
-
-    
   </section>
 
   
@@ -1803,7 +1841,7 @@ KeySpace 键值对统计数量信息
               
                 <a href="/archives/">
               
-                  <span class="site-state-item-count">113</span>
+                  <span class="site-state-item-count">115</span>
                   <span class="site-state-item-name">日志</span>
                 </a>
               </div>
