@@ -232,129 +232,6 @@
   
   
   <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="https://skydh.github.io/2018/03/12/mybatis简介/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="董航">
-      <meta itemprop="description" content="">
-      <meta itemprop="image" content="/images/avatar.gif">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="why are you so happy">
-    </span>
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-                
-                <a class="post-title-link" href="/2018/03/12/mybatis简介/" itemprop="url">mybatis简介</a></h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">发表于</span>
-              
-              <time title="创建于" itemprop="dateCreated datePublished" datetime="2018-03-12T11:26:20+08:00">
-                2018-03-12
-              </time>
-            
-
-            
-
-            
-          </span>
-
-          
-
-          
-            
-          
-
-          
-          
-
-          
-
-          
-
-          
-
-        </div>
-      </header>
-    
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          
-            <h2 id="优点和缺点"><a href="#优点和缺点" class="headerlink" title="优点和缺点"></a>优点和缺点</h2><p>　　sql和代码分离，利于管理和优化，但是sql代码量大，有些不好处理。MyBatis支持普通sql查询，存储过程，高级映射，其消除了所有的JDBC代码和参数的手工设置以及结果集的检索，使用简单的XML和注解来配置映射关系。恩，还有动态sql,避免了sql注入。</p>
-<h2 id="mybatis缓存机制"><a href="#mybatis缓存机制" class="headerlink" title="mybatis缓存机制"></a>mybatis缓存机制</h2><p>　　Mybatis缓存是分为2级缓存。<br>　　一级缓存是一个sqlSession级别的。就是一个sqlSession里面sql和参数一样的sql就会从从缓存里面取出来，默认开启。<br>　　二级缓存：，多个SqlSession使用同一个Mapper的sql语句去操作数据库，得到的数据会存在二级缓存区域，它同样是使用HashMapper进行数据存储，相比一级缓存SqlSession，二级缓存的范围更大，多个SqlSession可以共用二级缓存，二级缓存是跨SqlSession的。默认不开启</p>
-<p><pre><br>    mybatis-config<br>    <settings><br>        <setting name="cacheEnabled" value="true"><br>    </setting></settings><br>    <!-- 开启当前mapper的namespace下的二级缓存 --><br>    <cache eviction="LRU" flushinterval="60000" size="512" readonly="true"><br></cache></pre><br>　　对于缓存数据更新机制，当某一个作用域(一级缓存Session/二级缓存Namespaces)的进行了 C/U/D 操作后，默认该作用域下所有 select 中的缓存将被clear。</p>
-<h2 id="和-的区别是什么？"><a href="#和-的区别是什么？" class="headerlink" title="#{}和${}的区别是什么？"></a>#{}和${}的区别是什么？</h2><p>   第一个是解析传递进来的参数数据，是预编译处理，<br>第二个是对传递进来的参数原样拼接在SQL中，是字符串替换。<br>使用#{}可以有效的防止SQL注入，提高系统安全性。<br>看看案例实现</p>
-
-          
-        
-      
-    </div>
-    
-    
-    
-
-    
-
-    
-
-    
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </div>
-  
-  
-  
-  </article>
-
-
-    
-      
-
-  
-
-  
-  
-  
-
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-  
-  
-  
-  <div class="post-block">
     <link itemprop="mainEntityOfPage" href="https://skydh.github.io/2018/03/11/spring mvc简介/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -1615,6 +1492,156 @@
 
 
     
+      
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="https://skydh.github.io/2018/02/08/DNS协议简介/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="董航">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="why are you so happy">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                <a class="post-title-link" href="/2018/02/08/DNS协议简介/" itemprop="url">DNS协议</a></h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2018-02-08T09:33:46+08:00">
+                2018-02-08
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            <h2 id="什么是DNS协议"><a href="#什么是DNS协议" class="headerlink" title="什么是DNS协议"></a>什么是DNS协议</h2><p>　　我们知道网络上每个站点的位置是靠ip来确认的，想要访问一个网站必须知道他的ip地址。但是ip地址全部是数字，很不好记忆。也不方便记忆，于是就有了域名。每个域名都有对应的ip地址，网上的域名非常多。且网上域名和ip对应关系也经常变化，因此需要有专门的把域名装换为ip的服务器，这个就是DNS服务器，我们把域名传递过去他就会返回对应的ip。我们可以用nslookup来获取域名信息。看下面的例子</p>
+<p><img src="https://raw.githubusercontent.com/skydh/picture/master/DNS_001.png" alt="aaa"><br>　　域名服务器的域名是：ns.wuhan.net.cn<br>　　域名服务器的ip是： 202.103.24.68<br>　　被解析的域名对应ip是：180.97.33.107 ，180.97.33.108<br>　　被解析域名的CNAME域名是：www.a.shifen.com<br>　　什么是CNAME?<br>　　CNAME是将别的域名装换为一个域名，再将这个域名解析到A记录上，也就是在转换为ip,为什么需要这么做，一个网站要是有多个域名，如果对应ip变了，那么所有的对应关系都要修改，但是有了中间层这个域名，那么则只要改一下就行了。</p>
+<h2 id="DNS注册"><a href="#DNS注册" class="headerlink" title="DNS注册"></a>DNS注册</h2><p>　　DNS是如何获取到ip和域名的对应关系呢？那是通过万网注册。DNS服务器则可以获取到其信息了。</p>
+<h2 id="DNS地址获取"><a href="#DNS地址获取" class="headerlink" title="DNS地址获取"></a>DNS地址获取</h2><p>　　可以在网络配置页面进行DNS配置。可以选择自动获取，也可以设置固定的DNS地址。</p>
+<h2 id="本机自己配置ip"><a href="#本机自己配置ip" class="headerlink" title="本机自己配置ip"></a>本机自己配置ip</h2><p>　　Windows下这个目录C:\Windows\System32\drivers\etc可以配置对应域名和ip,本机解析域名时先从hosts下找，找不到再从DNS服务器上找。<br>　　这个是我本机的hosts</p>
+<pre>
+        # Copyright (c) 1993-2009 Microsoft Corp.
+        #
+        # This is a sample HOSTS file used by Microsoft TCP/IP for Windows.
+        #
+        # This file contains the mappings of IP addresses to host names. Each
+        # entry should be kept on an individual line. The IP address should
+        # be placed in the first column followed by the corresponding host name.
+        # The IP address and the host name should be separated by at least one
+        # space.
+        #
+        # Additionally, comments (such as these) may be inserted on individual
+        # lines or following the machine name denoted by a '#' symbol.
+        #
+        # For example:
+        #
+        #      102.54.94.97     rhino.acme.com          # source server
+        #       38.25.63.10     x.acme.com              # x client host
+
+        # localhost name resolution is handled within DNS itself.
+        #    127.0.0.1       localhost
+        #    ::1             localhost
+        10.11.248.91 zjy.cscec.com.cn
+
+
+</pre>
+
+          
+        
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
   </section>
 
   
@@ -1665,7 +1692,7 @@
               
                 <a href="/archives/">
               
-                  <span class="site-state-item-count">115</span>
+                  <span class="site-state-item-count">114</span>
                   <span class="site-state-item-name">日志</span>
                 </a>
               </div>

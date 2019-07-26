@@ -232,141 +232,6 @@
   
   
   <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="https://skydh.github.io/2018/05/14/虚拟机字节码执行引擎/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="董航">
-      <meta itemprop="description" content="">
-      <meta itemprop="image" content="/images/avatar.gif">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="why are you so happy">
-    </span>
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-                
-                <a class="post-title-link" href="/2018/05/14/虚拟机字节码执行引擎/" itemprop="url">虚拟机字节码执行引擎</a></h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">发表于</span>
-              
-              <time title="创建于" itemprop="dateCreated datePublished" datetime="2018-05-14T16:07:38+08:00">
-                2018-05-14
-              </time>
-            
-
-            
-
-            
-          </span>
-
-          
-
-          
-            
-          
-
-          
-          
-
-          
-
-          
-
-          
-
-        </div>
-      </header>
-    
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          
-            <h2 id="java到底是解释语言还是编译语言"><a href="#java到底是解释语言还是编译语言" class="headerlink" title="java到底是解释语言还是编译语言"></a>java到底是解释语言还是编译语言</h2><p>　　java他是个混合类型的语言，他解释一行行代码执行，同时将反复执行的热点代码，以方法为单位即时编译。因为一个程序里面执行最多的往往是那20%的代码。</p>
-<h2 id="不同的即时编译器"><a href="#不同的即时编译器" class="headerlink" title="不同的即时编译器"></a>不同的即时编译器</h2><p>　　java有多款即时编译器。C1,C2,Graal,这几款是为了在编译时间和运行效率取个均衡。C1是编译时间短，同时性能差，C2正好和C1相反，编译时间稍长，但是性能更高。<br>　　从 Java 7 开始，HotSpot 默认采用分层编译的方式：热点方法首先会被 C1 编译，而后热点方法中的热点会进一步被 C2 编译。在计算资源充足的情况下，字节码的解释执行和即时编译可同时进行。编译完成后的机器码会在下次调用该方法时启用，以替换原本的解释执行。</p>
-<h2 id="运行时栈帧结构"><a href="#运行时栈帧结构" class="headerlink" title="运行时栈帧结构"></a>运行时栈帧结构</h2><p>　　java代码加载是放到方法区的，但是在运行过程中，每调用一个方法，就生成一个栈帧。栈帧是用于支持虚拟机进行方法调用的和方法执行的数据结构，是虚拟机运行时数据区的虚拟机栈的栈元素，栈帧存储了方法的局部变量表，操作数栈，动态链接，方法返回地址等。<br>　　每一个栈帧需要多大的内存在编译期间就确认了。</p>
-<h3 id="局部变量表"><a href="#局部变量表" class="headerlink" title="局部变量表"></a>局部变量表</h3><p>　　在其，存放方法参数和方法内部定义的局部变量。</p>
-<h3 id="操作数栈"><a href="#操作数栈" class="headerlink" title="操作数栈"></a>操作数栈</h3><p>　　也叫操作栈，是一个后入先出栈，当一个方法开始执行时，操作数栈是空的，在执行过程中，各种字节码指令会往操作数栈写入和提取内容。</p>
-<h3 id="动态连接"><a href="#动态连接" class="headerlink" title="动态连接"></a>动态连接</h3><p>　　每个栈帧都包含一个指向运行时常量池的引用，在Class文件中会有大量符号引用，一部分会在类加载时就直接转换为直接引用，一部分是在运行时转换为直接引用。</p>
-<h3 id="方法返回地址"><a href="#方法返回地址" class="headerlink" title="方法返回地址"></a>方法返回地址</h3><p>　　方法有２个方式退出，第一个是执行引擎遇到返回的字节码指令，正常退出。第二个就是遇到了异常，且没有被处理也会退出，这个是异常完成退出。无论哪种退出都要返回到方法被调用的位置，程序才能继续执行，正常退出时才会有这个值，异常退出时，一般不会保存这个值。</p>
-<h3 id="附加信息"><a href="#附加信息" class="headerlink" title="附加信息"></a>附加信息</h3><p>　　一些不在规范里面描述的信息，例如调试相关的信息，一般吧动态连接，方法返回地址。</p>
-<h2 id="方法调用"><a href="#方法调用" class="headerlink" title="方法调用"></a>方法调用</h2><p>　　在java中没有传统的连接步骤，存放在Class文件的是符号引用。</p>
-<h3 id="解析"><a href="#解析" class="headerlink" title="解析"></a>解析</h3><p>　　在类加载的解析阶段，会将一部分符号引用变成直接引用。这一部分是有要求的，就是方法调用在编译器就确认好了，不会发生变化的调用。<br>　　在java中符合这个规范（编译器可知，运行期不可变的方法）是静态方法属于这个类，私有方法，外部不可访问，这2个类型的方法注定不会被重写或者继承产生其他版本。因此是在编译器就确认好了。</p>
-<h3 id="分派"><a href="#分派" class="headerlink" title="分派"></a>分派</h3><h4 id="静态分派"><a href="#静态分派" class="headerlink" title="静态分派"></a>静态分派</h4><p>　　A a=new B();其中B继承A,其中这个A是静态类型，这个B是实际类型。静态类型编译期间就可以知道确认，而实际类型必须在运行期间在可以确认。编译器不知道一个对象的实际类型是什么，在编译期间。<br>　　在重载中</p>
-<pre><code>public void test(A a){...} ...1
-public void test(B b){...} ...2
-</code></pre><p>　　如果传入A a=new B();把这个对象当参数穿进去，那么调用的是第一个方法，为何？因为这个虚拟机在重载时根据的是参数的静态类型进行判断的，而静态类型却是在编译期间就可以知道的，因此在编译期间就将符号引用确认了。凡是通过静态参数确认的都是静态分配。</p>
-<h4 id="动态分配"><a href="#动态分配" class="headerlink" title="动态分配"></a>动态分配</h4><p>　　动态分配和java中的重写密切相关。动态分配哈java字节码的一些指令相关度很高，他就是更具对象的实际类型类指定的，和对象实际类型相关。这是和java字节码的解析相关的，字节码就是这么解析的。
-　　</p>
-
-          
-        
-      
-    </div>
-    
-    
-    
-
-    
-
-    
-
-    
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </div>
-  
-  
-  
-  </article>
-
-
-    
-      
-
-  
-
-  
-  
-  
-
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-  
-  
-  
-  <div class="post-block">
     <link itemprop="mainEntityOfPage" href="https://skydh.github.io/2018/05/11/jvm类加载器/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -1599,6 +1464,128 @@ public class DemoTest {
 
 
     
+      
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="https://skydh.github.io/2018/04/22/缓冲为何提高效率/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="董航">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="why are you so happy">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                <a class="post-title-link" href="/2018/04/22/缓冲为何提高效率/" itemprop="url">io缓冲为何可以提高效率</a></h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2018-04-22T18:02:31+08:00">
+                2018-04-22
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            <h2 id="问题"><a href="#问题" class="headerlink" title="问题"></a>问题</h2><p>  据我了解，运用FileInputStream读写一段数据是一个字节一个字节的读取，如果有10个字节大小的文件，就要调用10次系统调用，每次将读取的数据赋值给变量，然后程序使用变量。<br>  缓冲区可以看作是一个放在内存中的数组，但是从硬盘中读取数据仍然要使用系统调用，系统调用的读取仍然是每次一个，只是每调用一次之后，将所得到的数据放入缓冲区中的，<br>  然后程序一次性使用10个数据。<br>  我是这样理解的，但是不管用与不用缓冲区，使用的系统调用是一样多的。（不知我的理解正确与否，请指出）如果我理解的是正确的，那么为什么使用缓冲区读写的效率要高呢？？谢谢！</p>
+<h2 id="回答"><a href="#回答" class="headerlink" title="回答"></a>回答</h2><p>  理解是对的。<br>  调用I\O操作的时候，实际上还是一个一个的读或者写，关键就在，CPU只有一个，不论是几个核心。CPU在系统调用时，会不会还要参与主要操作？参与多次就会花更多的时间。 系统调用时，<br>  若不用缓冲，CPU会酌情考虑使用 中断。此时CPU是主动地，每个周期中都要花去一部分去询问I\O设备是否读完数据，这段时间CPU不能做任何其他的事情（至少负责执行这段模块的核不能）。所以，调用一次读了一个字，通报一次，CPU腾出时间处理一次。而设置缓冲，CPU通常会使用 DMA 方式去执行 I\O 操作。CPU 将这个工作交给DMA控制器来做，自己腾出时间做其他的事，当DMA完成工作时，DMA会主动告诉CPU“操作完成”。<br>  这时，CPU接管后续工作。在此，CPU 是被动的。DMA是专门 做 I＼O 与 内存 数据交换的，不仅自身效率高，也节约了CPU时间，CPU在DMA开始和结束时做了一些设置罢了。<br>  所以，调用一次，不必通报CPU，等缓冲区满了，DMA 会对C PU 说 “嘿，伙计！快过来看看，把他们都搬走吧”。综上，设置缓冲，就建立了数据块，使得DMA执行更方便，CPU也有空闲，而不是呆呆地候着I\O数据读来。从微观角度来说，设置缓冲效率要高很多。尽管，不能从这个程序上看出来。 几万字的读写\就能看到差距。</p>
+<p> 转载自 <a href="http://blog.csdn.net/vic1990/article/details/46236837" target="_blank" rel="noopener">http://blog.csdn.net/vic1990/article/details/46236837</a></p>
+
+          
+        
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
   </section>
 
   
@@ -1649,7 +1636,7 @@ public class DemoTest {
               
                 <a href="/archives/">
               
-                  <span class="site-state-item-count">115</span>
+                  <span class="site-state-item-count">114</span>
                   <span class="site-state-item-name">日志</span>
                 </a>
               </div>

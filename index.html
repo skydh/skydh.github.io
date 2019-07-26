@@ -696,193 +696,6 @@ public class SimpleKafkaConsumer {
   
   
   <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="https://skydh.github.io/2019/06/27/kafka基础-主题和分区/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="董航">
-      <meta itemprop="description" content="">
-      <meta itemprop="image" content="/images/avatar.gif">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="why are you so happy">
-    </span>
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-                
-                <a class="post-title-link" href="/2019/06/27/kafka基础-主题和分区/" itemprop="url">kafka入门005 -主题和分区</a></h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">发表于</span>
-              
-              <time title="创建于" itemprop="dateCreated datePublished" datetime="2019-06-27T20:40:55+08:00">
-                2019-06-27
-              </time>
-            
-
-            
-
-            
-          </span>
-
-          
-
-          
-            
-          
-
-          
-          
-
-          
-
-          
-
-          
-
-        </div>
-      </header>
-    
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          
-            <h2 id="创建主题"><a href="#创建主题" class="headerlink" title="创建主题"></a>创建主题</h2><p>　　在集群配置的时候就说过了　auto.create.topics.enable这个值设置为true时。生产者发送一个没有被创建主题的消息时，会自动创建一个分区数为num.partition默认为1，副本因子为default.replication.factory默认为1的主题。消费者请求某个主题时也会创建一个类似的主题。这样主题不利于管理，因此我们需要将　auto.create.topics.enable设置为false。<br>　　<br>　　我们一般通过这个命令在服务器通过kafka-topics.sh脚本来创建主题。</p>
-<pre><code>./bin/kafka-topics.sh --zookeeper localhost:2181/kafka --create --topic topic-dh --partitions 4 --replication-factor 1
-</code></pre><p>　　这个命令是创建一个叫做topic-dh的主题，分区有4个，副本因子2个。<br>　　配置文件里面有个logs的配置，里面配置了主题和分区。前面也说过了，每个副本必须在不同的broke。我们不仅可以通过刚刚的路径查看log日志文件，也可以通过。<br>　　我们不仅可以通过上述的日志文件查看主题，我们还可以通过zk客户端查看，每创建一个主题就会在zk的/brokers/topics上创建一个同名的实节点。该节点记录了创建该主题分区的分配方案。首先启动这个zk客户端，启动命令如下：<br>　　./zkCli.sh –server 127.0.0.1:2181。<br>　　然后在命令行界面输入获取节点。和书上不一样的是，我的节点信息存放在 /kafka/brokers/topics/topic-demo111。这个目录下面，没有存放在 /brokers/topics/topic-demo111里面。</p>
-<p>　　我们可以通过下面命令查看分区细节信息。</p>
-<pre><code>./bin/kafka-topics.sh --zookeeper localhost:2181/kafka --describe --topic topic-create 
-</code></pre><p>　　来查看信息。</p>
-<p>　　我们可以更加详细的分配主题副本不同节点的分配。</p>
-<pre><code>./bin/kafka-topics.sh --zookeeper localhost:2181/kafka --create --topic topic-createsss --replica-assignment 2:0,0:1,1:2,2:1
-</code></pre><p>　　这很好理解，2个副本，4个分区，分区1的副本是2,0，分区2的副本是0,2之类的。前面说过了，副本必须在不同节点上面，因此如果你设置的节点是一样的，会报错。同时如果设置的分区的副本数不一样也不行，也会报错。比如：2:0,0,2:1这种情况，第二个分区的副本是1个其余分区的副本是2个。2:0,,2:1跳过某个分区也是不行的。<br>　　其次，我在集群配置说了，我们可以在主题里面设置参数从而覆盖broker参数。</p>
-<pre><code>./bin/kafka-topics.sh --zookeeper localhost:2181/kafka --create --topic topic-dh --partitions 4 --replication-factor 1 --config cleanup.policy=compact --config max.message.bytes=10000
-</code></pre><p>　　同时我们创建主题时不能同名。可以加这么一个参数来限定。</p>
-<pre><code>./bin/kafka-topics.sh --zookeeper localhost:2181/kafka --create --topic topic-dh --partitions 4 --replication-factor 1　--if-not-exists
-</code></pre><p>　　kafka内部做埋点处理时会根据主题的名称来命名metrics的名称，且将”.”改成”_”,因此topic.1_2和topic_1_2的metrics的名称都是topic_1_2，因此注意是否重名。<br>　　broke支持指定机架信息，如果制定了机架信息，则在分区副本分配是会尽可能的让分区副本分配到不同机架上，通过参数broke.rack=RACK1来配置的。如果集群里面部分broke指定了机架，部分没有指定，那么依旧会报错。</p>
-<p>　　使用这个脚本创建主题，也就是这个kafka-topic.sh,本质上是调用kafka.admin.TopicCommand这个类实现对主题的管理，我们可以直接使用这个类来创建主题哦。demo如下。</p>
-<h2 id="分区副本的分配"><a href="#分区副本的分配" class="headerlink" title="分区副本的分配"></a>分区副本的分配</h2><p>　　除了前面说的–replica-assignment参数来直接指定副本分配情况，如果没有的话，则是按照内部逻辑进行处理的，有２个方案。有前面我说的机架信息，和没有机架信息。<br>　　没有机架信息的方案如下：（ps 这是scala代码）</p>
-<pre><code>val rand = new Random
-private def assignReplicasToBrokersRackUnaware(
-nPartitions: Int, //分区数
-replicationFactor: Int, //副本因子
-brokerList: Seq[Int], //集群中broker列表
-fixedStartIndex: Int, //起始索引。默认为-1
-startPartitionId: Int //起始分区编号，默认-1
-): Map[Int, Seq[Int]] //返回值类型
-= {
-val ret = mutable.Map[Int, Seq[Int]]() //声明一个map
-val brokerArray = brokerList.toArray //获取brokerid的列表
-//起始索引小于0,那么从brokerid列表里面获取一个随机的有效值
-val startIndex = if (fixedStartIndex &gt;= 0) fixedStartIndex else rand.nextInt(brokerArray.length)
-//确保起始分区大于0
-var currentPartitionId = math.max(0, startPartitionId)
-//指定副本间隔
-var nextReplicaShift = if (fixedStartIndex &gt;= 0) fixedStartIndex else rand.nextInt(brokerArray.length)
-//这是一个for循环，scala语法看着好难受，遍历所有分区。
-for (_ &lt;- 0 until nPartitions) {
-  if (currentPartitionId &gt; 0 &amp;&amp; (currentPartitionId % brokerArray.length == 0))
-    nextReplicaShift += 1
-  //获取第一个副本索引
-  val firstReplicaIndex = (currentPartitionId + startIndex) % brokerArray.length
-  //生成一个该分区副本集合
-  val replicaBuffer = mutable.ArrayBuffer(brokerArray(firstReplicaIndex))
-  //保存该分区的所有副本分配的broker集合
-  for (j &lt;- 0 until replicationFactor - 1)
-    //为其余副本分配broker
-    replicaBuffer += brokerArray(replicaIndex(firstReplicaIndex, nextReplicaShift, j, brokerArray.length))
-  //保存该分区的副本分配信息
-  ret.put(currentPartitionId, replicaBuffer)
-  //继续下一个分区
-  currentPartitionId += 1
-}
-ret
-}
-private def replicaIndex(firstReplicaIndex: Int, secondReplicaShift: Int, replicaIndex: Int, nBrokers: Int): Int = {
-val shift = 1 + (secondReplicaShift + replicaIndex) % (nBrokers - 1)
-(firstReplicaIndex + shift) % nBrokers
-}
-</code></pre><p>　　这个算法使得分区副本分配的很均匀。差不多正好。<br>　　指定机架信息和没指定机架信息本质上差不多。一个机架可以分配多个broker节点，但是满足下面条件的broker不可哟添加到当前分区的副本列表里面。<br>　　１.此broker所在机架已经有一个broker在这个分区的副本列表里面，且其他机架中没有任何的broken在该分区的副本列表里面。</p>
-<p>　　２.此broker已经在在列表，且其他broker不在。创建主题时实质上是在zookeeper中的/kafka/brokers/topics节点下创建和该主题对应的子节点，并且写入副本分配信息，且在/config/topics节点下创建该节点对应的子节点并且主题配置信息。kafka创建主题的实质上动作是交给控制器异步完成的。<br>　　因此我们可以直接通过创建规则下的节点，来直接创建一个新的主题。这样我们可以绕过一些规则，比如我们创建主题分区的时候都是从０开始计数。我们通过创建zookeeper节点就不用从0开始累加了。</p>
-<h2 id="查看主题"><a href="#查看主题" class="headerlink" title="查看主题"></a>查看主题</h2><p>　　kafka-topics.sh这个命令有５个指令类型：create,list,describe,alter和delete。其中list和describe是查看主题信息的。</p>
-<pre><code>./bin/kafka-topics.sh --zookeeper localhost:2181/kafka -list
-</code></pre><p>　　这个命令是查看当前kafka当前所有可用主题。</p>
-<pre><code>./bin/kafka-topics.sh --zookeeper localhost:2181/kafka --describe --topic topic-create 
-</code></pre><p>　　这个是查看topic-create这个主题的详细信息，可以接多个主题，一次查看多个主题信息。如果没有–topic这个参数则是查看所有主题信息。</p>
-<pre><code>./bin/kafka-topics.sh --zookeeper localhost:2181/kafka --describe  --topics-with-overrides
-</code></pre><p>　　–topics-with-overrides加这个参数则是查看所有使用了覆盖配置的主题。</p>
-<pre><code>./bin/kafka-topics.sh --zookeeper localhost:2181/kafka --describe --topic topic-create --under-replicated-partitions
-</code></pre><p>　　这个参数是查询当前主题所有包含失效副本的分区</p>
-<pre><code>./bin/kafka-topics.sh --zookeeper localhost:2181/kafka --describe --topic topic-create -unavaliable-partitions 
-</code></pre><p> 　　这个参数查看主题中没有lead副本的分区。</p>
-
-          
-        
-      
-    </div>
-    
-    
-    
-
-    
-
-    
-
-    
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </div>
-  
-  
-  
-  </article>
-
-
-    
-      
-
-  
-
-  
-  
-  
-
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-  
-  
-  
-  <div class="post-block">
     <link itemprop="mainEntityOfPage" href="https://skydh.github.io/2019/06/25/kafka基础-消费者/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -2030,6 +1843,131 @@ public class SimpleKafkaConsumer {
 
 
     
+      
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="https://skydh.github.io/2019/05/28/内部临时表/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="董航">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="why are you so happy">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                <a class="post-title-link" href="/2019/05/28/内部临时表/" itemprop="url">mysql内部临时表</a></h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2019-05-28T19:03:28+08:00">
+                2019-05-28
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            <h2 id="简介"><a href="#简介" class="headerlink" title="简介"></a>简介</h2><p>　　在mysql里面，join_buffer，sort_buffer,内部临时表这3个都是在执行sql时暂存数据用的。前面2个前面文章都有介绍，本文主要介绍内部临时表。</p>
+<h2 id="union"><a href="#union" class="headerlink" title="union"></a>union</h2><pre><code>(select 1000 as f) union (select id from t1 order by id desc limit 2);
+</code></pre><p>　　比如这个sql，就是用到了内部临时表。这个sql就是查询2个子查询的并集，去重，若是不要去重，则是union all。<br>　　这个语句的操作流程是先创建一个临时表把第一个子查询的数据丢进去，然后再把第二个查询的数据丢进去。如果用union all则不涉及到去重，那么就不会创建临时表，只是直接拼装结果返回。</p>
+<h2 id="group-by"><a href="#group-by" class="headerlink" title="group by"></a>group by</h2><p>　　１．select id%10 as m, count(*) as c from t1 group by m;<br>　　其操作流程为，先创建一个内部临时表，存放2个字段，m,c然后遍历主键，将计算出来的值丢到m，判断是否存在，若存在则+1，然后输出。</p>
+<h2 id="大小参数"><a href="#大小参数" class="headerlink" title="大小参数"></a>大小参数</h2><p>　　默认16m，由这个参数tmp_table_size确认。</p>
+<h2 id="优化"><a href="#优化" class="headerlink" title="优化　"></a>优化　</h2><p>　　select SQL_BIG_RESULT id%100 as m, count(*) as c from t1 group by m;<br>　　如此，可以直接省去其中某些步骤，这是针对数据量大的情况直接执行走磁盘临时表。</p>
+
+          
+        
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
   </section>
 
   
@@ -2080,7 +2018,7 @@ public class SimpleKafkaConsumer {
               
                 <a href="/archives/">
               
-                  <span class="site-state-item-count">115</span>
+                  <span class="site-state-item-count">114</span>
                   <span class="site-state-item-name">日志</span>
                 </a>
               </div>
