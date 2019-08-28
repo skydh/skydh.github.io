@@ -232,6 +232,156 @@
   
   
   <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="https://skydh.github.io/2018/02/08/DNS协议简介/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="董航">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="why are you so happy">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                <a class="post-title-link" href="/2018/02/08/DNS协议简介/" itemprop="url">DNS协议</a></h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2018-02-08T09:33:46+08:00">
+                2018-02-08
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            <h2 id="什么是DNS协议"><a href="#什么是DNS协议" class="headerlink" title="什么是DNS协议"></a>什么是DNS协议</h2><p>　　我们知道网络上每个站点的位置是靠ip来确认的，想要访问一个网站必须知道他的ip地址。但是ip地址全部是数字，很不好记忆。也不方便记忆，于是就有了域名。每个域名都有对应的ip地址，网上的域名非常多。且网上域名和ip对应关系也经常变化，因此需要有专门的把域名装换为ip的服务器，这个就是DNS服务器，我们把域名传递过去他就会返回对应的ip。我们可以用nslookup来获取域名信息。看下面的例子</p>
+<p><img src="https://raw.githubusercontent.com/skydh/picture/master/DNS_001.png" alt="aaa"><br>　　域名服务器的域名是：ns.wuhan.net.cn<br>　　域名服务器的ip是： 202.103.24.68<br>　　被解析的域名对应ip是：180.97.33.107 ，180.97.33.108<br>　　被解析域名的CNAME域名是：www.a.shifen.com<br>　　什么是CNAME?<br>　　CNAME是将别的域名装换为一个域名，再将这个域名解析到A记录上，也就是在转换为ip,为什么需要这么做，一个网站要是有多个域名，如果对应ip变了，那么所有的对应关系都要修改，但是有了中间层这个域名，那么则只要改一下就行了。</p>
+<h2 id="DNS注册"><a href="#DNS注册" class="headerlink" title="DNS注册"></a>DNS注册</h2><p>　　DNS是如何获取到ip和域名的对应关系呢？那是通过万网注册。DNS服务器则可以获取到其信息了。</p>
+<h2 id="DNS地址获取"><a href="#DNS地址获取" class="headerlink" title="DNS地址获取"></a>DNS地址获取</h2><p>　　可以在网络配置页面进行DNS配置。可以选择自动获取，也可以设置固定的DNS地址。</p>
+<h2 id="本机自己配置ip"><a href="#本机自己配置ip" class="headerlink" title="本机自己配置ip"></a>本机自己配置ip</h2><p>　　Windows下这个目录C:\Windows\System32\drivers\etc可以配置对应域名和ip,本机解析域名时先从hosts下找，找不到再从DNS服务器上找。<br>　　这个是我本机的hosts</p>
+<pre>
+        # Copyright (c) 1993-2009 Microsoft Corp.
+        #
+        # This is a sample HOSTS file used by Microsoft TCP/IP for Windows.
+        #
+        # This file contains the mappings of IP addresses to host names. Each
+        # entry should be kept on an individual line. The IP address should
+        # be placed in the first column followed by the corresponding host name.
+        # The IP address and the host name should be separated by at least one
+        # space.
+        #
+        # Additionally, comments (such as these) may be inserted on individual
+        # lines or following the machine name denoted by a '#' symbol.
+        #
+        # For example:
+        #
+        #      102.54.94.97     rhino.acme.com          # source server
+        #       38.25.63.10     x.acme.com              # x client host
+
+        # localhost name resolution is handled within DNS itself.
+        #    127.0.0.1       localhost
+        #    ::1             localhost
+        10.11.248.91 zjy.cscec.com.cn
+
+
+</pre>
+
+          
+        
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
     <link itemprop="mainEntityOfPage" href="https://skydh.github.io/2018/02/07/session 和token/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -1961,174 +2111,6 @@ add31</pre>
 
 
     
-      
-
-  
-
-  
-  
-  
-
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-  
-  
-  
-  <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="https://skydh.github.io/2017/11/29/java线程的常用方法和属性介绍/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="董航">
-      <meta itemprop="description" content="">
-      <meta itemprop="image" content="/images/avatar.gif">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="why are you so happy">
-    </span>
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-                
-                <a class="post-title-link" href="/2017/11/29/java线程的常用方法和属性介绍/" itemprop="url">java线程的常用方法和属性介绍</a></h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">发表于</span>
-              
-              <time title="创建于" itemprop="dateCreated datePublished" datetime="2017-11-29T20:59:07+08:00">
-                2017-11-29
-              </time>
-            
-
-            
-
-            
-          </span>
-
-          
-
-          
-            
-          
-
-          
-          
-
-          
-
-          
-
-          
-
-        </div>
-      </header>
-    
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          
-            <h2 id="start"><a href="#start" class="headerlink" title="start()"></a>start()</h2><p>　　start方法是Thread 类的方法，在这个方法中会调用native方法（start0()）来启动线程，为该线程分配资源。</p>
-<h2 id="sleep"><a href="#sleep" class="headerlink" title="sleep()"></a>sleep()</h2><p>　　sleep方法有2个方法。</p>
-<p><pre>   public static native void sleep(long millis) </pre></p>
-<p><pre><br>throws InterruptedException;<br>  public static void sleep(long millis, int nanos)<br>    throws InterruptedException {<br>        if (millis &lt; 0) {<br>            throw new IllegalArgumentException(“timeout value is negative”);<br>        }</pre></p>
-<pre><code>    if (nanos &lt; 0 || nanos &gt; 999999) {
-        throw new IllegalArgumentException(
-                            &quot;nanosecond timeout value out of range&quot;);
-    }
-
-    if (nanos &gt;= 500000 || (nanos != 0 &amp;&amp; millis == 0)) {
-        millis++;
-    }
-
-    sleep(millis);
-}
-</code></pre><p><br>　　看了源码，发现第二个纳秒级别的没什么用，实际上还是毫秒级别。<br>　　sleep方法在进入阻塞队列时不会释放当前线程所持有的锁。</p>
-<h2 id="yield"><a href="#yield" class="headerlink" title="yield()"></a>yield()</h2><p>　　该方法会让当前线程交出cpu权限，但是不能确定具体时间，和sleep方法一样不会释放当前线程所持有的锁，该方法会让线程直接进入就绪状态，很好理解。目的是为了让同等优先级的线程获得cpu执行的机会。</p>
-<h2 id="join"><a href="#join" class="headerlink" title="join()"></a>join()</h2><p>　　该方法是让当前线程阻塞，直到调用该方法的线程执行完毕。源码分析</p>
-<p><pre> public final synchronized void join(long millis)<br>    throws InterruptedException {<br>        long base = System.currentTimeMillis();<br>        long now = 0;</pre></p>
-<pre><code>    if (millis &lt; 0) {
-        throw new IllegalArgumentException(&quot;timeout value is negative&quot;);
-    }
-
-    if (millis == 0) {
-        while (isAlive()) {
-            wait(0);
-        }
-    } else {
-        while (isAlive()) {
-            long delay = millis - now;
-            if (delay &lt;= 0) {
-                break;
-            }
-            wait(delay);
-            now = System.currentTimeMillis() - base;
-        }
-    }
-} 
-</code></pre><p> <br>　　这个是join的源码，代码很清晰，如果调用该方法的对象线程已启动，那么当前线程释放该对象锁，并进入条件等待队列里面，等待改线程执行完（线程如果在同步代码块中结束会自动调用notifyAll()方法来唤醒等待队列里面的线程）</p>
-<h2 id="wait-notifyAll-notify"><a href="#wait-notifyAll-notify" class="headerlink" title="wait() ,notifyAll(),notify()"></a>wait() ,notifyAll(),notify()</h2><p>　　这3个方法一般一同出现。且都是Object类的方法，用来辅助操作线程类。<br>　　这3个方法都必须在同步代码块中，不然就会报错。<br>　　wait()方法会让当前线程释放锁，并进入到条件等待队列。<br>　　notify()方法会随机唤醒条件等待队列的任意一个线程，并将其放到锁池里面。<br>　　notifyAll()方法则是唤醒条件等待队列的所有线程，并将其都放到锁池里面。<br>　　而锁池里面的线程来竞争所需要的对象锁，成功获取到锁的线程将加入到就绪队列里面。</p>
-<h2 id="interrupt-isInterrupted-interrupted"><a href="#interrupt-isInterrupted-interrupted" class="headerlink" title="interrupt(),isInterrupted(),interrupted()"></a>interrupt(),isInterrupted(),interrupted()</h2><p>　　这3个方法表示线程的中断，这个很有意思，分多钟情况讨论。（在java中，中断不是强制停止改线程，而是给线程一个信号，让其自行处理何时退出）<br>　　isInterrupted：就是返回对应线程的中断标志位是否为true。<br>　　interrupted：返回当前线程的中断标志位是否为true，但它还有一个重要的副作用，就是清空中断标志位，也就是说，连续两次调用<br>　　interrupted()，第一次返回的结果为true，第二次一般就是false 。<br>　　interrupt：表示中断对应的线程。</p>
-<p>　　中断线程分情况讨论：<br>　　1.还没start，或者已经结束，无效果<br>　　2.运行中，中断无效，直到只能设置个中断位，直到线程走完或者进入阻塞。<br>　　3.锁池，中断无效。<br>　　4.阻塞，等待，会抛出异常，可以中断。<br>　　ps(io等待大多都是可以中断的，但是inputStream的read不会相应中断。)<br>　　中断不好使，因此最好自己在线程类里面提供关闭方法。比如</p>
-<p><pre> class MyThread extends Thread{<br>        private volatile boolean isStop = false;<br>        @Override<br>        public void run() {<br>            int i = 0;<br>            while(!isStop){<br>                i++;<br>            }<br>        }</pre></p>
-<pre><code>    public void setStop(boolean stop){
-        this.isStop = stop;
-    }
-}
-</code></pre><p> </p>
-<h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><p>　　在这里我没有写具体的例子，因为例子大家可以自己写测试下，太占篇幅了，这里只举出一些源码。</p>
-
-          
-        
-      
-    </div>
-    
-    
-    
-
-    
-
-    
-
-    
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </div>
-  
-  
-  
-  </article>
-
-
-    
   </section>
 
   
@@ -2179,7 +2161,7 @@ add31</pre>
               
                 <a href="/archives/">
               
-                  <span class="site-state-item-count">114</span>
+                  <span class="site-state-item-count">115</span>
                   <span class="site-state-item-name">日志</span>
                 </a>
               </div>
