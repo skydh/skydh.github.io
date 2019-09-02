@@ -524,17 +524,19 @@ public class SimpleKafkaConsumer {
 </ul>
 <h1 id="项目经验"><a href="#项目经验" class="headerlink" title="项目经验"></a>项目经验</h1><h2 id="CIM-城市信息模型-云平台用户端（平安好房）"><a href="#CIM-城市信息模型-云平台用户端（平安好房）" class="headerlink" title="CIM(城市信息模型)云平台用户端（平安好房）"></a>CIM(城市信息模型)云平台用户端（平安好房）</h2><h3 id="项目描述"><a href="#项目描述" class="headerlink" title="项目描述"></a>项目描述</h3><p>　　CIM（城市信息模型）云平台，从产品功能上分为用户端，管理端以及用户中心，实现二维和三维等数据上图的服务。其中深圳团队负责用户端，上海团队负责管理端和用户中心端。项目架构单体应用+Rpc+http来完成端于端之间的交互。单体框架采用技术为springboot+spring data jpa+redis.</p>
 <h3 id="项目职责"><a href="#项目职责" class="headerlink" title="项目职责"></a>项目职责</h3><ul>
-<li><p>负责搭建项目基本框架及选型</p>
+<li><p>负责搭建项目基本框架及选型，包括上下文工具类的封装，全局异常捕捉，多数据源的封装，采用HikariCP作为数据库连接池，采用lettuce作为redis客户端，返回信息国际化支持，swagger支持，项目的分层等搭建。</p>
 </li>
-<li><p>对接公司运维系统</p>
+<li><p>对接公司运维系统。</p>
 </li>
-<li><p>对接用户中心</p>
+<li><p>对接用户中心，完成用户端权限的控制。</p>
 </li>
-<li><p>对接产品负责资源列表功能开发和优化</p>
+<li><p>完善HikariCP的配置优化，和线上连接泄漏的处理。</p>
 </li>
-<li><p>负责基本组件的封装和维护</p>
+<li><p>对接产品负责资源模块功能开发和优化。</p>
 </li>
-<li><p>负责安全漏洞的修复</p>
+<li><p>负责项目基本工具类的封装，包括，基于redis+aop的分布式锁（针对集群时定时器的执行），基于aop的非法字符过滤，geojson文件的解析工具类，httpClient组件的封装，基于spring jdbc 多表分页，以及批量插入的工具类封装（针对spring data jpa多表查询的复杂）等封装。</p>
+</li>
+<li><p>负责安全漏洞的修复,主要针对性的修复上线前，appscan，fortify，渗透扫描的安全漏洞。</p>
 <h2 id="项目总结"><a href="#项目总结" class="headerlink" title="项目总结"></a>项目总结</h2></li>
 <li><p>更加熟悉公司内部的运维机制</p>
 </li>
@@ -547,22 +549,31 @@ public class SimpleKafkaConsumer {
 <li><p>开发更加规范，考虑的点更加多</p>
 </li>
 <li><p>加深了开发安全方面的考虑思索</p>
-<h2 id="平安城科官网"><a href="#平安城科官网" class="headerlink" title="平安城科官网"></a>平安城科官网</h2><h3 id="项目描述-1"><a href="#项目描述-1" class="headerlink" title="项目描述"></a>项目描述</h3><p>　　官网是公司的门户网站，前后端分离，后端框架采用springboot+spring data jpa+redis，项目主要对接公司内部的crm内容发布系统，同时也存在类似活动报名一类的需要持久化的功能。</p>
-<h3 id="项目职责-1"><a href="#项目职责-1" class="headerlink" title="项目职责"></a>项目职责</h3></li>
-<li><p>阅读文档，对接crm系统。</p>
-</li>
-<li><p>搭建项目基本框架以及申请资源配置。</p>
-</li>
-<li><p>对接产品，落地需求。</p>
 </li>
 </ul>
-<h3 id="项目总结-1"><a href="#项目总结-1" class="headerlink" title="项目总结"></a>项目总结</h3><ul>
+<h2 id="常德住房租赁备案平台"><a href="#常德住房租赁备案平台" class="headerlink" title="常德住房租赁备案平台"></a>常德住房租赁备案平台</h2><h3 id="项目描述-1"><a href="#项目描述-1" class="headerlink" title="项目描述"></a>项目描述</h3><p>　　该平台分为C端，B端，G端，项目采用springboot+spring data jpa+redis以及对接平安科技api来完成。</p>
+<h3 id="项目职责-1"><a href="#项目职责-1" class="headerlink" title="项目职责"></a>项目职责</h3><ul>
+<li><p>对接产品，落地需求，负责合同模块的开发维护。</p>
+</li>
+<li><p>对接第三方系统数据。</p>
+</li>
+<li><p>测试阶段迅速定位解决问题，保证版本顺利迭代。</p>
+<h3 id="项目总结-1"><a href="#项目总结-1" class="headerlink" title="项目总结"></a>项目总结</h3></li>
 <li><p>熟悉了平安城科开发的流程。</p>
 </li>
 <li><p>熟悉了公司申请资源的流程，且整理为文档。</p>
 </li>
-<li><p>了解了集群部署时，需要考虑的事情（比如定时器加锁）</p>
+</ul>
+<h2 id="项目的思考和建议"><a href="#项目的思考和建议" class="headerlink" title="项目的思考和建议"></a>项目的思考和建议</h2><p>　　接手的项目是一个二开项目，但是方案策略对二开很不友好，标准版持续更新，二开版本持续开发。无法合并，故此提出了个人看法和意见</p>
+<ul>
+<li><p><a href="https://skydh.github.io/2019/01/17/%E5%AE%9A%E5%88%B6%E5%8C%96%E7%8C%9C%E6%83%B3/">快速定制化</a></p>
 </li>
+<li><p><a href="https://skydh.github.io/2019/01/17/%E5%BE%AE%E6%9C%8D%E5%8A%A1%E7%8C%9C%E6%83%B3/">微服务化</a></p>
+</li>
+</ul>
+<p>　　项目中存在大量全文检索，使用了大量的mysql索引，由于数据量不大，前期没什么影响，但是不利于后期的开发和迭代，个人闲暇时间开发了一个Elasticsearch快速开发组件，希望可以帮助系统迅速迭代。</p>
+<ul>
+<li><a href="https://github.com/skydh/elasticsearch-helper" target="_blank" rel="noopener">Elasticsearch组件封装</a></li>
 </ul>
 <h2 id="建筑合约云平台（用友建筑云）"><a href="#建筑合约云平台（用友建筑云）" class="headerlink" title="建筑合约云平台（用友建筑云）"></a>建筑合约云平台（用友建筑云）</h2><h3 id="项目描述-2"><a href="#项目描述-2" class="headerlink" title="项目描述"></a>项目描述</h3><p>　　这是一个针对建筑厂商们提供专业的云服务的系统，希望帮助建筑管理更加方便快捷。该系统较大，涉及到上百开发人员，北京和武汉２个研发中心，历时２年。<br>　　项目经过多次重构。项目包含物资微服务群，商务管理微服务群，设备管理微服务群，资金管理微服务群，公共模块管理微服务群，用户中心微服务群等。项目一开始只是一个单体应用,前后端分离，后端使用spring+spring jpa+spring mvc+redis，随着业务的扩增，将系统更具业务基于dubbo+zk拆分为了多个微服务，用于对外提供建筑管理等各种微服务。后项目架构已经替换为了spring cloud系列了，相对dubbo，spring cloud功能更加完善。</p>
 <h3 id="项目职责-2"><a href="#项目职责-2" class="headerlink" title="项目职责"></a>项目职责</h3><ul>
@@ -577,8 +588,6 @@ public class SimpleKafkaConsumer {
 <li><p>负责商务管理，商务档案，共享档案的开发和维护。</p>
 </li>
 <li><p>编写项目文档，针对所负责的微服务整理可维护的文档。</p>
-</li>
-<li><p>参与针对Elasticsearch组件封装。</p>
 </li>
 </ul>
 <h3 id="项目总结-2"><a href="#项目总结-2" class="headerlink" title="项目总结"></a>项目总结</h3><ul>
