@@ -1,0 +1,865 @@
+<!DOCTYPE html>
+
+
+
+  
+
+
+<html class="theme-next pisces use-motion" lang="zh-Hans">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css" />
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=5.1.3" rel="stylesheet" type="text/css" />
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=5.1.3">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=5.1.3">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=5.1.3">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=5.1.3" color="#222">
+
+
+
+
+
+  <meta name="keywords" content="Hexo, NexT" />
+
+
+
+
+
+
+
+
+
+
+<meta name="description" content="明确的概念　　目前主流的日志框架是logback,log4j,javalogging,这是目前主流的日志框架，其中出了个适配器，相当于接口，slf4j的作者和logback,log4j是一个人，这个接口可以适配logback,log4j springboot启动时如何选择日志的呢　　我们从springboot启动　　预">
+<meta property="og:type" content="article">
+<meta property="og:title" content="springboot 选择日志">
+<meta property="og:url" content="https://skydh.github.io/2019/09/23/springboot 选择日志/index.html">
+<meta property="og:site_name" content="why are you so happy">
+<meta property="og:description" content="明确的概念　　目前主流的日志框架是logback,log4j,javalogging,这是目前主流的日志框架，其中出了个适配器，相当于接口，slf4j的作者和logback,log4j是一个人，这个接口可以适配logback,log4j springboot启动时如何选择日志的呢　　我们从springboot启动　　预先知识：  @Import,这个注解的value是Class类型的数组，我们可以">
+<meta property="og:locale" content="zh-Hans">
+<meta property="og:updated_time" content="2019-09-24T10:06:27.309Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="springboot 选择日志">
+<meta name="twitter:description" content="明确的概念　　目前主流的日志框架是logback,log4j,javalogging,这是目前主流的日志框架，其中出了个适配器，相当于接口，slf4j的作者和logback,log4j是一个人，这个接口可以适配logback,log4j springboot启动时如何选择日志的呢　　我们从springboot启动　　预先知识：  @Import,这个注解的value是Class类型的数组，我们可以">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Pisces',
+    version: '5.1.3',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: true,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    duoshuo: {
+      userId: '0',
+      author: '博主'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="https://skydh.github.io/2019/09/23/springboot 选择日志/"/>
+
+
+
+
+
+  <title>springboot 选择日志 | why are you so happy</title>
+  
+
+
+
+
+
+
+
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/"  class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">why are you so happy</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle">clear 航</p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br />
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />
+            
+            归档
+          </a>
+        </li>
+      
+
+      
+    </ul>
+  
+
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="https://skydh.github.io/2019/09/23/springboot 选择日志/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="董航">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="why are you so happy">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">springboot 选择日志</h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2019-09-23T17:55:12+08:00">
+                2019-09-23
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+          
+
+          
+          
+
+          
+            <span class="post-meta-divider">|</span>
+            <span class="page-pv"><i class="fa fa-file-o"></i>
+            <span class="busuanzi-value" id="busuanzi_value_page_pv" ></span>
+            </span>
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <h1 id="明确的概念"><a href="#明确的概念" class="headerlink" title="明确的概念"></a>明确的概念</h1><p>　　目前主流的日志框架是logback,log4j,javalogging,这是目前主流的日志框架，其中出了个适配器，相当于接口，slf4j的作者和logback,log4j是一个人，这个接口可以适配logback,log4j</p>
+<h1 id="springboot启动时如何选择日志的呢"><a href="#springboot启动时如何选择日志的呢" class="headerlink" title="springboot启动时如何选择日志的呢"></a>springboot启动时如何选择日志的呢</h1><p>　　我们从springboot启动<br>　　预先知识：</p>
+<ul>
+<li>@Import,这个注解的value是Class类型的数组，我们可以直接传递一些类进去，那么这些类就会被导入到当前ioc容器。或者导入，这些类里面加了@Bean方法返回的对象。同时会将实现ImportSelector接口的selectImports方法返回的类的全限定名导入到ioc容器。</li>
+</ul>
+<p>　　流程如下：</p>
+<p>　　１．启动类上面的@SpringBootApplication注解，点进去，再进去EnableAutoConfiguration注解，上面有个import注解，前面说过了，点进去这个AutoConfigurationImportSelector类，看到selectImports方法：</p>
+<pre><code>@Override
+public String[] selectImports(AnnotationMetadata annotationMetadata) {
+    if (!isEnabled(annotationMetadata)) {
+        return NO_IMPORTS;
+    }
+    AutoConfigurationMetadata autoConfigurationMetadata = AutoConfigurationMetadataLoader
+            .loadMetadata(this.beanClassLoader);
+    AutoConfigurationEntry autoConfigurationEntry = getAutoConfigurationEntry(
+            autoConfigurationMetadata, annotationMetadata);
+    return StringUtils.toStringArray(autoConfigurationEntry.getConfigurations());
+}
+</code></pre><p>　　我们看到第２行代码，点进去</p>
+<pre><code>protected AutoConfigurationEntry getAutoConfigurationEntry(
+        AutoConfigurationMetadata autoConfigurationMetadata,
+        AnnotationMetadata annotationMetadata) {
+    if (!isEnabled(annotationMetadata)) {
+        return EMPTY_ENTRY;
+    }
+    AnnotationAttributes attributes = getAttributes(annotationMetadata);
+    List&lt;String&gt; configurations = getCandidateConfigurations(annotationMetadata,
+            attributes);
+    configurations = removeDuplicates(configurations);
+    Set&lt;String&gt; exclusions = getExclusions(annotationMetadata, attributes);
+    checkExcludedClasses(configurations, exclusions);
+    configurations.removeAll(exclusions);
+    configurations = filter(configurations, autoConfigurationMetadata);
+    fireAutoConfigurationImportEvents(configurations, exclusions);
+    return new AutoConfigurationEntry(configurations, exclusions);
+}
+</code></pre><p>　　我们点到第五行代码点进去</p>
+<pre><code>    protected List&lt;String&gt; getCandidateConfigurations(AnnotationMetadata metadata,
+        AnnotationAttributes attributes) {
+    List&lt;String&gt; configurations = SpringFactoriesLoader.loadFactoryNames(
+            getSpringFactoriesLoaderFactoryClass(), getBeanClassLoader());
+    Assert.notEmpty(configurations,
+            &quot;No auto configuration classes found in META-INF/spring.factories. If you &quot;
+                    + &quot;are using a custom packaging, make sure that file is correct.&quot;);
+    return configurations;
+}
+</code></pre><p>　　不断深入SpringFactoriesLoader.loadFactoryNames方法</p>
+<pre><code>private static Map&lt;String, List&lt;String&gt;&gt; loadSpringFactories(@Nullable ClassLoader classLoader) {
+    MultiValueMap&lt;String, String&gt; result = cache.get(classLoader);
+    if (result != null) {
+        return result;
+    }
+
+    try {
+        Enumeration&lt;URL&gt; urls = (classLoader != null ?
+                classLoader.getResources(FACTORIES_RESOURCE_LOCATION) :
+                ClassLoader.getSystemResources(FACTORIES_RESOURCE_LOCATION));
+        result = new LinkedMultiValueMap&lt;&gt;();
+        while (urls.hasMoreElements()) {
+            URL url = urls.nextElement();
+            UrlResource resource = new UrlResource(url);
+            Properties properties = PropertiesLoaderUtils.loadProperties(resource);
+            for (Map.Entry&lt;?, ?&gt; entry : properties.entrySet()) {
+                String factoryClassName = ((String) entry.getKey()).trim();
+                for (String factoryName : StringUtils.commaDelimitedListToStringArray((String) entry.getValue())) {
+                    result.add(factoryClassName, factoryName.trim());
+                }
+            }
+        }
+        cache.put(classLoader, result);
+        return result;
+    }
+    catch (IOException ex) {
+        throw new IllegalArgumentException(&quot;Unable to load factories from location [&quot; +
+                FACTORIES_RESOURCE_LOCATION + &quot;]&quot;, ex);
+    }
+}
+</code></pre><p>  其中FACTORIES_RESOURCE_LOCATION= “META-INF/spring.factories”<br>　也就是说从当前jar将前面说的key为org.springframework.boot.autoconfigure.EnableAutoConfiguration的value全部拉出来然后反射实例化后注入到spring ioc容器。这些key都是自动化配置的key。再看看后面的步骤。</p>
+<p>　　２。从SpringApplication.run(WebApplication.class, args)<br>进入到    </p>
+<pre><code> */
+public static ConfigurableApplicationContext run(Class&lt;?&gt;[] primarySources,
+        String[] args) {
+    return new SpringApplication(primarySources).run(args);
+}
+</code></pre><p>　　<br>　　这个方法里面创建了SpringApplication对象，进入到其构造方法。</p>
+<pre><code>@SuppressWarnings({ &quot;unchecked&quot;, &quot;rawtypes&quot; })
+public SpringApplication(ResourceLoader resourceLoader, Class&lt;?&gt;... primarySources) {
+    this.resourceLoader = resourceLoader;
+    Assert.notNull(primarySources, &quot;PrimarySources must not be null&quot;);
+    this.primarySources = new LinkedHashSet&lt;&gt;(Arrays.asList(primarySources));
+    this.webApplicationType = WebApplicationType.deduceFromClasspath();
+    setInitializers((Collection) getSpringFactoriesInstances(
+            ApplicationContextInitializer.class));
+    setListeners((Collection) getSpringFactoriesInstances(ApplicationListener.class));
+    this.mainApplicationClass = deduceMainApplicationClass();
+}
+</code></pre><p>　　在setListeners((Collection) getSpringFactoriesInstances(ApplicationListener.class));这行代码里面Class类型是ApplicationListener。这个方法前文讲述过了。这里特别提一下其中有个Listener和本文相关，那就是LoggingApplicationListener这个Listener。然后将其注入到SpringApplication的listeners属性里面。前面方法里面创建对象后立马调用了run方法。进去，这个run方法我就不细说了，都知道。</p>
+<pre><code>try {
+        listeners.running(context);
+    }
+</code></pre><p>　　这行代码最终是启动listeners的，点进去源码可以看到</p>
+<pre><code>@Override
+public void running(ConfigurableApplicationContext context) {
+    context.publishEvent(
+            new ApplicationReadyEvent(this.application, this.args, context));
+}
+</code></pre><p>　　然后我们进入到LoggingApplicationListener这个类的关键代码处</p>
+<pre><code>@Override
+public void onApplicationEvent(ApplicationEvent event) {
+    if (event instanceof ApplicationStartingEvent) {
+        onApplicationStartingEvent((ApplicationStartingEvent) event);
+    }
+    else if (event instanceof ApplicationEnvironmentPreparedEvent) {
+        onApplicationEnvironmentPreparedEvent(
+                (ApplicationEnvironmentPreparedEvent) event);
+    }
+    else if (event instanceof ApplicationPreparedEvent) {
+        onApplicationPreparedEvent((ApplicationPreparedEvent) event);
+    }
+    else if (event instanceof ContextClosedEvent &amp;&amp; ((ContextClosedEvent) event)
+            .getApplicationContext().getParent() == null) {
+        onContextClosedEvent();
+    }
+    else if (event instanceof ApplicationFailedEvent) {
+        onApplicationFailedEvent();
+    }
+}
+</code></pre><p>  执行第一个事件。</p>
+<pre><code>private void onApplicationStartingEvent(ApplicationStartingEvent event) {
+    this.loggingSystem = LoggingSystem
+            .get(event.getSpringApplication().getClassLoader());
+    this.loggingSystem.beforeInitialize();
+}
+</code></pre><p>　　进入LoggingSystem的get方法里面。</p>
+<pre><code>public static LoggingSystem get(ClassLoader classLoader) {
+    String loggingSystem = System.getProperty(SYSTEM_PROPERTY);
+    if (StringUtils.hasLength(loggingSystem)) {
+        if (NONE.equals(loggingSystem)) {
+            return new NoOpLoggingSystem();
+        }
+        return get(classLoader, loggingSystem);
+    }
+    return SYSTEMS.entrySet().stream()
+            .filter((entry) -&gt; ClassUtils.isPresent(entry.getKey(), classLoader))
+            .map((entry) -&gt; get(classLoader, entry.getValue())).findFirst()
+            .orElseThrow(() -&gt; new IllegalStateException(
+                    &quot;No suitable logging system located&quot;));
+}
+</code></pre><p>　　核心出来了在这里，从SYSTEMS这个map里面按顺序取值，而这个map的值是下面的。测试了下。顺序取出的顺序是logback,log4j,javalog。按照上面代码的逻辑，如果上下文存在这个日志类，那么springboot就使用哪个类。显然是优先使用logback</p>
+<pre><code>private static final Map&lt;String, String&gt; SYSTEMS;
+
+static {
+    Map&lt;String, String&gt; systems = new LinkedHashMap&lt;&gt;();
+    systems.put(&quot;ch.qos.logback.core.Appender&quot;,
+            &quot;org.springframework.boot.logging.logback.LogbackLoggingSystem&quot;);
+    systems.put(&quot;org.apache.logging.log4j.core.impl.Log4jContextFactory&quot;,
+            &quot;org.springframework.boot.logging.log4j2.Log4J2LoggingSystem&quot;);
+    systems.put(&quot;java.util.logging.LogManager&quot;,
+            &quot;org.springframework.boot.logging.java.JavaLoggingSystem&quot;);
+    SYSTEMS = Collections.unmodifiableMap(systems);
+}
+</code></pre><p>　　
+　　</p>
+
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2019/09/06/java位运算/" rel="next" title="java 位运算">
+                <i class="fa fa-chevron-left"></i> java 位运算
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <p class="site-author-name" itemprop="name">董航</p>
+              <p class="site-description motion-element" itemprop="description">clear 航</p>
+          </div>
+
+          <nav class="site-state motion-element">
+
+            
+              <div class="site-state-item site-state-posts">
+              
+                <a href="/archives/">
+              
+                  <span class="site-state-item-count">117</span>
+                  <span class="site-state-item-name">日志</span>
+                </a>
+              </div>
+            
+
+            
+
+            
+
+          </nav>
+
+          
+
+          <div class="links-of-author motion-element">
+            
+          </div>
+
+          
+          
+
+          
+          
+
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#明确的概念"><span class="nav-number">1.</span> <span class="nav-text">明确的概念</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#springboot启动时如何选择日志的呢"><span class="nav-number">2.</span> <span class="nav-text">springboot启动时如何选择日志的呢</span></a></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <script async src="https://dn-lbstatics.qbox.me/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+<div class="copyright">&copy; <span itemprop="copyrightYear">2019</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">董航</span>
+
+  
+</div>
+
+
+<div class="powered-by">
+<i class="fa fa-user-md"></i><span id="busuanzi_container_site_uv">
+  本站访客数:<span id="busuanzi_value_site_uv"></span>
+</span>
+</div>
+
+  <div class="powered-by">由 <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a> 强力驱动</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">主题 &mdash; <a class="theme-link" target="_blank" href="https://github.com/iissnan/hexo-theme-next">NexT.Pisces</a> v5.1.3</div>
+
+
+
+
+        
+<div class="busuanzi-count">
+  <script async src="https://dn-lbstatics.qbox.me/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+
+  
+    <span class="site-uv">
+      <i class="fa fa-user"></i>
+      <span class="busuanzi-value" id="busuanzi_value_site_uv"></span>
+      
+    </span>
+  
+
+  
+    <span class="site-pv">
+      <i class="fa fa-eye"></i>
+      <span class="busuanzi-value" id="busuanzi_value_site_pv"></span>
+      
+    </span>
+  
+</div>
+
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/canvas-nest/canvas-nest.min.js"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.3"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.3"></script>
+
+
+
+  
+  
+
+
+  <script type="text/javascript" src="/js/src/affix.js?v=5.1.3"></script>
+
+  <script type="text/javascript" src="/js/src/schemes/pisces.js?v=5.1.3"></script>
+
+
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.3"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.3"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.3"></script>
+
+
+
+  
+
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>

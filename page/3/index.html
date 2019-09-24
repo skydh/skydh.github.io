@@ -232,6 +232,259 @@
   
   
   <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="https://skydh.github.io/2019/01/21/工作中发现的代码不良习惯/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="董航">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="why are you so happy">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                <a class="post-title-link" href="/2019/01/21/工作中发现的代码不良习惯/" itemprop="url">工作中发现的代码不良习惯</a></h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2019-01-21T11:36:28+08:00">
+                2019-01-21
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            <h2 id="接口"><a href="#接口" class="headerlink" title="接口"></a>接口</h2><p>　　接口方法定义不用额外写public abstract,默认即可。</p>
+<h2 id="spring注入属性"><a href="#spring注入属性" class="headerlink" title="spring注入属性"></a>spring注入属性</h2><p>　　我们约定了，当需要从配置文件中读取同一批的属性＞３个时，不要使用value来一个个注入，和springboot一样，将其批量放到一个类里面，然后调用。</p>
+<pre><code>@Component
+@ConfigurationProperties(prefix = &quot;rbapi.rabbitmq&quot;)
+@Data
+public class RbapiProperties {
+       private String  queuename;
+       private String  exchangename;
+       private String  routingkey;
+
+}
+</code></pre><p>　　然后在需要用到这些属性的地方，注解注入这个bean即可。
+　　 </p>
+
+          
+        
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="https://skydh.github.io/2019/01/17/吾日三省吾身/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="董航">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="why are you so happy">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                <a class="post-title-link" href="/2019/01/17/吾日三省吾身/" itemprop="url">吾日三省吾身</a></h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2019-01-17T10:15:14+08:00">
+                2019-01-17
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            <h2 id="why"><a href="#why" class="headerlink" title="why?"></a>why?</h2><p>　　很忧伤，同一级别年终考核，我是ｄ，领导开头就是级别不代表绝对公正性，然而我还是ｄ，一共ａｂｃｄｅｆ，６级，我在后面的0.5里面。</p>
+<h2 id="反思"><a href="#反思" class="headerlink" title="反思"></a>反思</h2><p>　　自身能力不够强，需要改进，领导说的理由，你才来没多久，我们部门是非核心部门，能力不够全面，不仅仅是技术能力，还要人际关系处理，揣摩领导意思！学到了。能力要全面，这个确实是的，我觉得还要有，良好的沟通能力，说话节奏控制住。</p>
+
+          
+        
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
     <link itemprop="mainEntityOfPage" href="https://skydh.github.io/2019/01/17/微服务猜想/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -1257,289 +1510,6 @@
 
 
     
-      
-
-  
-
-  
-  
-  
-
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-  
-  
-  
-  <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="https://skydh.github.io/2018/12/12/mysql 删除数据为何空间还是不大/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="董航">
-      <meta itemprop="description" content="">
-      <meta itemprop="image" content="/images/avatar.gif">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="why are you so happy">
-    </span>
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-                
-                <a class="post-title-link" href="/2018/12/12/mysql 删除数据为何空间还是不大/" itemprop="url">mysql 删除数据，空间为何没有回收</a></h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">发表于</span>
-              
-              <time title="创建于" itemprop="dateCreated datePublished" datetime="2018-12-12T09:30:49+08:00">
-                2018-12-12
-              </time>
-            
-
-            
-
-            
-          </span>
-
-          
-
-          
-            
-          
-
-          
-          
-
-          
-
-          
-
-          
-
-        </div>
-      </header>
-    
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          
-            <h2 id="表结构数据和表数据"><a href="#表结构数据和表数据" class="headerlink" title="表结构数据和表数据"></a>表结构数据和表数据</h2><p>　　mysql1.8之前，表结构数据和表数据分开放，表结构放在.frm文件里面。在1.8后就放到一起了。</p>
-<h2 id="innodb-file-per-table"><a href="#innodb-file-per-table" class="headerlink" title="innodb_file_per_table"></a>innodb_file_per_table</h2><p>　　这个参数off是表数据放在共享表空间里面。和数据字典放在一起，on则是表数据单独存为一个后缀为。ibd的文件，当你drop的时候，系统也会删除这个文件，mysql5.6之后系统是默认开启这个这个参数的，也就是说，一个表文件会放在一个文件里面。通常是默认开启的。开启利于管理维护，当我们进行drop时就会直接删除这个文件。从而释放空间，否则放在共享表空间里面，即使删除了，也不会释放空间。</p>
-<h2 id="问题来了"><a href="#问题来了" class="headerlink" title="问题来了"></a>问题来了</h2><p>　　因此我们直接删除表的时候会直接删除这个文件，但是删除部分数据的时候，我们会发现表空间没有被回收。</p>
-<h2 id="innodb删除流程"><a href="#innodb删除流程" class="headerlink" title="innodb删除流程"></a>innodb删除流程</h2><p>　　我们知道mysql innodb存储引擎里面存数据的方式是基于b+树。当删除一个记录，找到这个数据的时候，我们是将其标记为删除状态，而不是真的删除。等到有相关数据的时候那就可以直接插入进去。但是删除了一个页，那就和数据不太一样了，数据的复用是有局限性的，但是整个页是没有问题的。换句话说，你删除了某个数据，你填充这个数据只能是相关的，比如，这个数据页里面是6,7,8，你删除了7，你可以插入6到8之间的数据.或者可以在这个数据页里面的，如果是数据页，那么哪里都可以。同时如果相邻2个数据页的数据利用率很低，那么就会触发合并操作。是的另外一个页数据可复用。当我们使用delete指令的时候，我们进行的是逻辑删除，具体的数据页没有被回收，只是将其置换为可用状态，同时插入也是同样的道理。当你插入的数据在一个已经满了的数据页中间的时候，就要进行分页操作，那样也会造成大量空间被置为可用状态，但是不回收。</p>
-<h2 id="重建表"><a href="#重建表" class="headerlink" title="重建表"></a>重建表</h2><p>　　因此我们可以重建表来获取更加紧凑的结构。使用alter table A engine=InnoDB来进行重建操作，在mysql 5.5之前，逻辑是这样的，先构建一个临时表，然后把数据复制进去，在交换表名，删除旧表。显然这样的逻辑是全表锁的。中间是不能插入删除更新数据的，但是在之后就可以了，就是在上面的操作的过程中，增加一个临时文件，用来存储在这中间的ddl操作，最后再将其同步过去。其过程是先加写锁，再加读锁。</p>
-
-          
-        
-      
-    </div>
-    
-    
-    
-
-    
-
-    
-
-    
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </div>
-  
-  
-  
-  </article>
-
-
-    
-      
-
-  
-
-  
-  
-  
-
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-  
-  
-  
-  <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="https://skydh.github.io/2018/11/28/elk 配置指南/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="董航">
-      <meta itemprop="description" content="">
-      <meta itemprop="image" content="/images/avatar.gif">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="why are you so happy">
-    </span>
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-                
-                <a class="post-title-link" href="/2018/11/28/elk 配置指南/" itemprop="url">elk配置指南</a></h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">发表于</span>
-              
-              <time title="创建于" itemprop="dateCreated datePublished" datetime="2018-11-28T17:24:30+08:00">
-                2018-11-28
-              </time>
-            
-
-            
-
-            
-          </span>
-
-          
-
-          
-            
-          
-
-          
-          
-
-          
-
-          
-
-          
-
-        </div>
-      </header>
-    
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          
-            <h2 id="简介"><a href="#简介" class="headerlink" title="简介"></a>简介</h2><p>　　本文的目的是搭建一个具备elk日志监控的springmvc程序，代码里面将日志输出到redis里面，然后logstash配置input和output,将日志信息从redis里面取出来，然后放入Elasticsearch，然后启动kinaba，配置索引对应关系即可。最终可以通过kinaba可以实时看到日志，利于分析查询。</p>
-<h2 id="搭建一个springmvc的程序"><a href="#搭建一个springmvc的程序" class="headerlink" title="搭建一个springmvc的程序"></a>搭建一个springmvc的程序</h2><p>　　这里我直接给出仓库地址：<br><a href="https://github.com/skydh/spring-elk" target="_blank" rel="noopener">点我一下就到了</a><br>　　这里要注意下。我们把日志输出到了对应的redis里面。</p>
-<pre><code>&lt;appender name=&quot;LOGSTASH&quot; class=&quot;com.cwbase.logback.RedisAppender&quot;&gt;
-    &lt;source&gt;SpringELK&lt;/source&gt;
-    &lt;type&gt;dev-type&lt;/type&gt;
-    &lt;tags&gt;dev&lt;/tags&gt;
-    &lt;host&gt;127.0.0.1&lt;/host&gt;
-    &lt;port&gt;6379&lt;/port&gt;
-    &lt;key&gt;logstash&lt;/key&gt;
-&lt;/appender&gt;
-</code></pre><h2 id="软件下载"><a href="#软件下载" class="headerlink" title="软件下载"></a>软件下载</h2><p>　　１，下载6.3.0版本的kinaba，Elasticsearch，logstash。<br>　　２，下载redis。</p>
-<h2 id="主要配置修改"><a href="#主要配置修改" class="headerlink" title="主要配置修改"></a>主要配置修改</h2><p>　　１．Elasticsearch 在其配置文件Elasticsearch.yml</p>
-<pre><code>http.cors.enabled: true
-http.cors.allow-origin: &quot;*&quot;
-</code></pre><p>　　２．logstash 新建配置文件。</p>
-<pre><code>
-
-input {
-    redis {
-        data_type => "list"
-        key => "logstash"
-        host => "127.0.0.1"  #redis-server
-        port => 6379
-        batch_count => "1"
-        threads => 5
-    }
-}
-
-output {
-  elasticsearch {
-    hosts => ["http://localhost:9200"]
-   index => "%{logstash}-%{+YYYY.MM.dd}"
-    #user => "elastic"
-    #password => "changeme"
-  }
-}
-
-</code></pre>
-
-<h2 id="启动顺序"><a href="#启动顺序" class="headerlink" title="启动顺序"></a>启动顺序</h2><p>　　１．启动redis。<br>　　２．在tomcat里面启动spring mvc代码<br>　　３．启动Elasticsearch。浏览器进入 <a href="http://localhost:9200/" target="_blank" rel="noopener">http://localhost:9200/</a><br>　　４．进入到logstash的bin 目录，输入logstash -f ..config/redis.conf来根据配置文件来启动logstash。浏览器进入<a href="http://localhost:9600/" target="_blank" rel="noopener">http://localhost:9600/</a><br>　　５.直接启动kinaba 浏览器进入<a href="http://localhost:5601，然后配置es的索引，最终在discover里面成功看到了我们的日志。" target="_blank" rel="noopener">http://localhost:5601，然后配置es的索引，最终在discover里面成功看到了我们的日志。</a></p>
-
-          
-        
-      
-    </div>
-    
-    
-    
-
-    
-
-    
-
-    
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </div>
-  
-  
-  
-  </article>
-
-
-    
   </section>
 
   
@@ -1590,7 +1560,7 @@ output {
               
                 <a href="/archives/">
               
-                  <span class="site-state-item-count">115</span>
+                  <span class="site-state-item-count">117</span>
                   <span class="site-state-item-name">日志</span>
                 </a>
               </div>

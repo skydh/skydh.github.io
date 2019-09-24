@@ -79,17 +79,17 @@
 
 
 
-<meta name="description" content="什么是spring mvc　　Spring MVC本质上还是一个Servlet,他封装了一套通用的方案，使得我们开发时只需要写核心的业务逻辑，不需要写Servlet。而Servlet也是对底层Socket的封装，使得我们开发变得简单。">
+<meta name="description" content="什么是spring mvc　　Spring MVC本质上还是一个Servlet,他封装了一套通用的方案，使得我们开发时只需要写核心的业务逻辑，不需要写Servlet。而Servlet也是对底层Socket的封装，使得我们开发变得简单。 一个简单mvc 流程 首先浏览器向服务器发送一个请求。 服务器接受到连接创建一个so">
 <meta property="og:type" content="article">
 <meta property="og:title" content="spring mvc 流程">
 <meta property="og:url" content="https://skydh.github.io/2018/07/02/spring mvc流程分析 /index.html">
 <meta property="og:site_name" content="why are you so happy">
-<meta property="og:description" content="什么是spring mvc　　Spring MVC本质上还是一个Servlet,他封装了一套通用的方案，使得我们开发时只需要写核心的业务逻辑，不需要写Servlet。而Servlet也是对底层Socket的封装，使得我们开发变得简单。">
+<meta property="og:description" content="什么是spring mvc　　Spring MVC本质上还是一个Servlet,他封装了一套通用的方案，使得我们开发时只需要写核心的业务逻辑，不需要写Servlet。而Servlet也是对底层Socket的封装，使得我们开发变得简单。 一个简单mvc 流程 首先浏览器向服务器发送一个请求。 服务器接受到连接创建一个socket线程和浏览器建立连接，紧接着创建request,reponse对象，然后">
 <meta property="og:locale" content="zh-Hans">
-<meta property="og:updated_time" content="2018-07-02T08:00:25.192Z">
+<meta property="og:updated_time" content="2019-09-23T08:13:48.638Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="spring mvc 流程">
-<meta name="twitter:description" content="什么是spring mvc　　Spring MVC本质上还是一个Servlet,他封装了一套通用的方案，使得我们开发时只需要写核心的业务逻辑，不需要写Servlet。而Servlet也是对底层Socket的封装，使得我们开发变得简单。">
+<meta name="twitter:description" content="什么是spring mvc　　Spring MVC本质上还是一个Servlet,他封装了一套通用的方案，使得我们开发时只需要写核心的业务逻辑，不需要写Servlet。而Servlet也是对底层Socket的封装，使得我们开发变得简单。 一个简单mvc 流程 首先浏览器向服务器发送一个请求。 服务器接受到连接创建一个socket线程和浏览器建立连接，紧接着创建request,reponse对象，然后">
 
 
 
@@ -305,6 +305,12 @@
 
       
         <h2 id="什么是spring-mvc"><a href="#什么是spring-mvc" class="headerlink" title="什么是spring mvc"></a>什么是spring mvc</h2><p>　　Spring MVC本质上还是一个Servlet,他封装了一套通用的方案，使得我们开发时只需要写核心的业务逻辑，不需要写Servlet。而Servlet也是对底层Socket的封装，使得我们开发变得简单。</p>
+<h2 id="一个简单mvc-流程"><a href="#一个简单mvc-流程" class="headerlink" title="一个简单mvc 流程"></a>一个简单mvc 流程</h2><ul>
+<li>首先浏览器向服务器发送一个请求。</li>
+<li>服务器接受到连接创建一个socket线程和浏览器建立连接，紧接着创建request,reponse对象，然后交接给Servlet容器。</li>
+<li>打断下，预先知识，DispatcherServlet类继承实现 FrameworkServlet抽象类， FrameworkServlet抽象类继承HttpServlet抽象类。HttpServlet抽象类最终实现Servlet接口，因此最顶级的接口是Servlet接口。</li>
+<li>下面说的方法本质上都是DispatcherServlet类的，然后进入service方法（ FrameworkServlet抽象类实现的），然后调用父类的service方法（HttpServlet），在这个方法里面从HttpServletRequest对象里面获取到http请求方式，比如get，post等，在这些方法里面。统一调用了processRequest方法（FrameworkServlet抽象类实现的）在这个方法里面，LocaleContext，ServletRequestAttributes这2个从HttpServletRequest对象取出来，放到</li>
+</ul>
 
       
     </div>
@@ -418,7 +424,7 @@
               
                 <a href="/archives/">
               
-                  <span class="site-state-item-count">115</span>
+                  <span class="site-state-item-count">117</span>
                   <span class="site-state-item-name">日志</span>
                 </a>
               </div>
@@ -457,7 +463,7 @@
             
 
             
-              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#什么是spring-mvc"><span class="nav-number">1.</span> <span class="nav-text">什么是spring mvc</span></a></li></ol></div>
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#什么是spring-mvc"><span class="nav-number">1.</span> <span class="nav-text">什么是spring mvc</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#一个简单mvc-流程"><span class="nav-number">2.</span> <span class="nav-text">一个简单mvc 流程</span></a></li></ol></div>
             
 
           </div>

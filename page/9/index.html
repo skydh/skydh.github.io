@@ -232,6 +232,317 @@
   
   
   <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="https://skydh.github.io/2018/04/22/java String +操作导致的问题/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="董航">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="why are you so happy">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                <a class="post-title-link" href="/2018/04/22/java String +操作导致的问题/" itemprop="url">java String 的+操作导致的问题</a></h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2018-04-22T18:24:32+08:00">
+                2018-04-22
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            <h2 id="定义"><a href="#定义" class="headerlink" title="定义"></a>定义</h2><p>　　在java中 null既不是对象，也不是一种类型，而是一种特殊的值。在这里我要说的是一种特殊情况哈。</p>
+<h2 id="编译器自带的优化"><a href="#编译器自带的优化" class="headerlink" title="编译器自带的优化"></a>编译器自带的优化</h2><p>　　总所周知，我们的java代码中String对象那如果直接用+连连接字符串可能导致效率变低。但是现在在java1.5以后编译器对其自动做了优化，如果你有时间打开反编译的源码看看，你会发现，String a=”b”+”cc”;这个代码在编译器中优化了，优化方式为在这行代码的开始的地方声明一个StringBuilder,然后不断append后面的字符串。因此对于java来说你用StringBuilder和String的+其实效率都是一样的，但是为了保证一个良好的习惯还是用StringBuilder好一点。</p>
+<h2 id="导致的问题"><a href="#导致的问题" class="headerlink" title="+导致的问题"></a>+导致的问题</h2><p>　　我们用””+null，这个空对象，会生成一个null字符串。这是为什么呢？<br>　　前文已经提到，我们已经用编译器做了优化，String对象的+被优化为了StringBuilder的append，然而我们看看append的源码，你就会发现为何是null字符串了。</p>
+<pre>
+
+         public StringBuilder append(Object obj) {
+            return append(String.valueOf(obj));
+        }
+
+        @Override
+        public StringBuilder append(String str) {
+            super.append(str);
+            return this;
+        }
+
+</pre>
+　　查看源码发现，append方法向上调用了其抽象类AbstractStringBuilder方法的append方法，在看
+<pre>
+
+     public AbstractStringBuilder append(String str) {
+            if (str == null)
+                return appendNull();
+            int len = str.length();
+            ensureCapacityInternal(count + len);
+            str.getChars(0, len, value, count);
+            count += len;
+            return this;
+        }
+     private AbstractStringBuilder appendNull() {
+            int c = count;
+            ensureCapacityInternal(c + 4);
+            final char[] value = this.value;
+            value[c++] = 'n';
+            value[c++] = 'u';
+            value[c++] = 'l';
+            value[c++] = 'l';
+            count = c;
+            return this;
+        }
+
+</pre>
+　　你看真相大白了，在这个抽象类的这个append方法中，先进行了判断，如果为null,则是把这个null作为一个字符串加上去。因此解决了上面我们遇到的问题，为何String对象+null,会条件一个null字符串。
+　　测试案例如下：
+<pre>
+
+    public static void main(String[] args) {
+            String a="dh";
+            String b=a+null;
+            System.out.println(b);
+
+        }
+</pre>
+　　结果如下：
+<pre>
+    dhnull
+</pre>
+
+
+
+          
+        
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="https://skydh.github.io/2018/04/22/java为何方法可以多态而属性没有多态/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="董航">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="why are you so happy">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                <a class="post-title-link" href="/2018/04/22/java为何方法可以多态而属性没有多态/" itemprop="url">java属性为什么没多态，而是方法多态</a></h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2018-04-22T18:07:37+08:00">
+                2018-04-22
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            <h2 id="定义"><a href="#定义" class="headerlink" title="定义"></a>定义</h2><p>　　java多肽的特性：方法具有多态性，属性却没有。</p>
+<h2 id="准备"><a href="#准备" class="headerlink" title="准备"></a>准备</h2><p>　　基类：</p>
+<p><img src="https://raw.githubusercontent.com/skydh/picture/master/%E5%A4%9A%E6%80%81/base.png" alt="aaa"></p>
+<p>　　子类：</p>
+<p><img src="https://raw.githubusercontent.com/skydh/picture/master/%E5%A4%9A%E6%80%81/child.png" alt="aaa"></p>
+<p>　　测试类：</p>
+<p><img src="https://raw.githubusercontent.com/skydh/picture/master/%E5%A4%9A%E6%80%81/test%20(1" alt="aaa">.png)</p>
+<p>　　结果：</p>
+<p><img src="https://raw.githubusercontent.com/skydh/picture/master/%E5%A4%9A%E6%80%81/result.png" alt="aaa"></p>
+<h2 id="分析如下"><a href="#分析如下" class="headerlink" title="分析如下"></a>分析如下</h2><p>  父类  a=new 子类，实际对象时子类。由于向上转型，我们可以用父类在编译期间代替子类，使得编译不报错，当然你调用的方法必须是父类所拥有的，不然编译监察报错，</p>
+<p>  其实new 子类（）,那么实际类型就是子类，运行期间就是子类的方法和属性啊，而一个父类有多个子类，那么就造成多态的生成和原理，那么问题来了，为什么</p>
+<p>  我们的属性不具有多态特性。我们直接调用属性值，那么出来的就是父类的属性值，为什么呢？</p>
+<p>  这个就是静态绑定和动态绑定的问题了</p>
+<p>  编译期间的绑定就是静态绑定，运行期间的绑定就是动态绑定，java为了实现多态的这个机制，选择让方法在运行期间绑定对应对象所对应实际类型，选择让属性在编译期间绑定其所对应实际类型。那么这个问题不就解决了？</p>
+<p>  编译期间时，肯定是父类的类型，如果直接调用属性，故名思议则是父类所对应的属性值。而方法则是在运行期间绑定的，这个对象实际上实际是子类对象，那么运行期间就肯定是子类类型，故方法是子类的方法，而在方法中调用的值是子类的值就更简单了，我们调用子类的值时，实际上简写了this.属性，而this却是指当前对象。当前对象只有被实例化才会有对象，那么肯定是运行期间，故在方法里面调用属性值是子类的值。</p>
+
+          
+        
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
     <link itemprop="mainEntityOfPage" href="https://skydh.github.io/2018/04/22/缓冲为何提高效率/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -1461,336 +1772,6 @@ ctorInstance(memory);  //2：初始化对象
 
 
     
-      
-
-  
-
-  
-  
-  
-
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-  
-  
-  
-  <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="https://skydh.github.io/2018/03/18/spring事务机制/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="董航">
-      <meta itemprop="description" content="">
-      <meta itemprop="image" content="/images/avatar.gif">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="why are you so happy">
-    </span>
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-                
-                <a class="post-title-link" href="/2018/03/18/spring事务机制/" itemprop="url">spring 事务机制</a></h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">发表于</span>
-              
-              <time title="创建于" itemprop="dateCreated datePublished" datetime="2018-03-18T17:13:06+08:00">
-                2018-03-18
-              </time>
-            
-
-            
-
-            
-          </span>
-
-          
-
-          
-            
-          
-
-          
-          
-
-          
-
-          
-
-          
-
-        </div>
-      </header>
-    
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          
-            <h1 id="简介"><a href="#简介" class="headerlink" title="简介"></a>简介</h1><ul>
-<li>spring事务通过这个接口来定义的：TransactionDefinition ，这个接口包含了和事务属性有关的方法和参数定义。</li>
-<li>spring事务里面PlatformTransactionManager这个接口定义了事务的具体执行操作方法。其最终的实现类主要有：DataSourceTransactionManager：适用于使用JDBC和iBatis进行数据持久化操作的情况。<br>HibernateTransactionManager：适用于使用Hibernate进行数据持久化操作的情况。<br>JpaTransactionManager：适用于使用JPA进行数据持久化操作的情况。这个类也可以管理jdbc的事务。ps:（This transaction manager also supports direct DataSource access within a<ul>
-<li>transaction (i.e. plain JDBC code working with the same DataSource).）</li>
-</ul>
-</li>
-</ul>
-<h2 id="事务隔离级别"><a href="#事务隔离级别" class="headerlink" title="事务隔离级别"></a>事务隔离级别</h2><p>　　在这个接口里面定义了一些事务隔离级别，这和mysql的事务隔离界别没区别，都是RU,RC,RR,SE。我们可以使用符合自己业务需求的隔离级别。</p>
-<h2 id="事务传播级别"><a href="#事务传播级别" class="headerlink" title="事务传播级别"></a>事务传播级别</h2><p>　　在接口定义中，下面几个参数代表了不同传播级别。事务的传播就是在开启当前事务之前已经开启了一个事务。</p>
-<pre><code>int PROPAGATION_REQUIRED = 0;
-int PROPAGATION_SUPPORTS = 1;
-int PROPAGATION_MANDATORY = 2;
-int PROPAGATION_REQUIRES_NEW = 3;
-int PROPAGATION_NOT_SUPPORTED = 4;
-int PROPAGATION_NEVER = 5;
-int PROPAGATION_NESTED = 6;
-</code></pre><ul>
-<li>PROPAGATION_REQUIRED：若存在事务，则加入当前事务，否则创建一个新事务。</li>
-<li>PROPAGATION_SUPPORTS：若存在事务，则加入当前事务，否则以无事务的状态运行。</li>
-<li>PROPAGATION_MANDATORY：如果存在事务则加入当前事务，没有则抛出异常。</li>
-<li>PROPAGATION_REQUIRES_NEW：创建一个新事务，以这个新事务为主，把已存在的事务挂起。</li>
-<li>PROPAGATION_NOT_SUPPORTED：以非事务的方式运行，若存在事务，则把当前事务挂起。</li>
-<li>PROPAGATION_NEVER：以非事务的方向运行，若存在事务，则抛出异常。</li>
-<li>PROPAGATION_NESTED：若存在事务，则创建一个事务作为当前事务的嵌套事务来执行，没有则是创建一个新事物和PROPAGATION_REQUIRED类似。内嵌事务并不是一个独立的事务，它依赖于外部事务的存在，只有通过外部的事务提交，才能引起内部事务的提交，嵌套的子事务不能单独提交。</li>
-</ul>
-<h1 id="编程式事务"><a href="#编程式事务" class="headerlink" title="编程式事务"></a>编程式事务</h1><p>　　类似于JDBC编程实现事务管理。Spring框架提供一致的事务抽象，因此对于JDBC还是JTA事务都是采用相同的API进行编程。</p>
-<h1 id="声明式事务"><a href="#声明式事务" class="headerlink" title="声明式事务"></a>声明式事务</h1><p>　　声明式事务实际上是通过aop实现的，我们一般也是采用这个方案，可以有效的减少代码code。并且把公共代码全部抽取了出来。我们一般也是采用这个方案。</p>
-
-          
-        
-      
-    </div>
-    
-    
-    
-
-    
-
-    
-
-    
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </div>
-  
-  
-  
-  </article>
-
-
-    
-      
-
-  
-
-  
-  
-  
-
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-  
-  
-  
-  <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="https://skydh.github.io/2018/03/18/redis入门学习/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="董航">
-      <meta itemprop="description" content="">
-      <meta itemprop="image" content="/images/avatar.gif">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="why are you so happy">
-    </span>
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-                
-                <a class="post-title-link" href="/2018/03/18/redis入门学习/" itemprop="url">redis入门学习</a></h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">发表于</span>
-              
-              <time title="创建于" itemprop="dateCreated datePublished" datetime="2018-03-18T17:11:52+08:00">
-                2018-03-18
-              </time>
-            
-
-            
-
-            
-          </span>
-
-          
-
-          
-            
-          
-
-          
-          
-
-          
-
-          
-
-          
-
-        </div>
-      </header>
-    
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          
-            <h2 id="NOSQL"><a href="#NOSQL" class="headerlink" title="NOSQL"></a>NOSQL</h2><p>　　为什么需要NOSQL?<br>　　１．高并发读写。<br>　　２．海量数据的高效率的存储和访问。<br>　　３．高可扩展和高可用性。<br>　　什么是NOSQL?<br>　　NOSQL是not only sql。非关系数据库。<br>　　NOSQL数据库的四大分类。<br>　　键值存储：ｒｅｄｉｓ．<br>　　列存储：ＨＢＡＳＥ，<br>　　文档数据库：ＭＯＮＧＤＢ．<br>　　图形数据库：Ｎｅｏ４ｊ，</p>
-<p><img src="https://raw.githubusercontent.com/skydh/picture/master/nosql.png" alt="aaa"></p>
-<h2 id="Redis概述"><a href="#Redis概述" class="headerlink" title="Redis概述"></a>Redis概述</h2><p>　　高性能的键值对数据库，也是内存数据库很快，支持很多键值数据类型：<br>　　字符串类型。<br>　　列表类型。<br>　　有序集合类型。<br>　　散列类型。<br>　　集合类型。<br>　　Redis主要用于场景。<br>　　缓存。　任务队列。网站访问统计等。</p>
-<h2 id="Redis安装"><a href="#Redis安装" class="headerlink" title="Redis安装"></a>Redis安装</h2><p>　　工具：CentOS,虚拟机VM,FileZilla,SecureCRT,官网下载的redis压缩包这5个工具。<br>　　１，打开虚拟机，用ifconfig查看网络地址，然后打开SecureCRT连接到这个虚拟机，然后进行操作.<br>　　２．打开FileZilla,连上虚拟机，然后找到找到文件传送到虚拟机里面的centos里面。<br>　　３．安装Gcc环境：yum install gcc c++,在线安装gcc。<br>　　４，解压这个redis压缩包。命令如下： tar -zxvf redis-4.0.8.tar.gz。然后进入到解压的包里面，编译这个redis。命令是： make,好了之后就是安装了，命令如下所示：make PREFIX=/usr/local/redis install,中间的是我的安装路径。然后进入到解压路径，找到redis.conf这个文件，复制到安装路径。命令如下：cp redis.conf /usr/local/redis。然后进入到安装路径下，找到这个文件打开编辑这个文件，将 daemonize no,改成yes。再然后启动redis,进入到安装目录的redis包下命令如下: ./bin/redis-server ./redis.conf。然后用这个命令：ps -ef | grep -i redis查看redis是否成功启动。，进入到redis的操作界面命令如下： redis.cli进行交互。至此，安装完毕</p>
-<h2 id="jedis介绍"><a href="#jedis介绍" class="headerlink" title="jedis介绍"></a>jedis介绍</h2><p>　　Jedis是redis的基本连接java操作接口。是redis官网首选的java客户端开发包。注意地址你要先ifconfig，查看地址。<br>代码演示下</p>
-<pre>
-
-    public class JunitTest {
-        @Test
-        public void demo1() {
-            //System.out.println("111");
-            Jedis jedis = new Jedis("192.168.1.106", 6379);
-            jedis.set("name1", "dh");
-            System.out.println(jedis.get("name1"));
-            jedis.close();
-        }
-
-    }
-</pre>
-
-<p><pre><br>    @Test<br>    public void demo2() {<br>        // System.out.println(“111”);</pre></p>
-<pre><code>    JedisPoolConfig jedisPoolConfig = new JedisPoolConfig();
-    // 最大数
-    jedisPoolConfig.setMaxTotal(20);
-    // 最大空闲数
-    jedisPoolConfig.setMaxIdle(10);
-
-    JedisPool jedisPool = new JedisPool(jedisPoolConfig, &quot;192.168.1.106&quot;, 6379);
-
-    Jedis jedis = null;
-    try {
-        jedis = jedisPool.getResource();
-        jedis.set(&quot;name1&quot;, &quot;dh&quot;);
-        System.out.println(jedis.get(&quot;name1&quot;));
-    } catch (Exception e) {
-    } finally {
-        jedis.close();
-        jedisPool.close();
-    }
-
-}
-</code></pre><p><br>　　相关的maven1依赖自己加。这里我要说的是以下几点，第一。直接运行会报错的，很多原因，CentOs方案如下：<br>　　１.开启防火墙：systemctl start firewalld.service<br>　　２．开启端口firewall-cmd –zone=public –add-port=80/tcp –permanent<br>　　命令含义：<br>　　–zone #作用域<br>　　–add-port=80/tcp #添加端口，格式为：端口/通讯协议<br>　　–permanent #永久生效，没有此参数重启后失效<br>　　３．重启防火墙：firewall-cmd –reload<br>　　４．修改上面redis包下的redis.conf文件1&gt;注释掉bind<br>   为#bind 127.0.0.1<br>　　2&gt;默认不是守护进程方式运行，这里可以修改<br>　　daemonize yes<br>　　3&gt;禁用保护模式<br>　　protected-mode no<br>　　５．若是SecureCRT无法连接虚拟机，输入：systemctl restart sshd.service<br>　　然后在运行，搞定。</p>
-<h2 id="redis基本数据结构"><a href="#redis基本数据结构" class="headerlink" title="redis基本数据结构"></a>redis基本数据结构</h2><p>　　五大基本数据类型：字符串（String）,字符串列表（list）,有序字符创集合（sorted set）,哈希（hash）,字符串集合（set）<br>　　key定义的注意点：1,key值不要太长，不要超过1024字节。2,不要太短，可读性太差，3命名规范</p>
-<h3 id="字符串String"><a href="#字符串String" class="headerlink" title="字符串String"></a>字符串String</h3><p>　　存入redis是2进制操作的，最大是512M.<br>　　基本命令：赋值：set company yonyou,取值 get company,取值并且赋值getset company baidu “mmm”,删除 del company.加值操作： incr num，若num不存在，那么创建值为0，且加一，若是存在那么加一，若是无法转为整形，报错。同样还有decr num是减一操作。incrby num 5,这是一次加5，其余的和incr一样，decrby num 5,这是和incryby相反的。append compay dh,是在company这个key的value的值后面添加一个字符串。返回值为字符串长度。若是不存在，那么直接创建这个值。<br>　　基本用法：将用户信息序列化之后存到redis里面。然后取出反序列化。<br>　　数据结构：数据结构类似ArrayList，是动态的，为了减少频繁的扩容，会预先分配冗余空间。当字符串大小小于1M时，扩容时翻倍扩容，大于等于1M时则是一次扩容1M。</p>
-<h3 id="存储Hash"><a href="#存储Hash" class="headerlink" title="存储Hash"></a>存储Hash</h3><p>　　String key 和String Value的map容器，每个Hash可以存很多键值对。相当于java里面的HashMap.当第一维数组发生碰撞时，会将碰撞的数据形成链表。<br>　　基本用法：也可以存储用户信息，可以把信息，也就是每个字段单独存储。用的时候不用一下子全部取出来，只用取出自己要用的部分。可以减少网络io，但是这种数据结构性能太差。<br>　　赋值：hest myhash username dh,多个赋值，hmset myhash username dh age 21.取值：hget myhash username,一次取多个值hget myhash username age.全部取出来 hgetall myhash.<br>　　删除：单个删除：hdel myhash user age,del myhash是删除整个集合。同一样可以加值操作， hincrby myhash age 5,也有删除操作hdecrby myhash age 5,判断hash中是否存在某个key:hexists myhash username,成功返回1，不成功返回0.判断hash中多少属性key:hlen myhash.获得所有的key:hkeys myhash,获取所有value:hvalue myhash</p>
-<h3 id="list"><a href="#list" class="headerlink" title="list"></a>list</h3><p>　　按照插入顺序的链表。可以从头部和尾部插入，没有key时创建这个key，数据没了删除这个key,链表的操作特征，大家都懂的。可以用作队列和栈。由于该结构是链表结构，如果按照顺序获取数据，左出或者右出都可以很高效，但是如果按照下标获取数据，那么久可能会很慢，因为要一个个遍历，时间复杂度高。<br>　　这个list的实际存储并不是纯粹的linkedList，而是一个叫做快速链表的一个结构，首先数据量小的时候使用一块连续的内存存储，这个结构就是ziplist,也就是压缩列表，所有元素紧挨一起存储，分配一块连续的内存，当数据量大的时候才会变成快速链表，就是多个ziplist连在一起。</p>
-<p>　　这些方式来存储数据ArrayList,linklist双向链表<br>　　左边插入数据Ipush mylist a,b,c,建立一个list,并且把数据插进去，就像栈一样，返回值是链表的个数。<br>　　右侧插入rpush mylist a b,c<br>　　查看链表　lrange mylist 0 5,查看链表0-5的元素。０代表第一个元素，－１代表最后一个元素。那么查看索引信息的<br>　　左侧弹出元素　lpop mylist<br>　　右侧弹出元素　rpop mylist<br>　　获取元素个数　llen mylist<br>　　lpushx,rpushx这个和lpush差不多一样，但是没有这个key的时候是不会创建这个链表的。<br>　　lrem mylist count 1,当cout&gt;0,那么从头开始删除数目为count的1，当count&lt;0,从尾部开始删除绝对值为count的1，如果count=0，那么删除所有的1，。<br>　　lset mylist 3 mmm,效果是吧第四个元素替换为mmm,<br>　　linsert mylist before b 11,在这个mylist的这个list里面的这个b元素前边插入11<br>　　linsert mylist after b 11,在这个mylist的这个list里面的这个b元素后边插入11。<br>　　 rpoplpush mylist mylist1 将list1结尾的元素放到list2首部,这个主要用于消息队列。</p>
-<h3 id="存储set。"><a href="#存储set。" class="headerlink" title="存储set。"></a>存储set。</h3><p>　　和java的set集合类似。也类似于集合。<br>　　sadd myset a b c，添加元素<br>　　srem  myset a删除元素<br>　　smembers myset 返回集合的所有元素。<br>　　sismember myset a,判断集合是否存在a,返回值为1表示存在，返回值为0表示不存在。<br>　　sdiff myset myset1,返回myset1中没有，但是myset有的值。<br>　　sinter myset myset1 返回这2个都有的值，也就是交集。<br>　　sunion myset myset1 ,这个就是求着2个集合的并集。<br>　　scard myset 返回集合的数目<br>　　srandmember myset 返回随机一个集合的元素<br>　　sdiffstore my1 myset myset1,就是将myset，myset1按这个顺序做一个差集，再把这个差集添加到my1这个集合里面去。<br>　　sinterstore my1 myset myset1,就是将myset，myset1做一个交集，再把这个交集添加到my1这个集合里面去。<br>　　sunionstore my1 myset myset1,就是将myset，myset1做一个并集，再把这个并集添加到my1这个集合里面去。
-　　</p>
-<h3 id="Sorted-set"><a href="#Sorted-set" class="headerlink" title="Sorted-set"></a>Sorted-set</h3><p>　　和Set差不多属性，就是多了个排序的能力。<br>　　zadd mysort 70 cs 80 ls 90 ss,增加3个元素，前面的是分数，代表其在sorted-set中的顺序，如果在添加zadd mysort 100 cs,这个value已经有了，那么就会用新的分数代替旧的分数。<br>　　zscore mysort cs 获取cs这个value对应的分数。<br>　　zcard mysort 返回这个sorted-set里面多少元素。<br>　　zrem mysort tom ww,删除tom,ww这个2个值。<br>　　zrange mysort 0 -1,和list的操作一样。这个只是返回值。<br>　　zrange mysqrt 0 -1 withscores，多返回了分数，从小到大的顺序出来。<br>　　zrevrange mysort 0 -1 withscores 从大到小排序。<br>　　zremrangebyrank mysort 0 4,范围删除。<br>　　zremrangebyscore mysort 80 100,按照分数范围删除。<br>　　zrangebyscore mysort 0 100,分数从0到100的value<br>　　zrangebyscore mysort 0 100 withscores 和上面一样就是多了分数。<br>　　zrangebyscore mysort 0 100 withscores limit 0 2,选取前面2个数据<br>　　zincrby mysort 3 ls，给ls这个元素的分数加3.<br>　　zcount mysort 80 90,分数80到90的个数。<br>　　 底层实现：这个底层是基于跳跃表实现的。为了满足随机插入，删除，定位，因此采用跳跃表。跳跃表是类似于这种层级制。最下面一层元素都会串起来，然后每隔几个元素选出一个代表，将这几个代表串起来，然后在这些代表里面在选出代表，在串起来，不断向上。</p>
-<h3 id="keys操作"><a href="#keys操作" class="headerlink" title="keys操作"></a>keys操作</h3><p>　　keys * 查看所有的keys<br>　　keys my? 以my开头的keys.<br>　　del my1,my2,删除这些keys.<br>　　exists mykeys判断这个key是否存在。<br>　　rename company newname,给这个key重命名<br>　　expire newname 1000.1000秒就过期。ke<br>　　ttl newname 所剩超时时间<br>　　type newname返回类型</p>
-<h2 id="Redis特性"><a href="#Redis特性" class="headerlink" title="Redis特性"></a>Redis特性</h2><h3 id="多数据库"><a href="#多数据库" class="headerlink" title="多数据库"></a>多数据库</h3><p>　　一个Redis可以包含多个数据库。一个Redis最多16个数据库，客户端默认连接的是0号数据库。类似于mysql可以创建多个数据库。<br>　　select 1,选择一号数据库<br>　　move myset 1,这个就是把当前数据库的这个key移到1号数据库里面。</p>
-<h3 id="事务"><a href="#事务" class="headerlink" title="事务"></a>事务</h3><p>　　multi exec discard<br>　　事务会让命令串行化执行，同时也不会向其他客户端提供服务。从而保证事务。<br>　　用multi来开启事务，用exec来提交事务。用discard来进行回滚。<br>　　当你用multi时，后续的命令都会被加到命令队列里面。直到遇见exec来提交。</p>
-<h2 id="Redis持久化"><a href="#Redis持久化" class="headerlink" title="Redis持久化"></a>Redis持久化</h2><p>　　就是把redis的数据同步到硬盘上，redis快是由于其运行在内存里面的。<br>　　２种方式实现持久化。<br>　　ＲＤＢ，ＡＯＦ这２个方式。<br>　　RDB，就是指定时间内就把数据写入硬盘。<br>　　配置：<br>　　打开我们的redis的配置文件redis.conf，<br>    save 900 1<br>    save 300 10<br>    save 60 10000<br>　　就是每900秒若是有一个key变化就写入文件。第二个就是每300秒有10个key变化时就写入文件，第三个就是每60秒有10000key变化时就写入文件。<br>　　dbfilename dump.rdb<br>　　文件名字。<br>　　dir ./当前路径。<br>　　aof，将以日志记录每个数据操作，启动时，重新加载。<br>　　配置：打开redis.conf这个文件找到这个appendonly no,这个是配置这个redis是否发开的方式。将之改为yes就是启动这个aof配置。<br>　　３个同步方案；<br>　　appendsync always ,每次操作都同步<br>　　appendfsync </p>
-<h2 id="info-指令"><a href="#info-指令" class="headerlink" title="info 指令"></a>info 指令</h2><p>　　我们可以用info指令查看redis运行状态。其大致分为9大块。</p>
-<pre><code>Server 服务器运行的环境参数
-Clients 客户端相关信息
-Memory 服务器运行内存统计数据
-Persistence 持久化信息
-Stats 通用统计数据
-Replication 主从复制相关信息
-CPU CPU 使用情况
-Cluster 集群信息
-KeySpace 键值对统计数量信息
-</code></pre><p>　　我们可以根据这些信息判断这些时候redis是否需要集群啊，等问题，来调整redis。</p>
-
-          
-        
-      
-    </div>
-    
-    
-    
-
-    
-
-    
-
-    
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </div>
-  
-  
-  
-  </article>
-
-
-    
   </section>
 
   
@@ -1841,7 +1822,7 @@ KeySpace 键值对统计数量信息
               
                 <a href="/archives/">
               
-                  <span class="site-state-item-count">115</span>
+                  <span class="site-state-item-count">117</span>
                   <span class="site-state-item-name">日志</span>
                 </a>
               </div>

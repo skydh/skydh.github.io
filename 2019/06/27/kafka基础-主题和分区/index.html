@@ -86,7 +86,7 @@
 <meta property="og:site_name" content="why are you so happy">
 <meta property="og:description" content="脚本管理主题信息创建主题　　在集群配置的时候就说过了　auto.create.topics.enable这个值设置为true时。生产者发送一个没有被创建主题的消息时，会自动创建一个分区数为num.partition默认为1，副本因子为default.replication.factory默认为1的主题。消费者请求某个主题时也会创建一个类似的主题。这样主题不利于管理，因此我们需要将　auto.cre">
 <meta property="og:locale" content="zh-Hans">
-<meta property="og:updated_time" content="2019-08-28T03:09:12.654Z">
+<meta property="og:updated_time" content="2019-09-10T11:45:11.698Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="kafka入门005 -主题和分区">
 <meta name="twitter:description" content="脚本管理主题信息创建主题　　在集群配置的时候就说过了　auto.create.topics.enable这个值设置为true时。生产者发送一个没有被创建主题的消息时，会自动创建一个分区数为num.partition默认为1，副本因子为default.replication.factory默认为1的主题。消费者请求某个主题时也会创建一个类似的主题。这样主题不利于管理，因此我们需要将　auto.cre">
@@ -447,7 +447,7 @@ private Map&lt;String, String&gt; configs = null;
 <h2 id="优先副本选举"><a href="#优先副本选举" class="headerlink" title="优先副本选举"></a>优先副本选举</h2><p>　　我们创建一个分区为３，副本为３的主题，必须要大于３的broke来支持。然后重启其中一个broke，那么lead副本可能不均衡了。由于消费者都是直接从lead副本交互数据，所以影响蛮大的。而创建和修改主题时，会有一个叫做优先副本的概念，kafka会通过一定的方式促使优先副本的选举为lead副本，从而使得分区平衡。当然不同broke的负载是不一样的，有的高，有的低。<br>　　这个方式是在broke端配置的，将auto.leader.rebalance.enable设置为true（默认也是true）,开启后，kafka的控制器会启动一个定时任务来轮训所有broke节点，计算一个值（非优先副本leader副本/分区总数）超过leader.imbalance.per.broker.percentage默认是0.1，超过这个值就会开启优先副本选举以来分区平衡，定时器的周期是leader.imbalance.check.interval.seconds控制，默认300秒。<br>　　但是生产环境是不建议开启的，选举优先节点时会阻塞业务，不好，而且分区平衡也不是负载均衡。我们可以在一个时间内，手动去执行分区平衡。是通过执行这个脚本命令。</p>
 <pre><code>./bin/kafka-preferred-replica-election.sh --zookeeper localhost:2181/kafka 
 </code></pre><p>　　这个命令是扫描集群里面所有分区，如果分区过多，可能执行失败，因为在选举过程，具体的元数据信息会被存入到zookeeper的/admin/preferred-replica-election节点，如果这些数据超过了zk默认节点大小（默认1M）因此我们可以path-to-json-file参数来小批量的对部分分区执行优先副本选举，通过path-to-json-file来指定一个json文件。</p>
-<h2 id="分区重分配"><a href="#分区重分配" class="headerlink" title="分区重分配"></a>分区重分配</h2><p>　　前面我们创建主题时，下线其中一个broke，这个节点的副本都会变得不可用，如果不修复，这个分区负载会一直这样，新增一个节点，也是如此。我们可以用kafka-reassign-partitions.sh来执行分区重分配的任务。</p>
+<h2 id="分区重分配"><a href="#分区重分配" class="headerlink" title="分区重分配"></a>分区重分配</h2><p>　　前面我们创建主题时，下线其中一个broke，这个节点的副本都会变得不可用，如果不修复，这个分区负载会一直这样，新增一个节点，也是如此。我们可以用kafka-reassign-partitions.sh来执行分区重分配的任务。原理就是复制，然后删除。</p>
 
       
     </div>
@@ -561,7 +561,7 @@ private Map&lt;String, String&gt; configs = null;
               
                 <a href="/archives/">
               
-                  <span class="site-state-item-count">115</span>
+                  <span class="site-state-item-count">117</span>
                   <span class="site-state-item-name">日志</span>
                 </a>
               </div>

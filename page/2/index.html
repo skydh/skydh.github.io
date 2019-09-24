@@ -232,6 +232,340 @@
   
   
   <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="https://skydh.github.io/2019/06/18/HikariCP-1/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="董航">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="why are you so happy">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                <a class="post-title-link" href="/2019/06/18/HikariCP-1/" itemprop="url">HikariCP 笔记</a></h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2019-06-18T10:03:42+08:00">
+                2019-06-18
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            <h2 id="优势"><a href="#优势" class="headerlink" title="优势"></a>优势</h2><p>　　１．HikariCp优化创建了concurrentBag，增加了并发读写的效率，减少了其他没必要的操作，是的集合性能提高了很多。<br>　　２．使用threadlocal缓存连接以及大量使用cas的机制，避免lock.<br>　　３．使用Javassist来实现动态代理类，实现了字节码的优化。<br>　　４．心跳语句由select 1 变成了ping。<br>　　５．大量的方法内联。效率提高了很多。<br>　　６．代码量少。<br>　　７．FastStatementList代替了Arraylist，去掉了调用get时的范围检查，增加性能。</p>
+<h2 id="声明定义"><a href="#声明定义" class="headerlink" title="声明定义"></a>声明定义</h2><p>　　HikariDataSource：数据源，我们通过其对象来获取连接。</p>
+<p>　　HikariPool：连接池，对资源进行管理。</p>
+<p>　　ConcurrentBag：作为物理连接的共享资源站。</p>
+<p>　　PoolEntry：物理连接的封装。</p>
+<p> 　　获取连接流程getConnection：<br>　　１．HikariDataSource对象调用getConnection来获取连接<br>　　２．调用HikariPool的getConnection获取连接。<br>　　３．调用ConcurrentBag取出一个PoolEntry．然后这个PoolEntry通过createProxyConnection掉用工厂类生成HikariProxyConnection返回。</p>
+<p>　　连接关闭closeConnection()：<br>　　closeConnectionExecutor关闭连接后，会调用fillPool()方法对连接池进行连接填充。同时HikariPool提供evictConnection(Connection)方法对物理连接进行手动关闭。<br>　　连接关闭close():<br>　　HikariProxyConnection调用close方法时调用了PooleEntry的recycle方法，之后通过HikariPool调用了ConcurrentBag的requite放回。（poolEntry通过borrow从bag中取出，再通过requite放回。资源成功回收）。</p>
+<p>　　创建连接createPoolEntry：<br>　　HikariCP中通过独立的线程池addConnectionExecutor进行新连接的生成，连接生成方法为PoolEntryCreator。物理链接的生成只由PoolBase的newConnection()实现，之后封装成PoolEntry，通过Bag的add方法加入ConcurrentBag。当ConcurrentBag存在等待线程，或者有连接被关闭时，会触发IBagItemListener的addBagItem(wait)方法，调用PoolEntryCreator进行新连接的生成。</p>
+<h2 id="连接池到底该多大"><a href="#连接池到底该多大" class="headerlink" title="连接池到底该多大"></a>连接池到底该多大</h2><p>　　２个参数：</p>
+<p>　　maxPoolSize：最大连接数。</p>
+<p>　　minIdle：最小连接数。作者建议这个值和maxPoolSize保持一致作为一个固定大小的连接池。</p>
+<p>　　连接池大家是综合每个应用系统的业务逻辑特性，加上应用硬件配置，加上应用部署数量，再加上db硬件配置和最大允许连接数测试出来的。很难有一个简单公式进行计算。连接数及超时时间设置不正确经常会带来较大的性能问题，并影响整个服务能力的稳定性。具体设置多少，要看系统的访问量，可通过反复测试，找到最佳点。压测很重要。</p>
+<p>　　我们进行判断时，可以从以下几个层面分析：<br>　　系统中多少个线程在进行与数据库有关的工作？多少个线程在等待获取数据库连接？获取数据库连接需要的平均时长是多少？如果平均时长较长，如大于 100ms，则可能说明配置的数据库连接数不足，或存在连接泄漏问题。
+　　</p>
+<p>　　
+　　</p>
+
+          
+        
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="https://skydh.github.io/2019/06/03/kafka基本概念入门/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="董航">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="why are you so happy">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                <a class="post-title-link" href="/2019/06/03/kafka基本概念入门/" itemprop="url">kafka入门001 -基本概念</a></h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2019-06-03T18:37:43+08:00">
+                2019-06-03
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            <p>读书笔记系列，一章一篇。<br>取自深入理解kafka和kafka专栏（极客时间）</p>
+<h2 id="基本概念"><a href="#基本概念" class="headerlink" title="基本概念"></a>基本概念</h2><h3 id="特点"><a href="#特点" class="headerlink" title="特点"></a>特点</h3><h4 id="消息系统"><a href="#消息系统" class="headerlink" title="消息系统"></a>消息系统</h4><p>　　和传统的消息系统一样，但是额外提供，顺序消费，回溯消费。</p>
+<h4 id="存储系统"><a href="#存储系统" class="headerlink" title="存储系统"></a>存储系统</h4><p>　　消息是持久化存储的。</p>
+<h3 id="流式平台处理"><a href="#流式平台处理" class="headerlink" title="流式平台处理"></a>流式平台处理</h3><p>　　kafka不仅为多个流行的流式处理框架提供了可靠的数据来源，还提供了完整的流式处理类库。</p>
+<h2 id="概念"><a href="#概念" class="headerlink" title="概念"></a>概念</h2><h3 id="producer"><a href="#producer" class="headerlink" title="producer"></a>producer</h3><p>　　生产者：生产消息发送给kakfa实例。</p>
+<h3 id="Consumer"><a href="#Consumer" class="headerlink" title="Consumer"></a>Consumer</h3><p>　　消费者：负责消费kafka上面的消息。消费者端采用pull的方式拉去消息，保存了数据的偏移量，当消费者宕机后重新上线，可以更具之前保存的消费位置重新进行消费。
+　</p>
+<h3 id="Broker"><a href="#Broker" class="headerlink" title="Broker"></a>Broker</h3><p>　　一个kafka实例，一个kafka集群里面有多个Broker，也就是多个kafka实例</p>
+<h3 id="ZooKeeper"><a href="#ZooKeeper" class="headerlink" title="ZooKeeper"></a>ZooKeeper</h3><p>　　Zk负责管理kafka集群的的元数据，控制器的选举等。它是一个分布式协调框架，负责协调管理并保存Kafka集群的所有元数据信息，比如集群都有哪些Broker在运行、创建了哪些Topic，每个Topic都有多少分区以及这些分区的Leader副本都在哪些机器上等信息。</p>
+<h3 id="主题"><a href="#主题" class="headerlink" title="主题"></a>主题</h3><p>　　kafka的消息是根据主题来分类。生产者发送的消息都要指定一个主题，消费者消费消息也是订阅主题。</p>
+<h3 id="分区"><a href="#分区" class="headerlink" title="分区"></a>分区</h3><p>　　主题是逻辑上的概念，一个主题可能是多个分区组成的，一个分区只可能会是一个主题的。分区可以看做是一个可追加的日志文件，每个消息在分区里面都有一个偏移量，kafka通过这个偏移量保证顺序消费，但是kafka保证的是分区顺序消费，而不是主题顺序消费。</p>
+<h3 id="副本"><a href="#副本" class="headerlink" title="副本"></a>副本</h3><p>　　一个分区有多个副本，其中一个是lead副本，其余是follow副本，分布在不同的broker里面，lead副本负责读写，其余副本负责和lead副本消息同步，当lead副本故障时，可以选举follow副本继续提供服务。由于副本的同步是异步的，因此可能不一致，所有副本统称为AR，所有和lead副本保持一致的是统称为ISR，与lead副本滞后的副本则统称为osr副本。这2个集合的副本是动态的，当ISR不满足时则将其提到OSR,当OSR更上时，则将其丢到ISR,副本数据的限制和你的当前borker相关，因为多个副本放在一台broken上毫无意思，因此，每个副本在不同的broken上。</p>
+<h3 id="HW"><a href="#HW" class="headerlink" title="HW"></a>HW</h3><p>　　高水位。这个是消费者目前只能拉倒的消息偏移量。这个值是所有副本AR里面保存数据最小值offset。</p>
+<h3 id="LEO"><a href="#LEO" class="headerlink" title="LEO"></a>LEO</h3><p>　　则是记录当前下一条数据写入的offset.</p>
+<h3 id="版本号"><a href="#版本号" class="headerlink" title="版本号"></a>版本号</h3><p>　　kafka-2.11-2.1.1，这个里面2.11是scala的编译器版本，2.1.1是kafka真实的版本。2是大版本，第一个1是小版本号，第二个1是修订号。<br>　　0.7远古版本。<br>　　0.8加了副本机制，但是api是远古版本客户端api，且和新版本不兼容。<br>　　0.9加入了安全认证，权限的功能，新版本生产者api稳定，但是消费者api极其不稳定。<br>　　0.10:加了了kafka Streams。消费者api较为稳定。<br>　　0.11提供幂等性produceapi和事务api.以及对消息做了重构。<br>　　1.0和2.0对stream做了优化，消息没有什么变化。</p>
+<h3 id="简单java代码"><a href="#简单java代码" class="headerlink" title="简单java代码"></a>简单java代码</h3><p>　　ps:注意kafka的server.properrties的listeners要开放出来，其格式为protocoll://hostname:port1。协议+域名ip+端口。第一个协议有很多，默认是PLAINTEXT不开启安全校验，域名要写出来，不写则是默认网卡，但是可能为127.0.0.1导致外部无法访问。还有advertised.listeners作用和listeners类似，主要用于IaaS环境，比如公有云上配备多个网卡，包含了私网网卡和公网网卡。对于这种情况，可以设置advertised.listeners绑定公网ip对外客户端使用。使用listeners绑定私网ip给broker之间通信。</p>
+<p>　　maven依赖</p>
+<pre><code>&lt;dependency&gt;
+    &lt;groupId&gt;org.apache.kafka&lt;/groupId&gt;
+    &lt;artifactId&gt;kafka-clients&lt;/artifactId&gt;
+&lt;/dependency&gt;
+</code></pre><p>　　生产者：</p>
+<pre><code>package com.dh.kafka;
+import java.util.Properties;
+import org.apache.kafka.clients.producer.KafkaProducer;
+import org.apache.kafka.clients.producer.ProducerRecord;
+/**
+ * 
+ * @author Lenovo
+  *
+ */
+public class SimpleKafkaProducer {
+    public static void main(String[] args) {
+        Properties props = new Properties();
+        // broker地址
+        props.put(&quot;bootstrap.servers&quot;, &quot;192.168.147.131:9092&quot;);
+        // 指定消息key序列化方式
+        props.put(&quot;key.serializer&quot;, &quot;org.apache.kafka.common.serialization.StringSerializer&quot;);
+        // 指定消息本身的序列化方式
+        props.put(&quot;value.serializer&quot;, &quot;org.apache.kafka.common.serialization.StringSerializer&quot;);
+        KafkaProducer&lt;String, String&gt; producer = new KafkaProducer&lt;&gt;(props);
+        ProducerRecord&lt;String, String&gt; record = new ProducerRecord&lt;&gt;(&quot;topic-demo111&quot;, &quot;hello, kafka&quot;);
+        try {
+            producer.send(record);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        System.out.println(&quot;Message sent successfully&quot;);
+        producer.close();
+    }
+}
+</code></pre><p>　　消费者：</p>
+<pre><code>package com.dh.kafka;
+import java.time.Duration;
+import java.util.Collections;
+import java.util.Properties;
+import org.apache.kafka.clients.consumer.ConsumerRecord;
+import org.apache.kafka.clients.consumer.ConsumerRecords;
+import org.apache.kafka.clients.consumer.KafkaConsumer;
+public class SimpleKafkaConsumer {
+    public static void main(String[] args) {
+        Properties props = new Properties();
+        props.put(&quot;bootstrap.servers&quot;, &quot;192.168.147.131:9092&quot;);
+        // 每个消费者分配独立的组号
+        props.put(&quot;group.id&quot;, &quot;group.demo&quot;);
+        // 设置多久一次更新被消费消息的偏移量
+        props.put(&quot;auto.commit.interval.ms&quot;, &quot;1000&quot;);
+        props.put(&quot;key.deserializer&quot;, &quot;org.apache.kafka.common.serialization.StringDeserializer&quot;);
+        props.put(&quot;value.deserializer&quot;, &quot;org.apache.kafka.common.serialization.StringDeserializer&quot;);
+        @SuppressWarnings(&quot;resource&quot;)
+        KafkaConsumer&lt;String, String&gt; consumer = new KafkaConsumer&lt;&gt;(props);
+        consumer.subscribe(Collections.singletonList(&quot;topic-demo111&quot;));
+        System.out.println(&quot;Subscribed to topic &quot; + &quot;topic-demo111&quot;);
+        while (true) {
+            ConsumerRecords&lt;String, String&gt; records = consumer.poll(Duration.ofMillis(1000));
+            for (ConsumerRecord&lt;String, String&gt; record : records)
+                System.out.printf(record.value());
+        }
+    }
+}
+</code></pre>
+          
+        
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
     <link itemprop="mainEntityOfPage" href="https://skydh.github.io/2019/05/28/内部临时表/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -1238,259 +1572,6 @@
 
 
     
-      
-
-  
-
-  
-  
-  
-
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-  
-  
-  
-  <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="https://skydh.github.io/2019/01/21/工作中发现的代码不良习惯/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="董航">
-      <meta itemprop="description" content="">
-      <meta itemprop="image" content="/images/avatar.gif">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="why are you so happy">
-    </span>
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-                
-                <a class="post-title-link" href="/2019/01/21/工作中发现的代码不良习惯/" itemprop="url">工作中发现的代码不良习惯</a></h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">发表于</span>
-              
-              <time title="创建于" itemprop="dateCreated datePublished" datetime="2019-01-21T11:36:28+08:00">
-                2019-01-21
-              </time>
-            
-
-            
-
-            
-          </span>
-
-          
-
-          
-            
-          
-
-          
-          
-
-          
-
-          
-
-          
-
-        </div>
-      </header>
-    
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          
-            <h2 id="接口"><a href="#接口" class="headerlink" title="接口"></a>接口</h2><p>　　接口方法定义不用额外写public abstract,默认即可。</p>
-<h2 id="spring注入属性"><a href="#spring注入属性" class="headerlink" title="spring注入属性"></a>spring注入属性</h2><p>　　我们约定了，当需要从配置文件中读取同一批的属性＞３个时，不要使用value来一个个注入，和springboot一样，将其批量放到一个类里面，然后调用。</p>
-<pre><code>@Component
-@ConfigurationProperties(prefix = &quot;rbapi.rabbitmq&quot;)
-@Data
-public class RbapiProperties {
-       private String  queuename;
-       private String  exchangename;
-       private String  routingkey;
-
-}
-</code></pre><p>　　然后在需要用到这些属性的地方，注解注入这个bean即可。
-　　 </p>
-
-          
-        
-      
-    </div>
-    
-    
-    
-
-    
-
-    
-
-    
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </div>
-  
-  
-  
-  </article>
-
-
-    
-      
-
-  
-
-  
-  
-  
-
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-  
-  
-  
-  <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="https://skydh.github.io/2019/01/17/吾日三省吾身/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="董航">
-      <meta itemprop="description" content="">
-      <meta itemprop="image" content="/images/avatar.gif">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="why are you so happy">
-    </span>
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-                
-                <a class="post-title-link" href="/2019/01/17/吾日三省吾身/" itemprop="url">吾日三省吾身</a></h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">发表于</span>
-              
-              <time title="创建于" itemprop="dateCreated datePublished" datetime="2019-01-17T10:15:14+08:00">
-                2019-01-17
-              </time>
-            
-
-            
-
-            
-          </span>
-
-          
-
-          
-            
-          
-
-          
-          
-
-          
-
-          
-
-          
-
-        </div>
-      </header>
-    
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          
-            <h2 id="why"><a href="#why" class="headerlink" title="why?"></a>why?</h2><p>　　很忧伤，同一级别年终考核，我是ｄ，领导开头就是级别不代表绝对公正性，然而我还是ｄ，一共ａｂｃｄｅｆ，６级，我在后面的0.5里面。</p>
-<h2 id="反思"><a href="#反思" class="headerlink" title="反思"></a>反思</h2><p>　　自身能力不够强，需要改进，领导说的理由，你才来没多久，我们部门是非核心部门，能力不够全面，不仅仅是技术能力，还要人际关系处理，揣摩领导意思！学到了。能力要全面，这个确实是的，我觉得还要有，良好的沟通能力，说话节奏控制住。</p>
-
-          
-        
-      
-    </div>
-    
-    
-    
-
-    
-
-    
-
-    
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </div>
-  
-  
-  
-  </article>
-
-
-    
   </section>
 
   
@@ -1541,7 +1622,7 @@ public class RbapiProperties {
               
                 <a href="/archives/">
               
-                  <span class="site-state-item-count">115</span>
+                  <span class="site-state-item-count">117</span>
                   <span class="site-state-item-name">日志</span>
                 </a>
               </div>
