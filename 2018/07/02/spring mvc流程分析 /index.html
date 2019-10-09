@@ -86,7 +86,7 @@
 <meta property="og:site_name" content="why are you so happy">
 <meta property="og:description" content="什么是spring mvc　　Spring MVC本质上还是一个Servlet,他封装了一套通用的方案，使得我们开发时只需要写核心的业务逻辑，不需要写Servlet。而Servlet也是对底层Socket的封装，使得我们开发变得简单。 一个简单mvc 流程 首先浏览器向服务器发送一个请求。 服务器接受到连接创建一个socket线程和浏览器建立连接，紧接着创建request,reponse对象，然后">
 <meta property="og:locale" content="zh-Hans">
-<meta property="og:updated_time" content="2019-09-23T08:13:48.638Z">
+<meta property="og:updated_time" content="2019-09-25T12:25:10.502Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="spring mvc 流程">
 <meta name="twitter:description" content="什么是spring mvc　　Spring MVC本质上还是一个Servlet,他封装了一套通用的方案，使得我们开发时只需要写核心的业务逻辑，不需要写Servlet。而Servlet也是对底层Socket的封装，使得我们开发变得简单。 一个简单mvc 流程 首先浏览器向服务器发送一个请求。 服务器接受到连接创建一个socket线程和浏览器建立连接，紧接着创建request,reponse对象，然后">
@@ -309,7 +309,9 @@
 <li>首先浏览器向服务器发送一个请求。</li>
 <li>服务器接受到连接创建一个socket线程和浏览器建立连接，紧接着创建request,reponse对象，然后交接给Servlet容器。</li>
 <li>打断下，预先知识，DispatcherServlet类继承实现 FrameworkServlet抽象类， FrameworkServlet抽象类继承HttpServlet抽象类。HttpServlet抽象类最终实现Servlet接口，因此最顶级的接口是Servlet接口。</li>
-<li>下面说的方法本质上都是DispatcherServlet类的，然后进入service方法（ FrameworkServlet抽象类实现的），然后调用父类的service方法（HttpServlet），在这个方法里面从HttpServletRequest对象里面获取到http请求方式，比如get，post等，在这些方法里面。统一调用了processRequest方法（FrameworkServlet抽象类实现的）在这个方法里面，LocaleContext，ServletRequestAttributes这2个从HttpServletRequest对象取出来，放到</li>
+<li>下面说的方法本质上都是DispatcherServlet类的，然后进入service方法（ FrameworkServlet抽象类实现的），然后调用父类的service方法（HttpServlet），在这个方法里面从HttpServletRequest对象里面获取到http请求方式，比如get，post等，在这些方法里面。统一调用了processRequest方法（FrameworkServlet抽象类实现的）在这个方法里面，LocaleContext，ServletRequestAttributes这2个从HttpServletRequest对象取出来，放到其上下文里面去。</li>
+<li>然后进入doService方法，在这个方法里面设置了诸如上下文，等信息到request对象里面，然后请求传递走到doDispatch方法里面了。</li>
+<li>先调用checkMultipart方法判断是否上传请求。然后调用getHandler方法来获取handle，进入RequestMappingHandlerMapping.getHandler方法来获取handle.</li>
 </ul>
 
       
@@ -424,7 +426,7 @@
               
                 <a href="/archives/">
               
-                  <span class="site-state-item-count">117</span>
+                  <span class="site-state-item-count">118</span>
                   <span class="site-state-item-name">日志</span>
                 </a>
               </div>

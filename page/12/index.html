@@ -232,6 +232,168 @@
   
   
   <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="https://skydh.github.io/2017/12/27/简述线程池/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="董航">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="why are you so happy">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                <a class="post-title-link" href="/2017/12/27/简述线程池/" itemprop="url">简述线程池</a></h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2017-12-27T15:56:50+08:00">
+                2017-12-27
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            <h2 id="基本概念"><a href="#基本概念" class="headerlink" title="基本概念"></a>基本概念</h2><p>　　线程池顾名思义线程的池子。<br>　　工作者线程和任务队列２个概念组成。<br>　　工作者线程主要线程就是一个循环，循环从对列中接受任务执行，任务队列则是保存待执行的任务。<br>　　线程池其优点是可以重用线程，避免创建大量的线程，也避免了创建线程的开销。</p>
+<h2 id="线程池的基本属性"><a href="#线程池的基本属性" class="headerlink" title="线程池的基本属性"></a>线程池的基本属性</h2><p>　　java中线程池的实现类是ThreadPoolExecutor.<br>　　线程池的大小和以下四个参数相关。<br>　　１．corePoolSize:核心线程数。<br>　　２．maximumPoolSize:最大线程个数。<br>　　３．keepAliveTime和unit：空闲线程存活时间。<br>　　逻辑是这样的：创建一个线程池后，里面没有一个线程，当新任务到来时，如果当前线程个数小于corePoolSize，无论是否有空闲线程，都创建线程，直到=corePoolSize,而大于corePoolSize后就会进入队列里面排队，如果队列满了，那么就会创建新的线程直到数量达到maximumPoolSize。而keepAliveTime则是当当前线程数目大于corePoolSize时，空闲线程时间达到了这个值，那么这个线程就会被终结掉。<br>　　任务拒绝策略：就是上述中maximumPoolSize的任务队列都满了。新任务来了，如何处理？<br>　　默认会抛出异常，类型是RejectedExecutionException。<br>　　ThreadPoolExecutor.AbortPolicy：这就是默认的方式，抛出异常<br>　　ThreadPoolExecutor.DiscardPolicy：静默处理，忽略新任务，不抛异常，也不执行<br>　　ThreadPoolExecutor.DiscardOldestPolicy：将等待时间最长的任务扔掉，然后自己排队<br>　　ThreadPoolExecutor.CallerRunsPolicy：在任务提交者线程中执行任务，而不是交给线程池中的线程执行<br>　　预配置好线程池。<br>　　工厂类Executor提供了一些预制好的线程池</p>
+<p><pre><br>public static ExecutorService newSingleThreadExecutor(ThreadFactory threadFactory) {<br>        return new FinalizableDelegatedExecutorService<br>            (new ThreadPoolExecutor(1, 1,<br>                                    0L, TimeUnit.MILLISECONDS,<br>                                    new LinkedBlockingQueue<runnable>(),<br>                                    threadFactory));<br>    }<br>public static ExecutorService newCachedThreadPool() {<br>        return new ThreadPoolExecutor(0, Integer.MAX_VALUE,<br>                                      60L, TimeUnit.SECONDS,<br>                                      new SynchronousQueue<runnable>());<br>    }<br>public static ExecutorService newFixedThreadPool(int nThreads, ThreadFactory threadFactory) {<br>        return new ThreadPoolExecutor(nThreads, nThreads,<br>                                      0L, TimeUnit.MILLISECONDS,<br>                                      new LinkedBlockingQueue<runnable>(),<br>                                      threadFactory);<br>    }<br></runnable></runnable></runnable></pre><br>　　等还有些。这里只是说出几个，看看其实现就知道他的意思了，</p>
+<p><pre><br>    package threadPool;</pre></p>
+<pre><code>import java.util.concurrent.ArrayBlockingQueue;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
+
+public class Test {
+    public static void main(String[] args) {
+        ThreadPoolExecutor executor = new ThreadPoolExecutor(5, 10, 200, TimeUnit.MILLISECONDS,
+                new ArrayBlockingQueue&lt;Runnable&gt;(5));
+
+        for (int i = 0; i &lt; 15; i++) {
+            MyTask myTask = new MyTask(i);
+            executor.execute(myTask);
+            System.out.println(&quot;线程池中线程数目：&quot; + executor.getPoolSize() + &quot;，队列中等待执行的任务数目：&quot; + executor.getQueue().size()
+                    + &quot;，已执行玩别的任务数目：&quot; + executor.getCompletedTaskCount());
+        }
+        executor.shutdown();
+    }
+    }
+class MyTask implements Runnable {
+
+    private int taskNum;
+
+    public MyTask(int num) {
+        this.taskNum = num;
+    }
+
+    @Override
+    public void run() {
+        System.out.println(&quot;正在执行task &quot; + taskNum);
+        try {
+            Thread.currentThread().sleep(4000);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+        System.out.println(&quot;task &quot; + taskNum + &quot;执行完毕&quot;);
+    }
+}
+</code></pre><p><br>　　结果如下：</p>
+<p><pre>正在执行task 0<br>线程池中线程数目：1，队列中等待执行的任务数目：0，已执行玩别的任务数目：0<br>线程池中线程数目：2，队列中等待执行的任务数目：0，已执行玩别的任务数目：0<br>正在执行task 1<br>线程池中线程数目：3，队列中等待执行的任务数目：0，已执行玩别的任务数目：0<br>正在执行task 2<br>线程池中线程数目：4，队列中等待执行的任务数目：0，已执行玩别的任务数目：0<br>正在执行task 3<br>线程池中线程数目：5，队列中等待执行的任务数目：0，已执行玩别的任务数目：0<br>正在执行task 4<br>线程池中线程数目：5，队列中等待执行的任务数目：1，已执行玩别的任务数目：0<br>线程池中线程数目：5，队列中等待执行的任务数目：2，已执行玩别的任务数目：0<br>线程池中线程数目：5，队列中等待执行的任务数目：3，已执行玩别的任务数目：0<br>线程池中线程数目：5，队列中等待执行的任务数目：4，已执行玩别的任务数目：0<br>线程池中线程数目：5，队列中等待执行的任务数目：5，已执行玩别的任务数目：0<br>线程池中线程数目：6，队列中等待执行的任务数目：5，已执行玩别的任务数目：0<br>正在执行task 10<br>线程池中线程数目：7，队列中等待执行的任务数目：5，已执行玩别的任务数目：0<br>线程池中线程数目：8，队列中等待执行的任务数目：5，已执行玩别的任务数目：0<br>正在执行task 12<br>线程池中线程数目：9，队列中等待执行的任务数目：5，已执行玩别的任务数目：0<br>正在执行task 13<br>正在执行task 11<br>线程池中线程数目：10，队列中等待执行的任务数目：5，已执行玩别的任务数目：0<br>正在执行task 14<br>task 0执行完毕<br>正在执行task 5<br>task 4执行完毕<br>task 3执行完毕<br>正在执行task 7<br>task 2执行完毕<br>task 1执行完毕<br>正在执行task 8<br>正在执行task 6<br>task 13执行完毕<br>task 14执行完毕<br>task 12执行完毕<br>task 11执行完毕<br>task 10执行完毕<br>正在执行task 9<br>task 5执行完毕<br>task 7执行完毕<br>task 8执行完毕<br>task 6执行完毕<br>task 9执行完毕<br></pre><br>　　网上直接找了个例子跑了一下，只要理解了上面的原理，这些就很好理解了。</p>
+
+          
+        
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
     <link itemprop="mainEntityOfPage" href="https://skydh.github.io/2017/12/27/volatile,原子变量和ThreadLocal/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -1856,7 +2018,7 @@ Thread-3   _19
               
                 <a href="/archives/">
               
-                  <span class="site-state-item-count">117</span>
+                  <span class="site-state-item-count">118</span>
                   <span class="site-state-item-name">日志</span>
                 </a>
               </div>

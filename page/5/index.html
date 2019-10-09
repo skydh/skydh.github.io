@@ -232,6 +232,139 @@
   
   
   <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="https://skydh.github.io/2018/10/24/微服务架构入门/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="董航">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="why are you so happy">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                <a class="post-title-link" href="/2018/10/24/微服务架构入门/" itemprop="url">微服务入门001 OAuth 2.0</a></h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2018-10-24T11:33:23+08:00">
+                2018-10-24
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            <h2 id="什么是OAuth2-0"><a href="#什么是OAuth2-0" class="headerlink" title="什么是OAuth2.0"></a>什么是OAuth2.0</h2><p>　　１．用于rest/api的代理请求框架。<br>　　２．解耦认证和授权<br>　　３．基于令牌Token的授权，在无需暴露用户密码的情况下，让应用能获得对用户数据的访问权限。<br>　　４．事实上的标准安全框架，支持多种用例场景。适用于，服务端webapp,单页spa,原生app，服务器服务器之间。</p>
+<h2 id="OAuth2-0的优势"><a href="#OAuth2-0的优势" class="headerlink" title="OAuth2.0的优势"></a>OAuth2.0的优势</h2><p>　　１．易于实现。<br>　　２．更加安全，客户端不接触密码，服务端集中保护。本质上就是解决这个问题。<br>　　３．广泛传播并持续采用。<br>　　４．短寿命和封装的token。<br>　　５. 资源服务器和授权服务器解耦。一个负责授予token权限(客户端访问其，其返回页面给用户，判断是否同意授权，同意，则授予让其有资格访问我的数据)，一个负责判断请求是否具有token<br>　　６．集中授权<br>　　７．基于http/json，易于请求和传递token<br>　　８．考虑了多种客户端场景<br>　　９．客户端有多种信任级别。</p>
+<h2 id="OAuth2-0的不足"><a href="#OAuth2-0的不足" class="headerlink" title="OAuth2.0的不足"></a>OAuth2.0的不足</h2><p>　　１.协议太宽泛了，因此各个实现版本兼容性不好。<br>　　２．和Oauth1.0不兼容。<br>　　３．Oauth2.0不是一个认证协议，他是个授权框架，他本省不会告诉你任何用户信息。是个授权协议。</p>
+<h2 id="Oauth2-0主要角色术语"><a href="#Oauth2-0主要角色术语" class="headerlink" title="Oauth2.0主要角色术语"></a>Oauth2.0主要角色术语</h2><p>　　１．资源拥有者：资源的拥有者，用户。<br>　　２．客户应用：通常是一个web应用，想要访问收到保护的数据。比如微信用户数据等。<br>　　３．资源服务器：一个web站点或者service api,客户想要访问的数据在我这里。<br>　　４．授权服务器：客户想要访问受保护的数据，必须先到我这里来认证，来获取到access token。<br>　　５．客户凭证：在授权服务器上注册后获得的，客户的ClientId和密码用于认证客户。<br>　　６．令牌：授权服务器接受到客户端请求后，验证后颁发的访问令牌<br>　　７．作用域：客户请求访问令牌是，由资源额外指定的细分权限。</p>
+<h2 id="Oauth2-0-令牌类型"><a href="#Oauth2-0-令牌类型" class="headerlink" title="Oauth2.0 令牌类型"></a>Oauth2.0 令牌类型</h2><p>　　１．access token：访问令牌用来代表一个用户或者服务直接去访问受保护的资源。<br>　　２．refresh token:刷新令牌，勇于去授权服务器获取一个新的令牌。（有时候访问令牌过期了，有的流程会支持获取到一个refreshtoken,我可以通过这个换取一个新的令牌）<br>　　３．Bearer Token：不管谁拿到token,都可以访问资源。<br>　　４．pop token:可以校验client是否对token的用友权。<br>　　５．Authorization Code Token:授权码，仅用于授权码授权类型。用于交换获取访问令牌和刷新令牌。</p>
+<h2 id="Ouath2-0的误区"><a href="#Ouath2-0的误区" class="headerlink" title="Ouath2.0的误区"></a>Ouath2.0的误区</h2><p>　　１．该协议仅仅支持http协议。<br>　　２．Oauth 是个授权协议，不是认证协议。<br>　　３．oauth 没有定义token格式<br>　　４．没有定义加密算法<br>　　５．不是单个协议<br>　　６．没有定义授权处理机制<br>　　７．仅仅是个授权框架，用于授权代理
+　　</p>
+<h2 id="授权模式"><a href="#授权模式" class="headerlink" title="授权模式"></a>授权模式</h2><h3 id="授权码模式"><a href="#授权码模式" class="headerlink" title="授权码模式"></a>授权码模式</h3><p>  用下面转载自码农翻身的一张图来解释下</p>
+<p><img src="https://raw.githubusercontent.com/skydh/picture/master/token_001.png" alt="aaa"></p>
+<p>　　１．用户访问客户端，客户端将用户重定向到授权服务器。同时附上客户端凭证和处理完后要重定向的url。<br>　　２．用户选择是否给予客户端授权。<br>　　３．用户给予授权，授权服务器将用户导向客户端事先指定的”重定向URI”（redirection URI），同时附上一个授权码。<br>　　４．客户端收到授权码，附上早先的”重定向URI”，向认证服务器申请令牌。这一步是在客户端的后台的服务器上完成的，对用户不可见。<br>　　５．认证服务器核对了授权码和重定向URI，确认无误后，向客户端发送访问令牌（access token）和更新令牌（refresh token）。</p>
+<h3 id="简化模式"><a href="#简化模式" class="headerlink" title="简化模式"></a>简化模式</h3><p>　　（A）客户端将用户导向认证服务器。<br>　　（B）用户决定是否给于客户端授权。<br>　　（C）假设用户给予授权，认证服务器将用户导向客户端指定的”重定向URI”，并在URI的Hash部分包含了访问令牌。<br>　　（D）浏览器向资源服务器发出请求，其中不包括上一步收到的Hash值。<br>　　（E）资源服务器返回一个网页，其中包含的代码可以获取Hash值中的令牌。<br>　　（F）浏览器执行上一步获得的脚本，提取出令牌。<br>　　（G）浏览器将令牌发给客户端。</p>
+<h3 id="密码模式"><a href="#密码模式" class="headerlink" title="密码模式"></a>密码模式</h3><p>　　这个通常需要客户端是操作系统的一部分，或者是一个著名公司出品，而认证服务器无法授权处理才使用。<br>　　（A）用户向客户端提供用户名和密码。<br>　　（B）客户端将用户名和密码发给认证服务器，向后者请求令牌。<br>　　（C）认证服务器确认无误后，向客户端提供访问令牌。</p>
+<h3 id="客户端模式"><a href="#客户端模式" class="headerlink" title="客户端模式"></a>客户端模式</h3><p>　　其实不存在授权问题，客户端自己向授权服务器拿令牌。<br>　　（A）客户端向认证服务器进行身份认证，并要求一个访问令牌。<br>　　（B）认证服务器确认无误后，向客户端提供访问令牌。</p>
+<p>为何要加个授权码呢？<br>   为了避免把token透露给浏览器，最好是透明的，我们不希望处理到这个token暴露在浏览器里面，每次重定向都会经过浏览器的。因此如果直接返回token的话就会产生问题。因此我们一般使用授权码的方式。</p>
+
+          
+        
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
     <link itemprop="mainEntityOfPage" href="https://skydh.github.io/2018/09/27/redis 数据类型实现机制/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -1459,146 +1592,6 @@ min-slaves-max-lag 10
 
 
     
-      
-
-  
-
-  
-  
-  
-
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-  
-  
-  
-  <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="https://skydh.github.io/2018/09/13/redis 管道/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="董航">
-      <meta itemprop="description" content="">
-      <meta itemprop="image" content="/images/avatar.gif">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="why are you so happy">
-    </span>
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-                
-                <a class="post-title-link" href="/2018/09/13/redis 管道/" itemprop="url">redis 管道</a></h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">发表于</span>
-              
-              <time title="创建于" itemprop="dateCreated datePublished" datetime="2018-09-13T17:47:48+08:00">
-                2018-09-13
-              </time>
-            
-
-            
-
-            
-          </span>
-
-          
-
-          
-            
-          
-
-          
-          
-
-          
-
-          
-
-          
-
-        </div>
-      </header>
-    
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          
-            <p>ps：读redis掘金小册</p>
-<h2 id="pipe管道命令"><a href="#pipe管道命令" class="headerlink" title="pipe管道命令"></a>pipe管道命令</h2><p>　　管道命令本质上是为了减少网络io交互产生的，其实现是在客户端实现的，客户端将多个请求并到一起发送，然后一起返回，有效减少了io次数。<br>　　这便是管道操作的本质，服务器根本没有任何区别对待，还是收到一条消息，执行一条消息，回复一条消息的正常的流程。客户端通过对管道中的指令列表改变读写顺序就可以大幅节省 IO 时间。管道中指令越多，效果越好。<br>　　我们可以用： redis-benchmark -t set -P 2 -q来进行压测，看看其QPS。</p>
-<h2 id="io操作真正的耗时点在哪里"><a href="#io操作真正的耗时点在哪里" class="headerlink" title="io操作真正的耗时点在哪里"></a>io操作真正的耗时点在哪里</h2><pre><code>１．客户端进程调用write将消息写到操作系统内核为套接字分配的发送缓冲send buffer。
-
-２．客户端操作系统内核将发送缓冲的内容发送到网卡，网卡硬件将数据通过「网际路由」送到服务器的网卡。
-
-３．服务器操作系统内核将网卡的数据放到内核为套接字分配的接收缓冲recv buffer。
-
-４．服务器进程调用read从接收缓冲中取出消息进行处理。
-
-５．服务器进程调用write将响应消息写到内核为套接字分配的发送缓冲send buffer。
-
-６．服务器操作系统内核将发送缓冲的内容发送到网卡，网卡硬件将数据通过「网际路由」送到客户端的网卡。
-
-７．客户端操作系统内核将网卡的数据放到内核为套接字分配的接收缓冲recv buffer。
-
-８．客户端进程调用read从接收缓冲中取出消息返回给上层业务逻辑进行处理。
-</code></pre><p>　　我们开始以为 write 操作是要等到对方收到消息才会返回，但实际上不是这样的。write 操作只负责将数据写到本地操作系统内核的发送缓冲然后就返回了。剩下的事交给操作系统内核异步将数据送到目标机器。但是如果发送缓冲满了，那么就需要等待缓冲空出空闲空间来，这个就是写操作 IO 操作的真正耗时。</p>
-<p>　　我们开始以为 read 操作是从目标机器拉取数据，但实际上不是这样的。read 操作只负责将数据从本地操作系统内核的接收缓冲中取出来就了事了。但是如果缓冲是空的，那么就需要等待数据到来，这个就是读操作 IO 操作的真正耗时。</p>
-<p>　　所以对于value = redis.get(key)这样一个简单的请求来说，write操作几乎没有耗时，直接写到发送缓冲就返回，而read就会比较耗时了，因为它要等待消息经过网络路由到目标机器处理后的响应消息,再回送到当前的内核读缓冲才可以返回。这才是一个网络来回的真正开销。</p>
-<p>　　而管道操作就是只用等一个网路来回从而减少时间开销，实际上减少了多余的通信次数。</p>
-
-          
-        
-      
-    </div>
-    
-    
-    
-
-    
-
-    
-
-    
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </div>
-  
-  
-  
-  </article>
-
-
-    
   </section>
 
   
@@ -1649,7 +1642,7 @@ min-slaves-max-lag 10
               
                 <a href="/archives/">
               
-                  <span class="site-state-item-count">117</span>
+                  <span class="site-state-item-count">118</span>
                   <span class="site-state-item-name">日志</span>
                 </a>
               </div>

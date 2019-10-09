@@ -232,6 +232,142 @@
   
   
   <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="https://skydh.github.io/2019/06/19/springboot单应用脚手架/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="董航">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="why are you so happy">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                <a class="post-title-link" href="/2019/06/19/springboot单应用脚手架/" itemprop="url">springboot单应用脚手架</a></h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2019-06-19T16:32:50+08:00">
+                2019-06-19
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            <h2 id="地址"><a href="#地址" class="headerlink" title="地址"></a>地址</h2><p> 　　<a href="https://github.com/skydh/springboot-scaffold" target="_blank" rel="noopener">脚手架地址</a></p>
+<h2 id="简介"><a href="#简介" class="headerlink" title="简介"></a>简介</h2><h3 id="多数据源"><a href="#多数据源" class="headerlink" title="多数据源"></a>多数据源</h3><p>　　在configuration包里面，我们定义了2个数据源，一个是pgsql，一个是mysql。这边对mysql加了@Primary优先处理，因此mysql可以使用jpa进行操作，而pg由于业务只用其进行批量处理，因此只让其使用springjdbc即可。</p>
+<p>　　由于jpa对批量处理以及复杂sql的不友好，因此这边建议，简单sql使用jpa，加快开发效率，复杂批量sql使用springjdbc，开发简单高效。我们约定，jpa的dao命名为xxxJpaDao,springjdbc的dao命名为xxxDao。</p>
+<h3 id="aop动态代理"><a href="#aop动态代理" class="headerlink" title="aop动态代理"></a>aop动态代理</h3><p>　　1.非法字符过滤，这个功能主要是检查你的rest接口里面的vo是否存在非法字符，会递归检查到基本类型，但是要检验的vo必须实现一个空接口。支持list，vo,map这3个数据混搭的检查。</p>
+<p>　　2.任务调度加锁。这个功能主要是用于工程在集群部署的情况下。定时器多次调用做了加锁限制。使用的是redis分布式锁。</p>
+<p>　　3.数据字段校验，这个主要是使用spring的安全校验来检查表单字段。</p>
+<p>　　4.ip校验，控制这个游客接口最多访问次数。</p>
+<h3 id="上下文"><a href="#上下文" class="headerlink" title="上下文"></a>上下文</h3><p>　　上下文是用ThreadLocal实现的，默认实现了用户信息的缓存，同时开发也可以自定义往里面丢值进去，但是请记住，我们访问服务的线程是从线程池里面取出来的，因此这个线程里面可能存在旧的值，因此，你需要在代码里面控制，要么每次都覆盖，要么在这个线程或者这个请求结束前将其数据释放。默认使用覆盖策略。</p>
+<h3 id="枚举"><a href="#枚举" class="headerlink" title="枚举"></a>枚举</h3><p>　　常量一律使用枚举。</p>
+<h3 id="异常"><a href="#异常" class="headerlink" title="异常"></a>异常</h3><p>　　使用了全局异常捕捉。</p>
+<h2 id="http"><a href="#http" class="headerlink" title="http"></a>http</h2><p>　　由于是单应用，存在远程调用，为了方便，我们使用http方式调用，采用的是spring的RestTemplate作为接口，httpClient为实现的方式。</p>
+<h2 id="拦截器"><a href="#拦截器" class="headerlink" title="拦截器"></a>拦截器</h2><p>　　拦截器有２个，一个是登录校验的拦截器，一个是基本非法字符校验的拦截器。</p>
+<h2 id="国际化"><a href="#国际化" class="headerlink" title="国际化"></a>国际化</h2><p>　　返回信息需要国际化处理，因为可能是不同国家，需要不同的语言。</p>
+<h2 id="分页查询"><a href="#分页查询" class="headerlink" title="分页查询"></a>分页查询</h2><p>　　基于springjdbc封装了一个分页查询的工具类。ps:可以考虑封装更多的工具类来完全代替jpa。</p>
+<h2 id="事务"><a href="#事务" class="headerlink" title="事务"></a>事务</h2><p>　　定义了２个事务管理器，一个是pgsql的DataSourceTransactionManager，来管理pgsql的springjdbc的事务，一个是JpaTransactionManager的事务管理器，可以管理mysql的jpa和spring jdbc的事务管理。</p>
+<p>　　ps(This transaction manager also supports direct DataSource access within a transaction<br>(i.e. plain JDBC code working with the same DataSource).<br> This allows for mixing services which access JPA and services which use plain JDBC (without being aware of JPA)!<br> Application code needs to stick to the same simple Connection lookup pattern as with DataSourceTransactionManager<br> (i.e. DataSourceUtils.getConnection(javax.sql.DataSource) or going through a TransactionAwareDataSourceProxy).<br>  Note that this requires a vendor-specific JpaDialect to be configured.)</p>
+<h2 id="返回值"><a href="#返回值" class="headerlink" title="返回值"></a>返回值</h2><p>　　返回值信息有４个，分别是，是否成功，返回code,返回message,返回vo。</p>
+
+          
+        
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
     <link itemprop="mainEntityOfPage" href="https://skydh.github.io/2019/06/18/HikariCP-1/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -1448,130 +1584,6 @@ public class SimpleKafkaConsumer {
 
 
     
-      
-
-  
-
-  
-  
-  
-
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-  
-  
-  
-  <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="https://skydh.github.io/2019/01/28/es 入门2.0/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="董航">
-      <meta itemprop="description" content="">
-      <meta itemprop="image" content="/images/avatar.gif">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="why are you so happy">
-    </span>
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-                
-                <a class="post-title-link" href="/2019/01/28/es 入门2.0/" itemprop="url">es 入门2.0</a></h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">发表于</span>
-              
-              <time title="创建于" itemprop="dateCreated datePublished" datetime="2019-01-28T10:21:06+08:00">
-                2019-01-28
-              </time>
-            
-
-            
-
-            
-          </span>
-
-          
-
-          
-            
-          
-
-          
-          
-
-          
-
-          
-
-          
-
-        </div>
-      </header>
-    
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          
-            <h2 id="2种通信方式"><a href="#2种通信方式" class="headerlink" title="2种通信方式"></a>2种通信方式</h2><p>　　我们有２个方式和服务端集群交互，第一个是通过9300端口并使用Elasticsearch原生传输协议和集群交互，同时集群的节点也是通过这个端口彼此通信的。这个只能通过java实现，同时maven依赖版本必须和es版本保持一致，不然可能连不上去。第二个方式就是其他语言包括java都可以使用的，就是通过restful api 9200端口和Elasticsearch交互。  </p>
-<h2 id="查询性能"><a href="#查询性能" class="headerlink" title="查询性能"></a>查询性能</h2><p>　　１．ES的搜索引擎严重依赖于底层的filesystem cache，你如果给filesystem cache更多的内存，尽量让内存可以容纳所有的idx segment file索引数据文件，那么你搜索的时候就基本都是走内存的，性能会非常高。一般来说，内存空间要达到磁盘数据量的一般，使用es性能才好。<br>　　２.在es中，如果内存留给filesystem cache的空间是1g，那么你的索引数据就要控制在1g以内，那么你的数据几乎都是走内存来搜索，性能极高。比如你只需要根据id，name,age3个字段来搜索，但是你把一行数据30多个字段都丢进去了，那么有大量的数据不是用来搜索的，占了filesystem cache的空间，浪费了。因此我们建议将id+name,age,其余的数据存在mysql里面，然后通过索引再mysql里面查询。<br>　　３．数据预热，可以搞个子系统，手动访问某些数据，将数据加热，提前刷到filesystem cache里面。<br>　　４．es深度分页性能很差，方案，去除深度分页。</p>
-<h2 id="倒排索引"><a href="#倒排索引" class="headerlink" title="倒排索引"></a>倒排索引</h2><p>　　Elasticsearch是通过Lucene的倒排索引技术实现比关系型数据库更快的过滤。特别是它对多条件的过滤支持非常好，倒排索引。
-　　
-　</p>
-
-          
-        
-      
-    </div>
-    
-    
-    
-
-    
-
-    
-
-    
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </div>
-  
-  
-  
-  </article>
-
-
-    
   </section>
 
   
@@ -1622,7 +1634,7 @@ public class SimpleKafkaConsumer {
               
                 <a href="/archives/">
               
-                  <span class="site-state-item-count">117</span>
+                  <span class="site-state-item-count">118</span>
                   <span class="site-state-item-name">日志</span>
                 </a>
               </div>

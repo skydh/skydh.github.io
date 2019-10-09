@@ -232,6 +232,313 @@
   
   
   <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="https://skydh.github.io/2019/10/09/多cookie导致的登录问题/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="董航">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="why are you so happy">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                <a class="post-title-link" href="/2019/10/09/多cookie导致的登录问题/" itemprop="url">多cookie导致的登录问题</a></h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2019-10-09T14:05:23+08:00">
+                2019-10-09
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            <h1 id="问题如下"><a href="#问题如下" class="headerlink" title="问题如下"></a>问题如下</h1><p>　　本系统登录用户中心后，用户中心返回一个cookie给浏览器，浏览器携带cookie访问我们后台服务，后台服务通过cookie，从redis里面获取到信息后，向用户中心发送rpc请求，从而进行权限校验。问题如下，用户中心修改配置后，账号登录变成单端登录，A登录a账号，B登录a账号，B把A挤了下来。但是A不知道，继续访问后台服务，报错，没有权限，但是浏览器端有了新的cookie。再次登录，用户中心报错。</p>
+<h1 id="分析如下"><a href="#分析如下" class="headerlink" title="分析如下"></a>分析如下</h1><p>　　２个方案，用户中心分析这个cookie，选择正确的cookie处理，或者本系统在那个情况下不生成这个cookie。</p>
+<h1 id="源码解析"><a href="#源码解析" class="headerlink" title="源码解析"></a>源码解析</h1><p>　　springmvc 请求一个服务，要经过一系列的过滤器链，而我们使用了springsession,那么其中就有一个优先级很高的一个过滤器SessionRepositoryFilter。核心方法为</p>
+<pre><code>@Override
+protected void doFilterInternal(HttpServletRequest request,
+        HttpServletResponse response, FilterChain filterChain)
+        throws ServletException, IOException {
+    request.setAttribute(SESSION_REPOSITORY_ATTR, this.sessionRepository);
+
+    SessionRepositoryRequestWrapper wrappedRequest = new SessionRepositoryRequestWrapper(
+            request, response, this.servletContext);
+    SessionRepositoryResponseWrapper wrappedResponse = new SessionRepositoryResponseWrapper(
+            wrappedRequest, response);
+
+    try {
+        filterChain.doFilter(wrappedRequest, wrappedResponse);
+    }
+    finally {
+        wrappedRequest.commitSession();
+    }
+}
+</code></pre><p>　　我们注意到，无论如何都要执行的finally代码块。进去观察</p>
+<pre><code>private void commitSession() {
+        HttpSessionWrapper wrappedSession = getCurrentSession();
+        if (wrappedSession == null) {
+            if (isInvalidateClientSession()) {
+                SessionRepositoryFilter.this.httpSessionIdResolver.expireSession(this,
+                        this.response);
+            }
+        }
+        else {
+            S session = wrappedSession.getSession();
+            clearRequestedSessionCache();
+            SessionRepositoryFilter.this.sessionRepository.save(session);
+            String sessionId = session.getId();
+            if (!isRequestedSessionIdValid()
+                    || !sessionId.equals(getRequestedSessionId())) {
+                SessionRepositoryFilter.this.httpSessionIdResolver.setSessionId(this,
+                        this.response, sessionId);
+            }
+        }
+    }
+</code></pre><p>　　最后一行代码会进入CookieHttpSessionIdResolver的setSessionId方法中，我们观察这个方法。</p>
+<pre><code>@Override
+public void setSessionId(HttpServletRequest request, HttpServletResponse response,
+        String sessionId) {
+    if (sessionId.equals(request.getAttribute(WRITTEN_SESSION_ID_ATTR))) {
+        return;
+    }
+    request.setAttribute(WRITTEN_SESSION_ID_ATTR, sessionId);
+    this.cookieSerializer
+            .writeCookieValue(new CookieValue(request, response, sessionId));
+}
+</code></pre><p>　　其会进入DefaultCookieSerializer的writeCookieValue方法里面</p>
+<pre><code>@Override
+public void writeCookieValue(CookieValue cookieValue) {
+    HttpServletRequest request = cookieValue.getRequest();
+    HttpServletResponse response = cookieValue.getResponse();
+
+    StringBuilder sb = new StringBuilder();
+    sb.append(this.cookieName).append(&apos;=&apos;);
+    String value = getValue(cookieValue);
+    if (value != null &amp;&amp; value.length() &gt; 0) {
+        validateValue(value);
+        sb.append(value);
+    }
+    int maxAge = getMaxAge(cookieValue);
+    if (maxAge &gt; -1) {
+        sb.append(&quot;; Max-Age=&quot;).append(cookieValue.getCookieMaxAge());
+        OffsetDateTime expires = (maxAge != 0)
+                ? OffsetDateTime.now().plusSeconds(maxAge)
+                : Instant.EPOCH.atOffset(ZoneOffset.UTC);
+        sb.append(&quot;; Expires=&quot;)
+                .append(expires.format(DateTimeFormatter.RFC_1123_DATE_TIME));
+    }
+    String domain = getDomainName(request);
+    if (domain != null &amp;&amp; domain.length() &gt; 0) {
+        validateDomain(domain);
+        sb.append(&quot;; Domain=&quot;).append(domain);
+    }
+    String path = getCookiePath(request);
+    if (path != null &amp;&amp; path.length() &gt; 0) {
+        validatePath(path);
+        sb.append(&quot;; Path=&quot;).append(path);
+    }
+    if (isSecureCookie(request)) {
+        sb.append(&quot;; Secure&quot;);
+    }
+    if (this.useHttpOnlyCookie) {
+        sb.append(&quot;; HttpOnly&quot;);
+    }
+    if (this.sameSite != null) {
+        sb.append(&quot;; SameSite=&quot;).append(this.sameSite);
+    }
+
+    response.addHeader(&quot;Set-Cookie&quot;, sb.toString());
+}
+</code></pre><p>　　找到了，原来在这里会在response里面写入cookie，在这个方法里面只要我们指定了cookie的name和domain和用户中心传给我们的一样，那么就会解决多cookie问题。</p>
+<p>　　从系统启动开始看，加了EnableRedisHttpSession这个注解，会采用spring session，点进去里面有个@import注解，引入了RedisHttpSessionConfiguration这个配置类，这个类里面配置引入了很多bean。同时继承了一个SpringHttpSessionConfiguration这个抽象类，在这个抽象类里面有2个方法和我们强相关</p>
+<pre><code>@Autowired(required = false)
+public void setCookieSerializer(CookieSerializer cookieSerializer) {
+    this.cookieSerializer = cookieSerializer;
+}
+
+@PostConstruct
+public void init() {
+    CookieSerializer cookieSerializer = (this.cookieSerializer != null)
+            ? this.cookieSerializer
+            : createDefaultCookieSerializer();
+    this.defaultHttpSessionIdResolver.setCookieSerializer(cookieSerializer);
+}
+</code></pre><p>　　第一个方法是当容器中存在CookieSerializer实例时，就注入到这个bean中，第二个方法是这个bean执行完构造方法和所有注入后执行的方法，这个方法里面的逻辑如下，如果上下文不存在CookieSerializer这个实例，那么直接new一个。</p>
+<p>　　那么解决方案就出来。我们可以创建一个bean注入到spring容器里面即可</p>
+<pre><code>@Configuration
+public class CookieConfiguration {
+@Value(&quot;${cookie.name}&quot;)
+private String cookieName;
+
+@Value(&quot;${cookie.domain}&quot;)
+private String domain;
+
+@Bean
+public DefaultCookieSerializer defaultCookieSerializer() {
+    DefaultCookieSerializer serializer = new DefaultCookieSerializer();
+    serializer.setCookieName(cookieName);
+    serializer.setDomainName(domain);
+    return serializer;
+}
+}
+</code></pre><p>　　如此即可，返回时写cookie时，name和domain就指定了，就会覆盖之前的cookie，不会出现2个cookie了。问题解决。</p>
+<h1 id="什么情况下会写入cookie。"><a href="#什么情况下会写入cookie。" class="headerlink" title="什么情况下会写入cookie。"></a>什么情况下会写入cookie。</h1><p>　　再往上走，会发现</p>
+<pre><code>if (!isRequestedSessionIdValid()
+                    || !sessionId.equals(getRequestedSessionId())) 
+</code></pre><p>　　这个条件下，才会执行写入cookie的情况。我们的上述情况一定在这个里面。主要是第一个条件我们看看，点进去看看</p>
+<pre><code>@Override
+    public boolean isRequestedSessionIdValid() {
+        if (this.requestedSessionIdValid == null) {
+            S requestedSession = getRequestedSession();
+            if (requestedSession != null) {
+                requestedSession.setLastAccessedTime(Instant.now());
+            }
+            return isRequestedSessionIdValid(requestedSession);
+        }
+        return this.requestedSessionIdValid;
+    }
+</code></pre><p>　　这个方法主要和requestedSessionIdValid这个值相关。我们通过eclipse的call功能，找到了只有这个方法才对这个属性做了修改。</p>
+<pre><code>@Override
+    public HttpSessionWrapper getSession(boolean create) {
+        HttpSessionWrapper currentSession = getCurrentSession();
+        if (currentSession != null) {
+            return currentSession;
+        }
+        S requestedSession = getRequestedSession();
+        if (requestedSession != null) {
+            if (getAttribute(INVALID_SESSION_ID_ATTR) == null) {
+                requestedSession.setLastAccessedTime(Instant.now());
+                this.requestedSessionIdValid = true;
+                currentSession = new HttpSessionWrapper(requestedSession, getServletContext());
+                currentSession.setNew(false);
+                setCurrentSession(currentSession);
+                return currentSession;
+            }
+        }
+        ........
+    }
+</code></pre><p>　　我省略了一部分代码。他会根据requestedSession来判断是否设值进去，因此进入方法getRequestedSession。</p>
+<pre><code>private S getRequestedSession() {
+        if (!this.requestedSessionCached) {
+            List&lt;String&gt; sessionIds = SessionRepositoryFilter.this.httpSessionIdResolver
+                    .resolveSessionIds(this);
+            for (String sessionId : sessionIds) {
+                if (this.requestedSessionId == null) {
+                    this.requestedSessionId = sessionId;
+                }
+                S session = SessionRepositoryFilter.this.sessionRepository
+                        .findById(sessionId);
+                if (session != null) {
+                    this.requestedSession = session;
+                    this.requestedSessionId = sessionId;
+                    break;
+                }
+            }
+            this.requestedSessionCached = true;
+        }
+        return this.requestedSession;
+    }
+</code></pre><p>　　这里我就不再进入方法内部了，我就直接说这些方法的功能。先获取事先约定好的cookie的value值，然后通过这个value值从redis里面获取对应的hash值，然后组装成session返回给方法，如果不存在，则返回null。最后若是session不存在，那么就会创建一个丢到redis里面去。并且丢到浏览器前端里面。</p>
+<p>　　因此当这个cookie过期，或者cookie在redis里面不存在时就会写入cookie。</p>
+
+          
+        
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
     <link itemprop="mainEntityOfPage" href="https://skydh.github.io/2019/09/23/springboot 选择日志/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -1067,6 +1374,7 @@ public class SimpleKafkaConsumer {
 </ul>
 <h1 id="最近正在阅读书单"><a href="#最近正在阅读书单" class="headerlink" title="最近正在阅读书单"></a>最近正在阅读书单</h1><ul>
 <li>《深入理解kafka》</li>
+<li>《Elasticsearch核心技术与实战》</li>
 </ul>
 <h1 id="致谢"><a href="#致谢" class="headerlink" title="致谢"></a>致谢</h1><p>　　感谢您花时间阅读我的简历，期待能有机会和您共事。</p>
 
@@ -2188,142 +2496,6 @@ public void close() {
 
 
     
-      
-
-  
-
-  
-  
-  
-
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-  
-  
-  
-  <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="https://skydh.github.io/2019/06/19/springboot单应用脚手架/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="董航">
-      <meta itemprop="description" content="">
-      <meta itemprop="image" content="/images/avatar.gif">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="why are you so happy">
-    </span>
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-                
-                <a class="post-title-link" href="/2019/06/19/springboot单应用脚手架/" itemprop="url">springboot单应用脚手架</a></h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">发表于</span>
-              
-              <time title="创建于" itemprop="dateCreated datePublished" datetime="2019-06-19T16:32:50+08:00">
-                2019-06-19
-              </time>
-            
-
-            
-
-            
-          </span>
-
-          
-
-          
-            
-          
-
-          
-          
-
-          
-
-          
-
-          
-
-        </div>
-      </header>
-    
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          
-            <h2 id="地址"><a href="#地址" class="headerlink" title="地址"></a>地址</h2><p> 　　<a href="https://github.com/skydh/springboot-scaffold" target="_blank" rel="noopener">脚手架地址</a></p>
-<h2 id="简介"><a href="#简介" class="headerlink" title="简介"></a>简介</h2><h3 id="多数据源"><a href="#多数据源" class="headerlink" title="多数据源"></a>多数据源</h3><p>　　在configuration包里面，我们定义了2个数据源，一个是pgsql，一个是mysql。这边对mysql加了@Primary优先处理，因此mysql可以使用jpa进行操作，而pg由于业务只用其进行批量处理，因此只让其使用springjdbc即可。</p>
-<p>　　由于jpa对批量处理以及复杂sql的不友好，因此这边建议，简单sql使用jpa，加快开发效率，复杂批量sql使用springjdbc，开发简单高效。我们约定，jpa的dao命名为xxxJpaDao,springjdbc的dao命名为xxxDao。</p>
-<h3 id="aop动态代理"><a href="#aop动态代理" class="headerlink" title="aop动态代理"></a>aop动态代理</h3><p>　　1.非法字符过滤，这个功能主要是检查你的rest接口里面的vo是否存在非法字符，会递归检查到基本类型，但是要检验的vo必须实现一个空接口。支持list，vo,map这3个数据混搭的检查。</p>
-<p>　　2.任务调度加锁。这个功能主要是用于工程在集群部署的情况下。定时器多次调用做了加锁限制。使用的是redis分布式锁。</p>
-<p>　　3.数据字段校验，这个主要是使用spring的安全校验来检查表单字段。</p>
-<p>　　4.ip校验，控制这个游客接口最多访问次数。</p>
-<h3 id="上下文"><a href="#上下文" class="headerlink" title="上下文"></a>上下文</h3><p>　　上下文是用ThreadLocal实现的，默认实现了用户信息的缓存，同时开发也可以自定义往里面丢值进去，但是请记住，我们访问服务的线程是从线程池里面取出来的，因此这个线程里面可能存在旧的值，因此，你需要在代码里面控制，要么每次都覆盖，要么在这个线程或者这个请求结束前将其数据释放。默认使用覆盖策略。</p>
-<h3 id="枚举"><a href="#枚举" class="headerlink" title="枚举"></a>枚举</h3><p>　　常量一律使用枚举。</p>
-<h3 id="异常"><a href="#异常" class="headerlink" title="异常"></a>异常</h3><p>　　使用了全局异常捕捉。</p>
-<h2 id="http"><a href="#http" class="headerlink" title="http"></a>http</h2><p>　　由于是单应用，存在远程调用，为了方便，我们使用http方式调用，采用的是spring的RestTemplate作为接口，httpClient为实现的方式。</p>
-<h2 id="拦截器"><a href="#拦截器" class="headerlink" title="拦截器"></a>拦截器</h2><p>　　拦截器有２个，一个是登录校验的拦截器，一个是基本非法字符校验的拦截器。</p>
-<h2 id="国际化"><a href="#国际化" class="headerlink" title="国际化"></a>国际化</h2><p>　　返回信息需要国际化处理，因为可能是不同国家，需要不同的语言。</p>
-<h2 id="分页查询"><a href="#分页查询" class="headerlink" title="分页查询"></a>分页查询</h2><p>　　基于springjdbc封装了一个分页查询的工具类。ps:可以考虑封装更多的工具类来完全代替jpa。</p>
-<h2 id="事务"><a href="#事务" class="headerlink" title="事务"></a>事务</h2><p>　　定义了２个事务管理器，一个是pgsql的DataSourceTransactionManager，来管理pgsql的springjdbc的事务，一个是JpaTransactionManager的事务管理器，可以管理mysql的jpa和spring jdbc的事务管理。</p>
-<p>　　ps(This transaction manager also supports direct DataSource access within a transaction<br>(i.e. plain JDBC code working with the same DataSource).<br> This allows for mixing services which access JPA and services which use plain JDBC (without being aware of JPA)!<br> Application code needs to stick to the same simple Connection lookup pattern as with DataSourceTransactionManager<br> (i.e. DataSourceUtils.getConnection(javax.sql.DataSource) or going through a TransactionAwareDataSourceProxy).<br>  Note that this requires a vendor-specific JpaDialect to be configured.)</p>
-<h2 id="返回值"><a href="#返回值" class="headerlink" title="返回值"></a>返回值</h2><p>　　返回值信息有４个，分别是，是否成功，返回code,返回message,返回vo。</p>
-
-          
-        
-      
-    </div>
-    
-    
-    
-
-    
-
-    
-
-    
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </div>
-  
-  
-  
-  </article>
-
-
-    
   </section>
 
   
@@ -2374,7 +2546,7 @@ public void close() {
               
                 <a href="/archives/">
               
-                  <span class="site-state-item-count">117</span>
+                  <span class="site-state-item-count">118</span>
                   <span class="site-state-item-name">日志</span>
                 </a>
               </div>
