@@ -303,7 +303,122 @@
       
         
           
-            
+            <h1 id="import"><a href="#import" class="headerlink" title="@import"></a>@import</h1><p>　　我们可以用这个注解导入bean到容器里面。</p>
+<h1 id="3个方式"><a href="#3个方式" class="headerlink" title="3个方式"></a>3个方式</h1><h2 id="直接-import"><a href="#直接-import" class="headerlink" title="直接@import"></a>直接@import</h2><p>　　导入的baen</p>
+<pre><code>@Data
+public class User {
+    private Integer id;
+    private String name;
+}
+</code></pre><p>　　导入方法：</p>
+<pre><code>@Configuration
+@Import(value = { User.class })
+public class Config {
+
+}
+</code></pre><h2 id="通过ImportBeanDefinitionRegistrar"><a href="#通过ImportBeanDefinitionRegistrar" class="headerlink" title="通过ImportBeanDefinitionRegistrar"></a>通过ImportBeanDefinitionRegistrar</h2><p>　　还是上面的bean。但是 不是直接导入。</p>
+<pre><code>public class UserServiceBeanDefinitionRegistrar implements ImportBeanDefinitionRegistrar {
+
+public void registerBeanDefinitions(AnnotationMetadata importingClassMetadata, BeanDefinitionRegistry registry) {
+    BeanDefinitionBuilder user = BeanDefinitionBuilder.rootBeanDefinition(User.class);
+    // 通过registry就可以注入到容器里啦
+    registry.registerBeanDefinition(&quot;user&quot;, user.getBeanDefinition());
+}
+}
+</code></pre><p>　　注解方法：</p>
+<pre><code>@Configuration
+@Import(value = { UserServiceBeanDefinitionRegistrar.class })
+public class Config {
+
+}
+</code></pre><h2 id="通过ImportSelector"><a href="#通过ImportSelector" class="headerlink" title="通过ImportSelector"></a>通过ImportSelector</h2><pre><code>public class UserServiceImportSelect implements ImportSelector {
+public String[] selectImports(AnnotationMetadata importingClassMetadata) {
+    return new String[] { User.class.getName() };
+}
+}
+</code></pre><p>　　注解方法：</p>
+<pre><code>@Configuration
+@Import(value = { UserServiceImportSelect.class })
+public class Config {
+
+}
+</code></pre><h2 id="小结"><a href="#小结" class="headerlink" title="小结"></a>小结</h2><p>　　上述３个方法都可以将bean导入到springbean容器里面。</p>
+<h2 id="源码分析"><a href="#源码分析" class="headerlink" title="源码分析"></a>源码分析</h2><p>　　老规矩，我们从springboot的启动开始分析，虽然这直接属于spring那一块。我们从run开始点点点，进入下面方法。</p>
+<pre><code>public ConfigurableApplicationContext run(String... args) {
+        ......
+        refreshContext(context);
+        ......
+}
+</code></pre><p>　　直接关注这个方法，这个方法会调用核心，他是spring容器启动的核心方法。<br>　　然后不断点点，进入到这个核心方法。</p>
+<pre><code>    @Override
+public void refresh() throws BeansException, IllegalStateException {
+    synchronized (this.startupShutdownMonitor) {
+        ．．．．．
+
+        invokeBeanFactoryPostProcessors(beanFactory);
+
+        ．．．．．
+
+
+}
+</code></pre><p>　　这个方法提取出invokeBeanFactoryPostProcessors方法，点进去。</p>
+<pre><code>public static void invokeBeanFactoryPostProcessors(
+        ConfigurableListableBeanFactory beanFactory, List&lt;BeanFactoryPostProcessor&gt; beanFactoryPostProcessors) {
+
+......
+
+List&lt;BeanFactoryPostProcessor&gt; priorityOrderedPostProcessors = new ArrayList&lt;&gt;();
+
+......
+
+invokeBeanFactoryPostProcessors(priorityOrderedPostProcessors, beanFactory);
+
+......
+}
+</code></pre><p>　</p>
+<p>　　进入这个方法后主要有２个方法需要注意。这个接口BeanFactoryPostProcessor的实现类是这个ConfigurationClassPostProcessor。进入invokeBeanFactoryPostProcessors方法。</p>
+<pre><code>private static void invokeBeanFactoryPostProcessors(
+        Collection&lt;? extends BeanFactoryPostProcessor&gt; postProcessors, ConfigurableListableBeanFactory beanFactory) {
+
+    for (BeanFactoryPostProcessor postProcessor : postProcessors) {
+        postProcessor.postProcessBeanFactory(beanFactory);
+    }
+}
+</code></pre><p>　　调用了postProcessBeanFactory方法。然后点点点，进入processConfigBeanDefinitions方法，这个就是处理@import的方法了。</p>
+<pre><code>    public void processConfigBeanDefinitions(BeanDefinitionRegistry registry) {
+......
+parser.parse(candidates);
+......
+
+}
+</code></pre><p>　　进入这个方法，不断进入doProcessConfigurationClass这个方法里面。</p>
+<pre><code>@Nullable
+protected final SourceClass doProcessConfigurationClass(ConfigurationClass configClass, SourceClass sourceClass)
+        throws IOException {
+
+    ......
+    Set&lt;BeanDefinitionHolder&gt; scannedBeanDefinitions =
+                    this.componentScanParser.parse(componentScan, sourceClass.getMetadata().getClassName());
+            // Check the set of scanned definitions for any further config classes and parse recursively if needed
+            for (BeanDefinitionHolder holder : scannedBeanDefinitions) {
+                BeanDefinition bdCand = holder.getBeanDefinition().getOriginatingBeanDefinition();
+                if (bdCand == null) {
+                    bdCand = holder.getBeanDefinition();
+                }
+                if (ConfigurationClassUtils.checkConfigurationClassCandidate(bdCand, this.metadataReaderFactory)) {
+                    parse(bdCand.getBeanClassName(), holder.getBeanName());
+                }
+            }
+        }
+    }
+
+    // Process any @Import annotations
+    processImports(configClass, sourceClass, getImports(sourceClass), true); 
+
+    ......
+    }
+</code></pre><p>　　进去后，第一个方法获取到本项目下所有的bean,然后过滤找到是@Import的bean,再然后在processImports方法里面将其里面的bean注入spring容器进去。</p>
+
           
         
       
@@ -1026,7 +1141,7 @@ static {
 <h2 id="位与-amp"><a href="#位与-amp" class="headerlink" title="位与( &amp; )"></a>位与( &amp; )</h2><p>　　将数字转换为２进制后做与运算，每一个数字都要做与运算。２个数进行位与时，将２个数均转换为２进制数，然后按照顺序每一位开始做对应的与运算。均为１才是１，否则，为０.</p>
 <h2 id="位或"><a href="#位或" class="headerlink" title="位或( | )"></a>位或( | )</h2><p>　　将数字转换为２进制后做或运算，每一个数字都要做或运算。２个数进行位或时，将２个数均转换为２进制数，然后按照顺序每一位开始做对应的位或运算。均为０才是０，否则为１.</p>
 <h2 id="位非"><a href="#位非" class="headerlink" title="位非( ~ )"></a>位非( ~ )</h2><p>　　将数字转换为２进制后做非运算，每一个数字都要做非运算。对这个数字每一位都要进行非运算，也就是取反。</p>
-<h2 id="位异或"><a href="#位异或" class="headerlink" title="位异或( ^ )"></a>位异或( ^ )</h2><p>　　将数字转换为２进制后做异或运算，每一个数字都要做异或运算。２个数进行异或时，将２个数均转换为２进制数，然后按照顺序每一位开始做对应的异或运算。均为０，或者均为１，才是１，否则为０.</p>
+<h2 id="位异或"><a href="#位异或" class="headerlink" title="位异或( ^ )"></a>位异或( ^ )</h2><p>　　将数字转换为２进制后做异或运算，每一个数字都要做异或运算。２个数进行异或时，将２个数均转换为２进制数，然后按照顺序每一位开始做对应的异或运算。均为０，或者均为１，才是0，否则为０.</p>
 
           
         
