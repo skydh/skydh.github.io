@@ -86,7 +86,7 @@
 <meta property="og:site_name" content="why are you so happy">
 <meta property="og:description" content="读书笔记系列，一章一篇。取自深入理解kafka和kafka专栏（极客时间） 基本概念特点消息系统　　和传统的消息系统一样，但是额外提供，顺序消费，回溯消费。 存储系统　　消息是持久化存储的。 流式平台处理　　kafka不仅为多个流行的流式处理框架提供了可靠的数据来源，还提供了完整的流式处理类库。 概念producer　　生产者：生产消息发送给kakfa实例。 Consumer　　消费者：负责消费k">
 <meta property="og:locale" content="zh-Hans">
-<meta property="og:updated_time" content="2019-07-15T13:12:52.420Z">
+<meta property="og:updated_time" content="2019-10-21T06:59:30.065Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="kafka入门001 -基本概念">
 <meta name="twitter:description" content="读书笔记系列，一章一篇。取自深入理解kafka和kafka专栏（极客时间） 基本概念特点消息系统　　和传统的消息系统一样，但是额外提供，顺序消费，回溯消费。 存储系统　　消息是持久化存储的。 流式平台处理　　kafka不仅为多个流行的流式处理框架提供了可靠的数据来源，还提供了完整的流式处理类库。 概念producer　　生产者：生产消息发送给kakfa实例。 Consumer　　消费者：负责消费k">
@@ -309,7 +309,7 @@
 <h4 id="存储系统"><a href="#存储系统" class="headerlink" title="存储系统"></a>存储系统</h4><p>　　消息是持久化存储的。</p>
 <h3 id="流式平台处理"><a href="#流式平台处理" class="headerlink" title="流式平台处理"></a>流式平台处理</h3><p>　　kafka不仅为多个流行的流式处理框架提供了可靠的数据来源，还提供了完整的流式处理类库。</p>
 <h2 id="概念"><a href="#概念" class="headerlink" title="概念"></a>概念</h2><h3 id="producer"><a href="#producer" class="headerlink" title="producer"></a>producer</h3><p>　　生产者：生产消息发送给kakfa实例。</p>
-<h3 id="Consumer"><a href="#Consumer" class="headerlink" title="Consumer"></a>Consumer</h3><p>　　消费者：负责消费kafka上面的消息。消费者端采用pull的方式拉去消息，保存了数据的偏移量，当消费者宕机后重新上线，可以更具之前保存的消费位置重新进行消费。
+<h3 id="Consumer"><a href="#Consumer" class="headerlink" title="Consumer"></a>Consumer</h3><p>　　消费者：负责消费kafka上面的消息。消费者端采用pull的方式拉去消息，保存了数据的偏移量，当消费者宕机后重新上线，可以根据之前保存的消费位置重新进行消费。
 　</p>
 <h3 id="Broker"><a href="#Broker" class="headerlink" title="Broker"></a>Broker</h3><p>　　一个kafka实例，一个kafka集群里面有多个Broker，也就是多个kafka实例</p>
 <h3 id="ZooKeeper"><a href="#ZooKeeper" class="headerlink" title="ZooKeeper"></a>ZooKeeper</h3><p>　　Zk负责管理kafka集群的的元数据，控制器的选举等。它是一个分布式协调框架，负责协调管理并保存Kafka集群的所有元数据信息，比如集群都有哪些Broker在运行、创建了哪些Topic，每个Topic都有多少分区以及这些分区的Leader副本都在哪些机器上等信息。</p>
@@ -497,7 +497,7 @@ public class SimpleKafkaConsumer {
               
                 <a href="/archives/">
               
-                  <span class="site-state-item-count">118</span>
+                  <span class="site-state-item-count">121</span>
                   <span class="site-state-item-name">日志</span>
                 </a>
               </div>

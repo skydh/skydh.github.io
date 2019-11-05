@@ -232,6 +232,415 @@
   
   
   <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="https://skydh.github.io/2018/01/22/mysql Innodb索引/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="董航">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="why are you so happy">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                <a class="post-title-link" href="/2018/01/22/mysql Innodb索引/" itemprop="url">mysql Innodb索引</a></h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2018-01-22T15:15:19+08:00">
+                2018-01-22
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            <h2 id="基本概念"><a href="#基本概念" class="headerlink" title="基本概念"></a>基本概念</h2><p>　　对于mysql目前的默认存储引擎Innodb来说，索引分为2个，一个是聚集索引，一个是普通索引（也叫二级索引）。<br>　　聚集索引：聚集索引的顺序和数据在磁盘的顺序一致，因此查询时使用聚集索引，效率更高，但是因此聚集索引也只能一条。一般来说，主键就是聚集索引，当然没有主键的话，就会创建一个隐藏的列来作为聚集索引列。Ｂ＋树的叶子节点就是数据值<br>　　２级索引就是不是聚集索引的索引了。其叶子节点存的是指向数据值的地址。</p>
+<h2 id="为什么需要索引？"><a href="#为什么需要索引？" class="headerlink" title="为什么需要索引？"></a>为什么需要索引？</h2><p>　　数据存储到数据库中是以数据块作为基本单位存放的，每个表有个参数叫块因子，就是一个数据块能存多少行记录，这个和你设置的数据块大小以及表的设计相关。<br>　　如果对一个无序字段进行搜索，那么就只能使用线性搜索。时间复杂度为n/2,如果是一个有序字段那么可以使用2分查找法，时间复杂度为log2 (N)。<br>　　如果对关键字段建立了索引，那么就会对这个关键字生成索引文件，也是以数据块作为单位存储的。第一这个数据是有序的，第二他的块因子很大，为什么呢？因为他只是一列或者几列数据，不是整列数据。<br>　　举个例子：<br>　　前置条件：数据块默认大小：1024字节，表行长度500字节，某索引字节5字节。数据5000000条。<br>　　1：无索引：查找字段无序：1024/500=2,    5000000/2=2500000块数据块，线性搜索：查找1250000次。<br>　　2：无索引：查找字段有序， 1024/500=2,5000000/2=2500000块数据块，有序，使用2分查找。Log2(2500000)=752 575</p>
+<p>　　3：有索引：1024/5=204，   5000000/204=24509块数据块，有序，使用2分查找。Log2(24509)=7378。<br>　　数量级：百万，十万，千。在这里，我只是用2分查找来代替引用，只是为了形成一个对比。索引不是链表是B+树（Innodb）</p>
+<h2 id="为何索引是B-树？"><a href="#为何索引是B-树？" class="headerlink" title="为何索引是B+树？"></a>为何索引是B+树？</h2><p>　　一般来说，索引本身也很大，不可能全部存储在内存中，因此索引往往以索引文件的形式存储的磁盘上。这样的话，索引查找过程中就要产生磁盘I/O消耗，相对于内存存取，I/O存取的消耗要高几个数量级，所以评价一个数据结构作为索引的优劣最重要的指标就是在查找过程中磁盘I/O操作次数的渐进复杂度。换句话说，索引的结构组织要尽量减少查找过程中磁盘I/O的存取次数。<br>　　因此为了提高效率，要尽量减少磁盘I/O。为了达到这个目的，磁盘往往不是严格按需读取，而是每次都会预读，即使只需要一个字节，磁盘也会从这个位置开始，顺序向后读取一定长度的数据放入内存。<br>　　预读的长度一般为页（page）的整倍数。页是计算机管理存储器的逻辑块，硬件及操作系统往往将主存和磁盘存储区分割为连续的大小相等的块，每个存储块称为一页（在许多操作系统中，页得大小通常为4k），主存和磁盘以页为单位交换数据。<br>　　数据库系统的设计者巧妙利用了磁盘预读原理，将一个节点的大小设为等于一个页，这样每个节点只需要一次I/O就可以完全载入。为了达到这个目的，在实际实现B-Tree还需要使用如下技巧：每次新建节点时，直接申请一个页的空间，这样就保证一个节点物理上也存储在一个页里，加之计算机存储分配都是按页对齐的，就实现了一个node只需一次I/O。<br>　　相对高瘦平衡二叉树，b+树就显得很矮胖，故查询次数也就更低一些，上面说的节点，就是索引。B树已经很不错了，为何会是b+树，他们2个怎么说呢，b树的节点利用率更加高，每一个节点都是存放了数据，而B+树则是只有叶子节点存放了数据，并且相邻叶子节点之间有个链接，作为一个小链表结构，那么这同时意味着非叶子几点几乎都没有使用，造成了浪费，但是对于数据库来说，我们很多查询都是范围查询，如果有了链表那么就不用再去父节点重新查询新数据了，更加适合于数据库的使用</p>
+<p>　　</p>
+
+          
+        
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="https://skydh.github.io/2018/01/18/mysql varchar/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="董航">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="why are you so happy">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                <a class="post-title-link" href="/2018/01/18/mysql varchar/" itemprop="url">mysql varchar到底能存多少字符。</a></h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2018-01-18T17:39:41+08:00">
+                2018-01-18
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            <h2 id="utf8编码的varchar"><a href="#utf8编码的varchar" class="headerlink" title="utf8编码的varchar"></a>utf8编码的varchar</h2><p>　　Mysql记录行数据是有限的。大小为64k,即65535个字节，而varchar要用1-2字节来存储字段长度，小于255的1字节，大于255的2字节。<br>　　Mysql 5.0后,英文字符固定都是一个字节，汉字字符根据编码方式占不同字节，Utf-8占3个字节，gbk占了2个字节。<br>　　第一，当编码方式为utf-8时，varchar存到21845就存不下了.也就是最大长度是21844.根据上面信息可以推算出 （ 65535-2 ）/3=21844余1<br>　　例子如下：<br>　　<img src="https://raw.githubusercontent.com/skydh/picture/master/mysql_001.png" alt="aaa"></p>
+<p>　　　<img src="https://raw.githubusercontent.com/skydh/picture/master/mysql_002.png" alt="aaa"></p>
+<h2 id="GBK编码的varchar"><a href="#GBK编码的varchar" class="headerlink" title="GBK编码的varchar"></a>GBK编码的varchar</h2><p>　　当编码格式为GBK时，varchar能存多少字符呢？经过推理可知大约能存32766个字符，（65535-2）/2=32766余1。<br>　　那么看看实验结果如下：<br>　<img src="https://raw.githubusercontent.com/skydh/picture/master/mysql_003.png" alt="aaa"></p>
+<p>　　　<img src="https://raw.githubusercontent.com/skydh/picture/master/mysql_004.png" alt="aaa"></p>
+<h2 id="为何提出这个问题？"><a href="#为何提出这个问题？" class="headerlink" title="为何提出这个问题？"></a>为何提出这个问题？</h2><p>　　前段时间一个哥们提bug，要把备注等字段全部最大大小设置为1000，甚至更多，这个表的字段本身就已经很多了，而我们设计表时一般都默认使用utf8这个编码格式，那么一个汉字就占了3个字节，故一个行记录的长度就会短了些，数据占用存储资源也会多了些，然后修改的时候成功的报了row size too large的这个错误。这里提出来也是为了让大家注意下。</p>
+<h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><p>　　设计表的时候不同的编码格式会导致varchar的最大值发生变化，varchar（数值），这个数值指的是字符数，也可以说是一个字，但是不是字节，当然存储的数据还是一个英文占一个字节，一个汉字根据编码格式占不同字节。</p>
+<p>　　</p>
+
+          
+        
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="https://skydh.github.io/2017/12/27/mysql 事务，锁，与四大隔离级别/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="董航">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="why are you so happy">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                <a class="post-title-link" href="/2017/12/27/mysql 事务，锁，与四大隔离级别/" itemprop="url">mysql 锁，事务，隔离级别</a></h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2017-12-27T15:57:31+08:00">
+                2017-12-27
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            <h1 id="概念"><a href="#概念" class="headerlink" title="概念"></a>概念</h1><h2 id="事务"><a href="#事务" class="headerlink" title="事务"></a>事务</h2><p>　　原子性：事务必须是一个自动工作的单元，要么全部执行，要么全部不执行.<br>　　一致性：事务结束的时候，所有的内部数据都是正确的。<br>　　隔离性：并发多个事务时，各个事务不干涉内部数据，处理的都是另外一个事务处理之前或之后的数据。<br>　　持久性：事务提交之后，数据是永久性的，不可再回滚。<br>　　在mysql 中start transaction with consistent snapshot，这个是立即开启事务，无论是否使用了表。而begin则是在操作第一个表的时候才开始开启事务。 </p>
+<h2 id="锁"><a href="#锁" class="headerlink" title="锁"></a>锁</h2><p>　　锁分为３个级别，分别是全局锁，表锁，行锁。<br>　　全局锁：Flush tables with read lock 这个来来加全局锁，整个库都被锁起来了，只能读，不能写操作。一般用于全局逻辑备份。<br>　　但是针对innodb的可重复读的级别下是可以直接开启一个事务来进行全局数据备份。这个全局锁主要针对mysql里面的非innodb引擎。<br>　　表级锁：表锁，元数据锁。<br>　　表锁：lock tables t1 read/write，给这个表加了锁，那就无法对这个表操纵数据。我们可以用unlock tables主动释放锁。也可以客户端断开连接的时候自动释放。read是只能读，write是无法读写。<br>　　元数据锁：这个锁很有意思，当访问一个表（增删改查），会对这个表增加一个MDL读锁。而当对这个表结构做修改时，就会加一个MDL写锁。读锁之间不互斥，没有任何影响，但是写锁和读锁，写锁和写锁都是互斥的，必须等待前面的完成，才可以继续。<br>　　当我们对表进行字段修改时，那么会扫描整个表的数据。因此我们需要注意，加字段对数据库的影响。<br>　　存在这么一种情况，一个表，被多个连接事务读取数据，没有释放，接着这个表要进行表结构修改，需要获取MDL写锁，但是前面的事务不释放，那就无法获取到锁。只能阻塞，但是后面的请求都要等前面的获取到写锁，且释放锁才可以获取到读锁。那么整个表都不可用。<br>　　对于高频，长事务表，我们可以在alter语句里面加等待时间，然后DBA手动重试。</p>
+<p>　　这里主要说２个行级锁，共享锁（ｓ），排它锁（ｘ）．<br>　　共享锁：事务Ｔ对数据对象ａ加了ｓ锁，那么这个事务Ｔ只能对数据读而不能写，而其他事务也不能对这个数据加其他锁，只能加Ｓ锁，直到这个事务Ｔ执行完毕，这就保证了这个数据在事务Ｔ中不变。<br>　　排它锁：事务Ｔ对数据对象加了Ｘ锁，事务Ｔ可以对数据修改读取，但是其他事务无法对数据加其他任意锁，也不能读取和修改该数据对象。<br>　　这个ｓ锁和ｘ锁都是select语句用出来的。lock in share mode,就是加读锁，for update 就是加写锁。<br>　　next-key lock：mysql加锁的基本单位，它是行锁+间隙锁。前开后闭的区间。</p>
+<h2 id="死锁"><a href="#死锁" class="headerlink" title="死锁"></a>死锁</h2><p>　　２个事务，出现循环等待的情况。事务A锁了资源a1,事务B锁了资源b1,然后事务A想获取b1的资源，锁等待。事务B想获取a1资源，锁等待，死锁产生。<br>　　２个方案：。<br>　　１．进入等待状态，直到超时。超时参数可以通过参数innodb_lock_wait_timeout来设置。默认是５０ｓ。一般不采用这个方式。<br>　　２．发起死锁检测，发现死锁后，主动回滚死锁链条的某一个事务，让其他事务得以执行。将参数innodb_deadlock_detect设置为on表示开启这个逻辑。我们一般采用这个方法。<br>　　但是这个是有代价的。该逻辑如下：每当一个事务被锁住的时候，就要看看它依赖的线程有没有被别人锁住，不断循环，最后判断是否出现循环等待，也就是死锁。<br>　　如果是所有事务都是更新同一行的操作，那么死锁检查操作就是每个新来的被堵住的线程都要判断是否是因为自己的到来而导致了死锁，如果是1000的并发，那么其操作则是100w量级的。这样会导致cpu 100%异常。<br>　　对于热点行数据更新问题。有以下方案：<br>　　１．确定不是死锁，把死锁检查关掉<br>　　２．做一个数据库中间件来判断来控制请求量<br>　　３．在代码层面吧热门行数据分割。</p>
+<h2 id="四大隔离级别"><a href="#四大隔离级别" class="headerlink" title="四大隔离级别"></a>四大隔离级别</h2><p>　　Read uncommitted (读未提交)：这个可能造成脏读。其效果如下，２个事务Ａ，Ｂ。Ａ查询数据，不提交。Ｂ修改数据，不提交。Ａ查询数据，发现Ｂ未提交的数据已经查询出来了。<br>　　Read committed (读已提交)：这个可以避免脏读，只能读取到提交后的数据。但是可能造成不可重复读问题。２个事务Ａ，Ｂ。Ａ查询数据，不提交。Ｂ修改数据，提交。Ａ查询数据，发现Ｂ未提交的数据已经查询出来了，造成了２次查询效果不一致问题。<br>　　Repeatable read (可重复读)：这个可以避免可重复读，但是无法避免幻读。２个事务Ａ，Ｂ。Ａ查询数据，不提交。Ｂ在Ａ的查询范围内insert一条数据，提交。Ａ查询数据，发现多了几条数据。造成了幻读。mysql在rr级别下是没有幻读的<br>　　Serializable (串行化)：可以避免脏读，不可重复读，幻读的问题，但是新能较低。</p>
+<h1 id="mysql的Innodb的上述情况。"><a href="#mysql的Innodb的上述情况。" class="headerlink" title="mysql的Innodb的上述情况。"></a>mysql的Innodb的上述情况。</h1><h2 id="预备知识"><a href="#预备知识" class="headerlink" title="预备知识"></a>预备知识</h2><h3 id="2PL：Two-Phase-Locking"><a href="#2PL：Two-Phase-Locking" class="headerlink" title="2PL：Two-Phase Locking"></a>2PL：Two-Phase Locking</h3><p>　　这个是２阶段锁机制。说的是锁操作分为两个阶段：加锁阶段与解锁阶段，并且保证加锁阶段与解锁阶段不相交。也就是说，一个事务里面，对于要加锁的数据加了锁，直到事务结束（正常commit或者rollback）,才会释放锁。因此，我们建议把需要加锁的sql放在后面执行，如此加锁时间会短很多。</p>
+<h3 id="mvcc和innodb的mvcc"><a href="#mvcc和innodb的mvcc" class="headerlink" title="mvcc和innodb的mvcc"></a>mvcc和innodb的mvcc</h3><p>　　mvcc:多版本并发控制，适用于读多于写的情况，一行数据多个版本，读取数据可能是某个历史版本。可以有效见面加锁。<br>　　Innodb的mvcc实现，网上有多个版本解释了innodb的mvcc实现,但是很多都无法自圆其说，这里找到一个版本是专业的DBA写的（我比较信服的一个版本）这里简述下：<br>　　１．在Mysql中MVCC是在Innodb存储引擎中得到支持的，Innodb为每行记录都实现了三个隐藏字段：<br>　　6字节的事务ID（DB_TRX_ID）<br>　　7字节的回滚指针（DB_ROLL_PTR）<br>　　隐藏的ID。<br>　　MVCC 在mysql 中的实现依赖的是 undo log 与 read view<br>　　undo log是为回滚而用，具体内容就是copy事务前的数据库内容（行）到undo buffer，在适合的时间把undo buffer中的内容刷新到磁盘。<br>　　read view: 主要用来判断当前版本数据的可见性。在innodb中，创建一个新事务的时候，innodb会将当前系统中的活跃事务列表（trx_sys-&gt;trx_list）创建一个副本（read view），副本中保存的是系统当前不应该被本事务看到的其他事务id列表。当用户在这个事务中要读取该行记录的时候，innodb会将该行当前的版本号与该read view进行比较。<br>　　系统维护一个事务id，每次开启新事物都会+1。当修改数据时，才会修改对应数据行的事务id,并且指向以前的版本。<br>　　RR特性：只有在当前事务开启前提交的数据才可见哦。<br>　　RC特性：只要提交的数据都可见。<br>　　１．设该行的当前事务id为trx_id_0，read view中最早的事务id为trx_id_1, 最迟的事务id为trx_id_2。<br>　　２．如果trx_id_0&lt; trx_id_1或者trx_id_0=当前事务id的话，那么表明该行记录所在的事务已经在所有新事务创建之前就提交了，那么无论是RR还是RC都是绝对可见的，所以该行记录的当前值是可见的。跳到步骤6.<br>　　３．如果trx_id_0&gt;trx_id_2的话，那么表明该行记录所在的事务在本次新事务创建之后才开启,那么显然该行记录的当前值不可见.跳到步骤5。<br>　　４．如果trx_id_1&lt;=trx_id_0&lt;=trx_id_2, 那么从trx_id_1到trx_id_2进行遍历，如果trx_id_0等于他们之中的某个事务id的话，说明这个记录行修改时的事务在本事务开启前没有提交，那么这行数据不可见。否则就是在本事务开启前就已经提交了，那么可见了跳到步骤5.<br>　　５．从该行记录的DB_ROLL_PTR指针所指向的回滚段中取出最新的undo-log的版本号，将它赋值该trx_id_0，然后跳到步骤2.<br>　　６．将该可见行的值返回。<br>　　总结：开启一个新事务，获取到一个read view,当前事务是最大的，因为开启一个加1一下，然后查询数据，只要查询的数据的行事务id等于当前事务号，或者&lt;当前事务号，且不在read view中，那么说明这个行事务id是在本事务开启前就提交了，所以这行是可见的，如果在read view里面或者&gt;当前事务号，那么都是在本事务开启前没有提交的，那么对于RR来说都是不可见的。只能回滚到上一条数据中，在进行判断。<br>　　数据可见分３个情况：等于当前事务ｉｄ，下雨活跃最小事务ｉｄ，不在活跃事务ｉｄ表里面。
+　</p>
+<p>　　至于RR和RC的区别在于，RR是事务开启时获得一份ReadView,而RC则是每次语句都获取一次ReadView，这个造成了不同隔离级别的快照读的可见性的区别了。<br>　　RC总结如下：<br>　　开启一个新事务，不获取到一个read view，而是在查询时获取到这个Read View,只要查出的这个数据的事务id不在这个read view里面，那么就是可见的了。因为在这个read view里面，对于当前查询来说都是为提交的啊，因为是活跃的事务，而不在这个里面的都是已经提交的事务，对于RC来说，只要是提交的事务，都是可见的。<br>　　只要你在我之前提交了，那么我的read view里面就没有你，那么我就可见你了。RC的判断很简单，每次查询时都会取一个read view,只要这个行数据不在这个我得read view里面即可。<br>　　这个就完美解释了不同隔离级别数据的可见性问题了</p>
+<h3 id="Innodb的四大隔离级别与标准的区别"><a href="#Innodb的四大隔离级别与标准的区别" class="headerlink" title="Innodb的四大隔离级别与标准的区别"></a>Innodb的四大隔离级别与标准的区别</h3><p>　　RU,RC.Serializable和标准一样，但是RR不一样，RR解决了幻读的问题。 怎么实现的后面说。</p>
+<h3 id="一条简单的语句如何加锁？加什么锁。"><a href="#一条简单的语句如何加锁？加什么锁。" class="headerlink" title="一条简单的语句如何加锁？加什么锁。"></a>一条简单的语句如何加锁？加什么锁。</h3><pre><code> CREATE TABLE `user` (
+
+ `id` int(11) NOT NULL,
+
+  `city` varchar(16) NOT NULL,
+
+  `name` varchar(16) NOT NULL,
+
+  PRIMARY KEY (`id`),
+
+  KEY `city` (`city`),
+
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
+
+ 数据为（0,0,0）（5,5,5）（10,10,10）（15,15,15）
+</code></pre><p>　　1.delete　from user where id=5;<br>　　按照规则1，这个先加一个（0,5]的next-key锁，再按照规则3，给唯一索引加锁时，退化为行锁。因此只加了5这个行锁。</p>
+<p>　　２.delete　from user where id=7;<br>　　按照规则1，这个先加一个（5,10]的next-key锁，再按照规则4，等值查询，给索引加锁时，向右遍历最后一个不满足条件，退化为间隙锁，因此加锁为（5,10）。　　</p>
+<p>   ３.delete　from user where city=5;　　<br>   按照规则1，先加锁（0,5],由于是非唯一索引，继续向右，加锁（5,10],根据规则4，退化为（5,10），因此加锁范围为（0,10）</p>
+<p>   ４.delete　from user where id&gt;=5 and id&lt;6;　<br>　  按照规则，首先是加锁（0,5],根据规则3，给唯一索引加锁时，退化为行锁，因此变成只对5加了行锁。范围查询，继续向右，再次加锁（5,10],因此加锁范围[5,10].</p>
+<p>　　５.delete　from user where city&gt;=5 and city&lt;6;　<br>　　按照规则，加锁（0,5],范围查询继续向右再加锁（5,10]。因此加锁范围（0,10].</p>
+<p>　　6.delete　from user where id&gt;=5 and id&lt;=10;<br>　　按照规则，首先是加锁（0,5],根据规则3，给唯一索引加锁时，退化为行锁，因此变成只对5加了行锁。范围查询，继续向右，再次加锁（5,10],再次根据规则5，加锁（10,15]因此加锁范围[5,15].</p>
+<p>　　7.delete　from user where id&gt;=5 and id&lt;6 limit 1;　<br>　  这个和4几乎一样，但是多了一个limit,逻辑和前面一样，但是已经找到5这个数据删除了，后面的就不加锁了，因为任务完成了。</p>
+<pre><code>加锁规则如下：
+</code></pre><p>　　１．加锁的基本单位是next-key lock,</p>
+<p>　　２．只有访问到的对象才会加锁</p>
+<p>　　３．索引上的等值查询，给唯一索引加锁时，会退化为行锁。</p>
+<p>　　４．索引上的等值查询，向右遍历时且最后一个值不满足条件，next-lock退化为间隙锁。</p>
+<p>　　５．唯一索引上的范围查询会查询到第一个不满足条件的为止。</p>
+<pre><code>6.间隙锁之间互不冲突，只和在这个区间插入数据冲突。
+</code></pre><p>参考书籍：mysql实战45讲。以上五个规则来自该作者的整理。经测试，实用有效。</p>
+
+          
+        
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
     <link itemprop="mainEntityOfPage" href="https://skydh.github.io/2017/12/27/简述线程池/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -1843,136 +2252,11 @@ Thread-3   _19
 
 
     
-      
-
-  
-
-  
-  
-  
-
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-  
-  
-  
-  <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="https://skydh.github.io/2017/11/20/创表语句转实体类/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="董航">
-      <meta itemprop="description" content="">
-      <meta itemprop="image" content="/images/avatar.gif">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="why are you so happy">
-    </span>
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-                
-                <a class="post-title-link" href="/2017/11/20/创表语句转实体类/" itemprop="url">创表语句转实体类</a></h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">发表于</span>
-              
-              <time title="创建于" itemprop="dateCreated datePublished" datetime="2017-11-20T21:00:46+08:00">
-                2017-11-20
-              </time>
-            
-
-            
-
-            
-          </span>
-
-          
-
-          
-            
-          
-
-          
-          
-
-          
-
-          
-
-          
-
-        </div>
-      </header>
-    
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          
-            <p><br> </p>
-<h2 id="为何规范化开发"><a href="#为何规范化开发" class="headerlink" title="为何规范化开发"></a>为何规范化开发</h2><blockquote>
-<p>对于一些企业级别的开发来说，开发必须规范，因为表太多了，相关的关联关系错综复杂。不规范将难以维护。<br><br> </p>
-<h2 id="如何规范化开发"><a href="#如何规范化开发" class="headerlink" title="如何规范化开发"></a>如何规范化开发</h2><p>1.规范的接口设计。第一要符合rest,第二要命名规范优雅，第三要单一职责，第四要可扩展性，第五要文档描述清晰<br><br><br>2.规范的代码风格，比如命名的各种规范，属性，方法的命名规范，总之要符合开发要求<br><br><br>3.规范的表设计，由于表比较多，字段复杂，表之间的关联也很多，那么就要使用powerdesigner等uml来设计表，这样的话可以完整的保留表之间的关系。</p>
-</blockquote>
-<h2 id="一些小工具"><a href="#一些小工具" class="headerlink" title="一些小工具"></a>一些小工具</h2><p>　　我是做erp开发的，所以遇见了一些比较大的表，一个表光字段就有60多个，而且一个功能有很多表相互关联，我只能使用powerdesigner这样的UML来设计表，设计完表之后，powerdesigner之类的会提供sql语句来创建表，但是最后的实体类就要我们来自己写，一想要写这么多字段，就很绝望，于是我在周末设计了一个小工具来帮助我开发。<br><br><br>　　这个工具类可以帮助我们利用创表语句创建出基本的实体类，包含了注解，以及注释，至于get,set方法就交给IDE来创建了。<br><br><br>　　下面是我的gitbub链接。<br><br><br> 　　<a href="https://github.com/skydh/createSqlToEntity" target="_blank" rel="noopener">点我一下就到了</a><br><br>　<br>　　如果对这个小工具这个有好的建议，可以发我邮箱一起研究改进下。donghang49@outlook.com</p>
-
-          
-        
-      
-    </div>
-    
-    
-    
-
-    
-
-    
-
-    
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </div>
-  
-  
-  
-  </article>
-
-
-    
   </section>
 
   
   <nav class="pagination">
-    <a class="extend prev" rel="prev" href="/page/11/"><i class="fa fa-angle-left"></i></a><a class="page-number" href="/">1</a><span class="space">&hellip;</span><a class="page-number" href="/page/11/">11</a><span class="page-number current">12</span>
+    <a class="extend prev" rel="prev" href="/page/11/"><i class="fa fa-angle-left"></i></a><a class="page-number" href="/">1</a><span class="space">&hellip;</span><a class="page-number" href="/page/11/">11</a><span class="page-number current">12</span><a class="page-number" href="/page/13/">13</a><a class="extend next" rel="next" href="/page/13/"><i class="fa fa-angle-right"></i></a>
   </nav>
 
 
@@ -2018,7 +2302,7 @@ Thread-3   _19
               
                 <a href="/archives/">
               
-                  <span class="site-state-item-count">118</span>
+                  <span class="site-state-item-count">121</span>
                   <span class="site-state-item-name">日志</span>
                 </a>
               </div>

@@ -86,7 +86,7 @@
 <meta property="og:site_name" content="why are you so happy">
 <meta property="og:description" content="表结构数据和表数据　　mysql1.8之前，表结构数据和表数据分开放，表结构放在.frm文件里面。在1.8后就放到一起了。 innodb_file_per_table　　这个参数off是表数据放在共享表空间里面。和数据字典放在一起，on则是表数据单独存为一个后缀为。ibd的文件，当你drop的时候，系统也会删除这个文件，mysql5.6之后系统是默认开启这个这个参数的，也就是说，一个表文件会放在一">
 <meta property="og:locale" content="zh-Hans">
-<meta property="og:updated_time" content="2019-04-17T02:04:22.054Z">
+<meta property="og:updated_time" content="2019-10-30T03:05:29.517Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="mysql 删除数据，空间为何没有回收">
 <meta name="twitter:description" content="表结构数据和表数据　　mysql1.8之前，表结构数据和表数据分开放，表结构放在.frm文件里面。在1.8后就放到一起了。 innodb_file_per_table　　这个参数off是表数据放在共享表空间里面。和数据字典放在一起，on则是表数据单独存为一个后缀为。ibd的文件，当你drop的时候，系统也会删除这个文件，mysql5.6之后系统是默认开启这个这个参数的，也就是说，一个表文件会放在一">
@@ -308,7 +308,7 @@
 <h2 id="innodb-file-per-table"><a href="#innodb-file-per-table" class="headerlink" title="innodb_file_per_table"></a>innodb_file_per_table</h2><p>　　这个参数off是表数据放在共享表空间里面。和数据字典放在一起，on则是表数据单独存为一个后缀为。ibd的文件，当你drop的时候，系统也会删除这个文件，mysql5.6之后系统是默认开启这个这个参数的，也就是说，一个表文件会放在一个文件里面。通常是默认开启的。开启利于管理维护，当我们进行drop时就会直接删除这个文件。从而释放空间，否则放在共享表空间里面，即使删除了，也不会释放空间。</p>
 <h2 id="问题来了"><a href="#问题来了" class="headerlink" title="问题来了"></a>问题来了</h2><p>　　因此我们直接删除表的时候会直接删除这个文件，但是删除部分数据的时候，我们会发现表空间没有被回收。</p>
 <h2 id="innodb删除流程"><a href="#innodb删除流程" class="headerlink" title="innodb删除流程"></a>innodb删除流程</h2><p>　　我们知道mysql innodb存储引擎里面存数据的方式是基于b+树。当删除一个记录，找到这个数据的时候，我们是将其标记为删除状态，而不是真的删除。等到有相关数据的时候那就可以直接插入进去。但是删除了一个页，那就和数据不太一样了，数据的复用是有局限性的，但是整个页是没有问题的。换句话说，你删除了某个数据，你填充这个数据只能是相关的，比如，这个数据页里面是6,7,8，你删除了7，你可以插入6到8之间的数据.或者可以在这个数据页里面的，如果是数据页，那么哪里都可以。同时如果相邻2个数据页的数据利用率很低，那么就会触发合并操作。是的另外一个页数据可复用。当我们使用delete指令的时候，我们进行的是逻辑删除，具体的数据页没有被回收，只是将其置换为可用状态，同时插入也是同样的道理。当你插入的数据在一个已经满了的数据页中间的时候，就要进行分页操作，那样也会造成大量空间被置为可用状态，但是不回收。</p>
-<h2 id="重建表"><a href="#重建表" class="headerlink" title="重建表"></a>重建表</h2><p>　　因此我们可以重建表来获取更加紧凑的结构。使用alter table A engine=InnoDB来进行重建操作，在mysql 5.5之前，逻辑是这样的，先构建一个临时表，然后把数据复制进去，在交换表名，删除旧表。显然这样的逻辑是全表锁的。中间是不能插入删除更新数据的，但是在之后就可以了，就是在上面的操作的过程中，增加一个临时文件，用来存储在这中间的ddl操作，最后再将其同步过去。其过程是先加写锁，再加读锁。</p>
+<h2 id="重建表"><a href="#重建表" class="headerlink" title="重建表"></a>重建表</h2><p>　　使用了很长时间的表存在大量这样的数据空洞，因此我们可以重建表来获取更加紧凑的结构。使用alter table A engine=InnoDB来进行重建操作，在mysql 5.5之前，逻辑是这样的，先构建一个临时表，然后把数据复制进去，在交换表名，删除旧表。显然这样的逻辑是全表锁的。中间是不能插入删除更新数据的，但是在之后就可以了，就是在上面的操作的过程中，增加一个临时文件，用来存储在这中间的ddl操作，最后再将其同步过去。其过程是先加写锁，再加读锁。</p>
 
       
     </div>
@@ -422,7 +422,7 @@
               
                 <a href="/archives/">
               
-                  <span class="site-state-item-count">118</span>
+                  <span class="site-state-item-count">121</span>
                   <span class="site-state-item-name">日志</span>
                 </a>
               </div>

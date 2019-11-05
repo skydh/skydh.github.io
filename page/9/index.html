@@ -232,6 +232,434 @@
   
   
   <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="https://skydh.github.io/2018/05/08/java垃圾回收算法/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="董航">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="why are you so happy">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                <a class="post-title-link" href="/2018/05/08/java垃圾回收算法/" itemprop="url">jvm垃圾回收算法</a></h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2018-05-08T17:30:29+08:00">
+                2018-05-08
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            <h2 id="引用"><a href="#引用" class="headerlink" title="引用"></a>引用</h2><p>　　强引用：这个引用在程序代码间很常见，类似于Object a=new Object（），这样直接声明的对象，只要强引用还存在，那么这个对象就不会被gc回收。<br>　　软引用：java用SoftReference类来实现软引用。软引用关联的对象会在系统即将发生内存溢出，也就是内存不够时，将会把这些对象进行回收，如果回收后依旧没有足够的内存才会抛出内存溢出异常。<br>　　弱引用：java用WeakReference类实现弱引用，其强度更弱于软引用，被弱引用的对象会在下次垃圾回收时直接被回收，无论内存是否足够。<br>　　虚引用：java用PhantomReference类来实现虚引用。这个是最弱的一种引用，甚至无法通过虚引用来获取对象。</p>
+<h1 id="判断对象是否被引用"><a href="#判断对象是否被引用" class="headerlink" title="判断对象是否被引用"></a>判断对象是否被引用</h1><h2 id="引用计数算法"><a href="#引用计数算法" class="headerlink" title="引用计数算法"></a>引用计数算法</h2><p>　　给对象加一个引用计数器，每当一个地方引用它时，计数器就加一，当引用失效时，计数器就减一，任何时刻计数器为0时的对象就是不可能再被使用的。但是有bug，２个对象相互引用，那么这个对象就永远无法被回收。</p>
+<h2 id="可达性分析算法"><a href="#可达性分析算法" class="headerlink" title="可达性分析算法"></a>可达性分析算法</h2><p>　　这个算法是通过一个叫”GC Roots”的对象作为起始点，从这个节点开始向下搜索，搜索的路径叫做引用链，如果可以通过引用链找到这个对象，那么这个对象时有效的，否则，无效，解决了上面2个对象相互引用但是没有别的对象可达的问题，可以作为”GC Roots”的对象有方法区常量引用的对象，虚拟机栈引用的对象，等。目前java就是这种判断模式。</p>
+<h1 id="gc垃圾回收算法"><a href="#gc垃圾回收算法" class="headerlink" title="gc垃圾回收算法"></a>gc垃圾回收算法</h1><h2 id="标记-清除算法"><a href="#标记-清除算法" class="headerlink" title="标记-清除算法"></a>标记-清除算法</h2><p>　　最基础的算法，就是把要回收的对象标记后进行回收，缺点是容易产生大量不连续的内存碎片，如果产生一个大的对象时，由于全是内存碎片，没有整个的内存，因此内存不够就会提前触发垃圾回收，效率很低。</p>
+<h2 id="复制算法"><a href="#复制算法" class="headerlink" title="复制算法"></a>复制算法</h2><p>　　目前主流虚拟机的收集算法之一主要针对新生态对象，初始化时是一比一的算法，就是把内存分为2部分一样大的部分，平时只使用其中一个部分也就是其一半，当发生垃圾回收时，就会把这个部分存活的对象放到另一个部分，这样子就避免了内存碎片，但是要只使用一半的内存，亏损太大划不来，目前主流虚拟机都是用这个算法来回收新生代。IBM研究发现，９８％的新生态对象生存周期很短的，于是一个新的算法出来了，就是把内存分为3部分，8：1：1，每次使用其中的0.9部分，当发生垃圾回收的时候那就把剩余的对象就放到剩余的0.1那里，当然剩余的0.1可能不够那就可以把一部分对象转化为老年态暂时存到老年态里面，这样子就只浪费0.1的内存了，性价比可以。</p>
+<h2 id="标记-整理算法"><a href="#标记-整理算法" class="headerlink" title="标记-整理算法"></a>标记-整理算法</h2><p>　　主要针对老年态对象，由于生存周期较长，不适合复制算法，该算法就是和标记-清除算法的加强版，就是多了一个移动的算法，就是把存活的对象都向一端移动，并且把端边缘的字段干掉</p>
+<h2 id="分代收集算法"><a href="#分代收集算法" class="headerlink" title="分代收集算法"></a>分代收集算法</h2><p>　　就是把对象划分为新生态和老年态，不同态使用不同不同的收集算法，新生代采用复制算法，老年态使用标记－整理算法或者标记－清除算法，这个也就是主流虚拟机所采用的。</p>
+<h1 id="垃圾回收器"><a href="#垃圾回收器" class="headerlink" title="垃圾回收器"></a>垃圾回收器</h1><p>　　垃圾回收器就是垃圾回收算法的具体实现，我们看看都有哪些垃圾回收器。</p>
+<h2 id="serial收集器"><a href="#serial收集器" class="headerlink" title="serial收集器"></a>serial收集器</h2><p>　　一个单线程的垃圾回收器，它在进行垃圾回收时，会让其他所有线程都暂停，直到他垃圾回收完毕，很显然，问题很大。采用的是复制算法。回收新生代对象。</p>
+<h2 id="parnew收集器"><a href="#parnew收集器" class="headerlink" title="parnew收集器"></a>parnew收集器</h2><p>　　是serial收集器的多线程版本，没有其他本质的区别</p>
+<h2 id="parallel-sacvenge收集器"><a href="#parallel-sacvenge收集器" class="headerlink" title="parallel sacvenge收集器"></a>parallel sacvenge收集器</h2><p>　　这是个新生带收集器，采用的是复制算法。</p>
+<h2 id="serial-old收集器"><a href="#serial-old收集器" class="headerlink" title="serial old收集器"></a>serial old收集器</h2><p>　　采用标记－整理算法。单线程。主要配合serial收集器</p>
+<h2 id="parnew-old收集器"><a href="#parnew-old收集器" class="headerlink" title="parnew　old收集器"></a>parnew　old收集器</h2><p>　　主要是配合parallel sacvenge收集器这个新生代垃圾回收器使用。</p>
+<h2 id="cms收集器"><a href="#cms收集器" class="headerlink" title="cms收集器"></a>cms收集器</h2><p>　　也是老年态收集器，采用标记整理算法。</p>
+<h2 id="G1收集器"><a href="#G1收集器" class="headerlink" title="G1收集器"></a>G1收集器</h2><p>　　上述收集器都要相互配合才可以使用，一个负责收集新生代对象，一个负责收集老年态对象。<br>　　但是这个G1不一样，这是个面向服务端的垃圾回收器。<br>　　以下优势：<br>　　１．能充分利用多核CPU来减少暂停时间。<br>　　２．分代收集，自身就可以实现分代收集。<br>　　３．空间整合：整体是采用标记－整理算法实现的收集器，但是局部上也是基于复制算法实现的。<br>　　４.可预测的停顿：让使用者在一定时间内消耗的垃圾回收时间不超过ｎ毫秒。<br>　　其他垃圾回收器回收要么是新生代，要么是老年代，但是G1不一样，虽然依旧保留了新生代和老年代这个概念，但是实际上将这个java堆分成了多个大小相等的独立区域Region，新生代和老年代不再是物理隔离了。他们都是一部分Region的集合（不需要连续）。<br>　　G1使用了一个方法来进行可预测的停顿，G1会跟踪每一个Region堆的垃圾回收价值（回收可用空间和对应时间）,并且维护一个优先列表，当需要进行垃圾回收时就按照这个优先列表来处理。</p>
+<h2 id="GC"><a href="#GC" class="headerlink" title="GC"></a>GC</h2><p>　　1.这个Minor GC是针对年轻代的回收，当虚拟机无法为一个新生对象分配空间时。就会发生这个GC操作。<br>　　2.Major GC 是清理老年代。Full GC 是清理整个堆空间—包括年轻代和老年代<br>　　3.每一次GC都会使得整个程序暂停几毫秒，这对用户程序几乎没有反应。</p>
+<h2 id="规则"><a href="#规则" class="headerlink" title="规则"></a>规则</h2><p>　　目前虚拟机，老年代：新生代＝2.27:1。<br>　　新生代，eden:from:to=6.4:1:1。<br>　　对象优先在eden区分配，大对象直接进入老年代（经历了多个gc存活的对象，from,to，大于某个年纪的对象总和大于其一半时，将其也挪到老年代。），长期存活对象将进入老年代。<br>　　当给对象分配内存时，如果没有足够的空间分配，虚拟机将发起一次垃圾回收。垃圾回收后，还是不够的话，会根据分配担保机制。就会把eden区的数据丢到老年代里面去。</p>
+<p>　　</p>
+
+          
+        
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="https://skydh.github.io/2018/05/04/java泛型/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="董航">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="why are you so happy">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                <a class="post-title-link" href="/2018/05/04/java泛型/" itemprop="url">java 泛型</a></h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2018-05-04T11:51:48+08:00">
+                2018-05-04
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            <h2 id="为何有泛型"><a href="#为何有泛型" class="headerlink" title="为何有泛型"></a>为何有泛型</h2><p>　　１．泛型是在编译期间进行校验的以保证类型安全。</p>
+<p>　　２．集合不会保证对象的类型，如果不用泛型。那么集合统一用父类object类型来指代，由于java语言的特性，在编译期间，父类和子类都可以用父类来指代，即使在运行期间都是自己的实际类型，集合这个类也是这样的，如果没用用泛型，他们用object这个统一的父类来指代，但是如果在编译期间你要使用子类特有的方法时的话还是要转换成子类类型，现在问题来了，集合类里面什么元素几乎都可以添加，毕竟都是object的子类，但是我们要使用的话，就会出现问题了，我们不知道到底是不是我们要使用的子类，万一集合里面添加了一个不是我们要用的子类，我们转换使用的时候就会报错：java.lang.ClassCastException。</p>
+<h2 id="最简单的泛型实例"><a href="#最简单的泛型实例" class="headerlink" title="最简单的泛型实例"></a>最简单的泛型实例</h2><p>　　List<string> list = new ArrayList<string>();</string></string></p>
+<p>　　就像这个加了String这个限制，放到集合里面的元素必须是String类型，取出数据的时候也没必要转换为string类型了，因为编译器已经知道了，不需要转换了（额外说下这个多态，多态的原理也正是这个原理，父类可以在编译期间指代子类，但是实际运行还是本身的类型，要是想用子类特有的方法，父类是不行的，虽然确实可以使用，但是编译时不会通过的，会报错，说找不到这个方法。）</p>
+<h2 id="自定义泛型接口、泛型类和泛型方法"><a href="#自定义泛型接口、泛型类和泛型方法" class="headerlink" title="自定义泛型接口、泛型类和泛型方法"></a>自定义泛型接口、泛型类和泛型方法</h2><pre><code>class Box&lt;T&gt; {
+    private T data;
+    public Box() {
+    }
+    public Box(T data) {
+        this.data = data;
+    }
+    public T getData() {
+      return data;
+    }
+}
+
+
+public class DemoTest {
+    public static void main(String[] args) {
+        Box&lt;String&gt; name = new Box&lt;String&gt;(&quot;dh&quot;);
+        Box&lt;Integer&gt; age = new Box&lt;Integer&gt;(123);
+        System.out.println(&quot;name class:&quot; + name.getClass());      // com.dh.Box
+        System.out.println(&quot;age class:&quot; + age.getClass());        // com.dh.Box
+        System.out.println(name.getClass() == age.getClass());    // true
+    }
+}
+</code></pre><p>　　在这里我们用Ｔ来来接收来自外部的参数，泛型终究只是编译期的东西，不会带到运行期，主要就是校验所传信息是否正确罢了，当然在逻辑上我们可以理解这是一些不同类（毕竟一个是String类型，一个是Integer类型），但是实际上这些都是相同的类，就是我们在生成对象的时候，给这个对象传了一个类型参数过去，就是这个类型参数是这个类的一点限制，多了一个参数，一个校验参数罢了。</p>
+<h2 id="类型通配符"><a href="#类型通配符" class="headerlink" title="类型通配符"></a>类型通配符</h2><pre><code>public class DemoTest {
+    public static void main(String[] args) {
+        Box&lt;String&gt; name = new Box&lt;String&gt;(&quot;dh&quot;);
+        Box&lt;Integer&gt; age = new Box&lt;Integer&gt;(123);
+        Box&lt;Number&gt; number = new Box&lt;Number&gt;(456);
+        getData(name);
+        getData(age);
+        getData(number);
+          get1rData(number); // 1
+        getUpperNumberData(age);    // 2
+        getUpperNumberData(number); // 3
+    }
+    public static void getData(Box&lt;?&gt; data) {
+        System.out.println(&quot;data :&quot; + data.getData());
+    }
+    public static void getUpperNumberData(Box&lt;? extends Number&gt; data){
+        System.out.println(&quot;data :&quot; + data.getData());
+    }
+    public static void get1rData(Box&lt;? super Number&gt; data) {
+        System.out.println(&quot;data :&quot; + data.getData());
+    }
+}
+</code></pre><p> 　　结果如下：<br>    data :dh<br>    data :123<br>    data :456<br>    data :456<br>    data :123<br>    data :456<br>　　我们用？来代替具体的参数类型，主要是为了匹配我们创建类ＢＯＸ时用了Ｔ这个形参。？可以说是所有形参的父类。可以指代任何泛型，是实际参数，不是形参。就是固定好的。</p>
+<p>　　&lt;? extends T&gt;必须是T和T的子类</p>
+<p>　　&lt;? Super T&gt;必须是T或T的父类<br>　　从上面的例子可以很容易的看出来。</p>
+
+          
+        
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="https://skydh.github.io/2018/05/04/java重写规则/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="董航">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="why are you so happy">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                <a class="post-title-link" href="/2018/05/04/java重写规则/" itemprop="url">java 重写规则</a></h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2018-05-04T11:39:36+08:00">
+                2018-05-04
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            <p>重写规则之一：重写方法不能比被重写方法限制有更严格的访问级别。<br>（但是可以更广泛，比如父类方法是包访问权限，子类的重写方法是public访问权限。）<br>重写规则之二： 参数列表必须与被重写方法的相同。<br>重写有个孪生的弟弟叫重载，也就是后面要出场的。如果子类方法的参数与父类对应的方法不同，那么就是你认错人了，那是重载，不是重写。<br>重写规则之三：返回类型必须与被重写方法的返回类型相同。<br>父类方法A：void eat(){} 子类方法B：int eat(){} 两者虽然参数相同，可是返回类型不同，所以不是重写。<br>父类方法A：int eat(){} 子类方法B：long eat(){} 返回类型虽然兼容父类，但是不同就是不同，所以不是重写。<br>重写规则之四：重写方法不能抛出新的异常或者比被重写方法声明的检查异常更广的检查异常。但是可以抛出更少，更有限或者不抛出异常。也就是说你自己定义的异常类中，你可以抛出子类，但是不能抛出父类以及以上的类。<br>注意：这种限制只是针对检查异常，至于运行时异常RuntimeException及其子类不再这个限制之中。<br>重写规则之五： 不能重写被标识为final的方法。常量方法啊，很显然。<br>重写规则之六：如果一个方法不能被继承，则不能重写它。如private方法</p>
+
+          
+        
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
     <link itemprop="mainEntityOfPage" href="https://skydh.github.io/2018/05/04/java虚拟机运行时数据区域/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -1181,597 +1609,11 @@
 
 
     
-      
-
-  
-
-  
-  
-  
-
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-  
-  
-  
-  <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="https://skydh.github.io/2018/04/03/单例模式/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="董航">
-      <meta itemprop="description" content="">
-      <meta itemprop="image" content="/images/avatar.gif">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="why are you so happy">
-    </span>
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-                
-                <a class="post-title-link" href="/2018/04/03/单例模式/" itemprop="url">单例模式</a></h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">发表于</span>
-              
-              <time title="创建于" itemprop="dateCreated datePublished" datetime="2018-04-03T14:57:07+08:00">
-                2018-04-03
-              </time>
-            
-
-            
-
-            
-          </span>
-
-          
-
-          
-            
-          
-
-          
-          
-
-          
-
-          
-
-          
-
-        </div>
-      </header>
-    
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          
-            <h2 id="单例模式"><a href="#单例模式" class="headerlink" title="单例模式"></a>单例模式</h2><p>　　单例模式是24种单例模式中最为基本简单的设计模式。单例模式是为了这个类只提供一个对外的实例。单例模式的基本思想是，构造函数私有化，外部无法直接创建一个实例，只能通过该类的静态方法来获取对象实例。</p>
-<h2 id="饿汉模式"><a href="#饿汉模式" class="headerlink" title="饿汉模式"></a>饿汉模式</h2><p>　　饿汉模式就是说这个实例在类加载初始化的时候就加载好了，因为特别急，所以戏称饿汉模式。</p>
-<p><pre><br>    public class Singleton{<br>        private Singleton(){}<br>        private static Singleton single=new Singleton();<br>        public static Singleton getInstance()<br>        {<br>        return single<br>        }<br>    }<br></pre></p>
-<h2 id="懒汉模式"><a href="#懒汉模式" class="headerlink" title="懒汉模式"></a>懒汉模式</h2><p>　　懒汉模式，顾名思义，就是说我懒得在没人用就创建，等到有人要用的时候就第一次创建，后面的调用方就直接用第一次创建的对象。所以戏称为懒汉模式。</p>
-<p><pre><br>    public class Singleton{<br>            private Singleton(){}<br>            public static Singleton single=null;<br>            public static Singleton getInstance(){<br>            if(singleton==null)<br>            {<br>            single=new Singleton();<br>            }<br>            return single;<br>    }<br>    }<br></pre><br>　　但是有问题，在多线程并发的情况下，这个单例类还没有创建第一个实例时，多个线程同时进入到了if(singleton==null)这个条件里面，就会创建多个实例。考虑到线程安全，可以在这个getInstance这个方法里面这个非null判断加个类锁(静态方法属于这个类本身，所以加类锁)。</p>
-<p><pre><br>    public class Singleton{<br>            private Singleton(){}<br>            public static Singleton single=null;<br>            public static Singleton getInstance(){<br>                synchronized(Singleton3.class){<br>                    if(singleton==null)<br>                    {<br>                        single=new Singleton();<br>                    }<br>            }<br>            return single;<br>        }<br>    }<br></pre><br>　　但是每一次创建类的时候都要加锁，对系统性能有很大的影响。</p>
-<p><pre><br>        public class Singleton{<br>            private Singleton(){}<br>            private static Singleton single=null;<br>            public static Singleton getInstance(){<br>                if(single==null)<br>                {<br>                    synchronized(Singleton.class)<br>                    {<br>                        if(single==null){<br>                        single=new Singleton()}<br>                    }<br>                }<br>                return single;<br>            }<br>        }<br></pre><br>　　这里２重锁非null判断，我们这里的话我们只是第一次创建对象的时候加了锁，而后面的获取对象就不用加锁了。恩，暂时没有问题了。</p>
-<p>　　为什么要２个非空判断呢？<br>　　A,B2个线程获取实例，都经过了第一个非空判断，A先获取到了类锁，进行初始化，B进入锁等待。A初始化后释放锁，B获取到锁，如果不再进行一次非空判断，就会再次创建一个对象。</p>
-<p>　　为什么必须要volatile关键字呢？<br>　　显然这样还不行，这里涉及到指令重排序问题。在上述的双重锁机制中，有的线程可能访问到没有被初始化的资源。<br>　　这是因为　single=new Singleton()这段代码不是原子的，它可以分解为３个操作。</p>
-<pre><code>memory = allocate();   //1：分配对象的内存空间
-instance = memory;     //3：设置instance指向刚分配的内存地址
-                       //注意，此时对象还没有被初始化！
-ctorInstance(memory);  //2：初始化对象
-</code></pre><p>　　根据java语言规范，在单线程中2和3操作的顺序是不影响程序执行效果的，那么这个顺序就是可以打乱的了，但是在多线程中这个可能会有影响，当a线程第一次访问时，获取到了类锁，进行对象创建，而马上第二个线程b,也访问到了，开始访问第一个非null判断，而a线程创建对象时，到了第3步，没有进行初始化，那么b线程返回的结果可能是一个没有初始化的对象。所以可能出现问题。<br>　　那么怎么解决呢？<br>　　那就是给这个要初始化的对象加volatile关键字，来禁止指令重排序，问题完美解决。</p>
-<h2 id="枚举方式实现单例"><a href="#枚举方式实现单例" class="headerlink" title="枚举方式实现单例"></a>枚举方式实现单例</h2><pre><code>public enum Singleton{
-    INSTANCE;
-}
-</code></pre><p>　　我们可以通过Singleton.INSTANCE来访问实例。创建枚举默认就是线程安全的，还能防止反序列化导致重新创建新的对象。不然就要像其他单例模式一样要重写readObject方法。
-　　</p>
-
-          
-        
-      
-    </div>
-    
-    
-    
-
-    
-
-    
-
-    
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </div>
-  
-  
-  
-  </article>
-
-
-    
-      
-
-  
-
-  
-  
-  
-
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-  
-  
-  
-  <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="https://skydh.github.io/2018/03/26/shiro 学习/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="董航">
-      <meta itemprop="description" content="">
-      <meta itemprop="image" content="/images/avatar.gif">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="why are you so happy">
-    </span>
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-                
-                <a class="post-title-link" href="/2018/03/26/shiro 学习/" itemprop="url">shiro学习</a></h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">发表于</span>
-              
-              <time title="创建于" itemprop="dateCreated datePublished" datetime="2018-03-26T09:45:54+08:00">
-                2018-03-26
-              </time>
-            
-
-            
-
-            
-          </span>
-
-          
-
-          
-            
-          
-
-          
-          
-
-          
-
-          
-
-          
-
-        </div>
-      </header>
-    
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          
-            <h2 id="学习原因"><a href="#学习原因" class="headerlink" title="学习原因"></a>学习原因</h2><p>　　１.我不会，所以要学习啊。<br>　　２．这边我需要用它来完成登录安全认证。</p>
-<h2 id="shiro-概念"><a href="#shiro-概念" class="headerlink" title="shiro 概念"></a>shiro 概念</h2><p>　　Subject:用户。<br>　　SecurityManager：安全管理器；即所有与安全有关的操作都会与SecurityManager交互；且它管理着所有Subject；可以看出它是Shiro的核心，它负责与后边介绍的其他组件进行交互，如果学习过SpringMVC，你可以把它看成DispatcherServlet前端控制器；<br>　　Authenticator:认证器。<br>　　Authorizer:授权器。<br>　　Realm:域，，Shiro从从Realm获取安全数据（如用户、角色、权限），就是说SecurityManager要验证用户身份，那么它需要从Realm获取相应的用户进行比较以确定用户身份是否合法；也需要从Realm得到用户相应的角色/权限进行验证用户是否能进行操作；可以把Realm看成DataSource，即安全数据<br>　　sessionmanager:会话管理器。<br>　　sessionDAO:session数据访问对象。<br>　　cacheManager:缓存控制器，可以和redis集成。　</p>
-<h2 id="身份认证流程如下："><a href="#身份认证流程如下：" class="headerlink" title="身份认证流程如下："></a>身份认证流程如下：</h2><p>　　代码如下：</p>
-<pre>
-    public class ShiroTest {
-        @Test
-        public void test() {
-            Factory<securitymanager> factory = new IniSecurityManagerFactory("classpath:shiro.ini");
-            // 2、得到SecurityManager实例 并绑定给SecurityUtils
-            SecurityManager securityManager = factory.getInstance();
-            SecurityUtils.setSecurityManager(securityManager);
-            // 3、得到Subject及创建用户名/密码身份验证Token（即用户身份/凭证）
-            Subject subject = SecurityUtils.getSubject();
-            UsernamePasswordToken token = new UsernamePasswordToken("zhang", "123");
-            try {
-                // 4、登录，即身份验证
-                subject.login(token);
-                System.out.println("222");
-            } catch (AuthenticationException e) {
-                System.out.println("111");
-            }
-            Assert.assertEquals(true, subject.isAuthenticated()); // 断言用户已经登录
-            // 6、退出
-            subject.logout();
-        }
-
-    }
-
-
-</securitymanager></pre>
-<pre>
-    声明一个realm  
-    myRealm1=com.github.zhangkaitao.shiro.chapter2.realm.MyRealm1  
-    myRealm2=com.github.zhangkaitao.shiro.chapter2.realm.MyRealm2  
-    指定securityManager的realms实现  
-    securityManager.realms=$myRealm1,$myRealm2 
-</pre>
-<pre>
-    public class MyRealm1 implements Realm {  
-        @Override  
-        public String getName() {  
-            return "myrealm1";  
-        }  
-        @Override  
-        public boolean supports(AuthenticationToken token) {  
-            //仅支持UsernamePasswordToken类型的Token  
-            return token instanceof UsernamePasswordToken;   
-        }  
-        @Override  
-        public AuthenticationInfo getAuthenticationInfo(AuthenticationToken token) throws AuthenticationException {  
-            String username = (String)token.getPrincipal();  //得到用户名  
-            String password = new String((char[])token.getCredentials()); //得到密码  
-            if(!"zhang".equals(username)) {  
-                throw new UnknownAccountException(); //如果用户名错误  
-            }  
-            if(!"123".equals(password)) {  
-                throw new IncorrectCredentialsException(); //如果密码错误  
-            }  
-            //如果身份认证验证成功，返回一个AuthenticationInfo实现；  
-            return new SimpleAuthenticationInfo(username, password, getName());  
-        }  
-    }   
-</pre>
-
-<p>　　首先调用Subject.login(token)进行登录，其会自动委托给Security Manager，调用之前必须通过SecurityUtils. setSecurityManager()设置；<br>　　SecurityManager负责真正的身份验证逻辑；它会委托给Authenticator进行身份验证；<br>　　Authenticator才是真正的身份验证者，Shiro API中核心的身份认证入口点，此处可以自定义插入自己的实现；<br>　　Authenticator可能会委托给相应的AuthenticationStrategy进行多Realm身份验证，默认ModularRealmAuthenticator会调用AuthenticationStrategy进行多Realm身份验证；<br>　　Authenticator会把相应的token传入Realm，从Realm获取身份验证信息，如果没有返回/抛出异常表示身份验证失败了。此处可以配置多个Realm，将按照相应的顺序及策略进行访问。</p>
-<h2 id="授权管理"><a href="#授权管理" class="headerlink" title="授权管理"></a>授权管理</h2><p>　　主体，即访问应用的用户，在Shiro中使用Subject代表该用户。用户只有授权后才允许访问相应的资源。<br>　　资源，在应用中用户可以访问的任何东西，比如访问JSP页面、查看/编辑某些数据、访问某个业务方法、打印文本等等都是资源。用户只要授权后才能访问。<br>　　权限，安全策略中的原子授权单位，通过权限我们可以表示在应用中用户有没有操作某个资源的权力。即权限表示在应用中用户能不能访问某个资源，如：访问用户列表页面，查看/新增/修改/删除用户数据（即很多时候都是CRUD（增查改删）式权限控制），打印文档等等。。<br>　　角色代表了操作集合，可以理解为权限的集合，一般情况下我们会赋予用户角色而不是权限，即这样用户可以拥有一组权限，赋予权限时比较方便。典型的如：项目经理、技术总监、CTO、开发工程师等都是角色，不同的角色拥有一组不同的权限。<br>　　权限的话，可以有单个资源的权限的crud，也可以使是单个实例的crud哦。</p>
-<h2 id="自身项目如何用的shiro"><a href="#自身项目如何用的shiro" class="headerlink" title="自身项目如何用的shiro"></a>自身项目如何用的shiro</h2><p>　　项目是基于ssm的框架。<br>　　首先在web.xml上配置shiro拦截器。DelegatingFilterProxy作用是自动到spring容器查找名字为shiroFilter（filter-name） 的bean并把 所有Filter的操作委托给它。然后将ShiroFilter配置到spring容器即可<br>    <filter><br>        <filter-name>shiroFilter</filter-name><br>        <filter-class>org.springframework.web.filter.DelegatingFilterProxy</filter-class><br>        <async-supported>true</async-supported><br>        <init-param><br>            <param-name>targetFilterLifecycle</param-name><br>            <param-value>true</param-value><br>        </init-param><br>    </filter></p>
-
-          
-        
-      
-    </div>
-    
-    
-    
-
-    
-
-    
-
-    
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </div>
-  
-  
-  
-  </article>
-
-
-    
-      
-
-  
-
-  
-  
-  
-
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-  
-  
-  
-  <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="https://skydh.github.io/2018/03/20/java动态代理/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="董航">
-      <meta itemprop="description" content="">
-      <meta itemprop="image" content="/images/avatar.gif">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="why are you so happy">
-    </span>
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-                
-                <a class="post-title-link" href="/2018/03/20/java动态代理/" itemprop="url">java 动态代理</a></h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">发表于</span>
-              
-              <time title="创建于" itemprop="dateCreated datePublished" datetime="2018-03-20T09:27:10+08:00">
-                2018-03-20
-              </time>
-            
-
-            
-
-            
-          </span>
-
-          
-
-          
-            
-          
-
-          
-          
-
-          
-
-          
-
-          
-
-        </div>
-      </header>
-    
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          
-            <h2 id="简介"><a href="#简介" class="headerlink" title="简介"></a>简介</h2><p>　　java动态代理是个很有用的东西，很多开源框架都用到了这个。比如aop等。</p>
-<h2 id="简单demo"><a href="#简单demo" class="headerlink" title="简单demo"></a>简单demo</h2><p><pre><br>    package com.dh.test;<br>    public interface PersonDao {<br>        public void say();<br>    }<br></pre><br>　　接口，java动态代理必须有个接口。</p>
-<p><pre><br>        package com.dh.test;<br>        public class PersonDaoImpl implements PersonDao{<br>            @Override<br>            public void say() {<br>                System.out.println(“time to eat”);<br>            }  </pre></p>
-<pre><code>}
-</code></pre><p><br>　　接口的实现。</p>
-<p><pre><br>    package com.dh.test;<br>    import java.lang.reflect.InvocationHandler;<br>    import java.lang.reflect.Method;<br>    public class PersonHandler implements InvocationHandler {<br>        private Object obj;<br>        public PersonHandler(Object obj) {<br>            this.obj = obj;<br>        }<br>        @Override<br>        public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {<br>            System.out.println(“before”);<br>            Object result = method.invoke(obj, args);<br>            System.out.println(“after”);<br>            return result;<br>        }<br>    }<br></pre><br>　　这个是动态要加强的东西。</p>
-<p><pre><br>    package com.dh.test;<br>    import java.lang.reflect.Proxy;<br>    public class PersonTest {<br>    public static void main(String args[]) {<br>        PersonDao pDao = new PersonDaoImpl();<br>        PersonHandler handler = new PersonHandler(pDao);<br>        PersonDao proxy = (PersonDao) Proxy.newProxyInstance(pDao.getClass().getClassLoader(),<br>                pDao.getClass().getInterfaces(), handler);<br>        proxy.say();<br>    }<br>    }<br>    }<br></pre><br>　　运行这个得到结果。</p>
-<p><pre><br>    before<br>    time to eat<br>    after<br></pre></p>
-<h2 id="代码解析"><a href="#代码解析" class="headerlink" title="代码解析"></a>代码解析</h2><p>　　代码先从这个Proxy的newProxyInstance开始解析，注释就写在代码上面</p>
-<p><pre><br>    @CallerSensitive<br>        public static Object newProxyInstance(ClassLoader loader， Class&lt;?&gt;[] interfaces,InvocationHandler h)<br>            throws IllegalArgumentException<br>        {<br>        /*</pre></p>
-<pre><code> *  这个方法校验这个实现了InvocationHandler接口的加强类是否为空
- */
-    Objects.requireNonNull(h);
-    final Class&lt;?&gt;[] intfs = interfaces.clone();
-    final SecurityManager sm = System.getSecurityManager();
-    if (sm != null) {
-        checkProxyAccess(Reflection.getCallerClass(), loader, intfs);
-    }
-    /*
-     * Look up or generate the designated proxy class.
-     * 这是生成class的地方。
-     */
-    Class&lt;?&gt; cl = getProxyClass0(loader, intfs);
-    /*
-     * Invoke its constructor with the designated invocation handler.
-     * 使用我们实现的InvocationHandler作为参数调用构造方法来获得代理类的实例 
-     */
-    try {
-        if (sm != null) {
-            checkNewProxyPermission(Reflection.getCallerClass(), cl);
-        }
-
-        final Constructor&lt;?&gt; cons = cl.getConstructor(constructorParams);
-        final InvocationHandler ih = h;
-        if (!Modifier.isPublic(cl.getModifiers())) {
-            AccessController.doPrivileged(new PrivilegedAction&lt;Void&gt;() {
-                public Void run() {
-                    cons.setAccessible(true);
-                    return null;
-                }
-            });
-        }
-        return cons.newInstance(new Object[]{h});
-    } catch (IllegalAccessException|InstantiationException e) {
-        throw new InternalError(e.toString(), e);
-    } catch (InvocationTargetException e) {
-        Throwable t = e.getCause();
-        if (t instanceof RuntimeException) {
-            throw (RuntimeException) t;
-        } else {
-            throw new InternalError(t.toString(), t);
-        }
-    } catch (NoSuchMethodException e) {
-        throw new InternalError(e.toString(), e);
-    }
-}
-</code></pre><p><br>　　下面是对生成代理类的代码</p>
-<pre>
-
-<pre><code>private static Class&lt;?&gt; getProxyClass0(ClassLoader loader, Class&lt;?&gt;... interfaces) {
-  //被代理类的接口不得超过65535个
-      if (interfaces.length &gt; 65535) {
-          throw new IllegalArgumentException(&quot;interface limit exceeded&quot;);
-      }
-      // If the proxy class defined by the given loader implementing
-      // the given interfaces exists, this will simply return the cached copy;
-      // otherwise, it will create the proxy class via the ProxyClassFactory
-      //JDK对代理进行了缓存，如果已经存在相应的代理类，则直接返回，否则才会通过ProxyClassFactory来创建代理  
-      return proxyClassCache.get(loader, interfaces);
-  }
-</code></pre><p></p></pre><br>　　我们进入　proxyclassCache里面找到其参数为内部类ProxyClassFactory，进去看看<p></p>
-<pre>
-
-<pre><code>private static final class ProxyClassFactory  
-    implements BiFunction&lt;ClassLoader, Class&lt;?&gt;[], Class&lt;?&gt;&gt; {  
-    // 所有代理类名字的前缀  
-    private static final String proxyClassNamePrefix = &quot;$Proxy&quot;;  
-    // 用于生成代理类名字的计数器  
-    private static final AtomicLong nextUniqueNumber = new AtomicLong();  
-    @Override  
-    public Class&lt;?&gt; apply(ClassLoader loader, Class&lt;?&gt;[] interfaces) {  
-        // 省略验证代理接口的代码……  
-        String proxyPkg = null;     // 生成的代理类的包名  
-        // 对于非公共接口，代理类的包名与接口的相同  
-        for (Class&lt;?&gt; intf : interfaces) {  
-            int flags = intf.getModifiers();  
-            if (!Modifier.isPublic(flags)) {  
-                String name = intf.getName();  
-                int n = name.lastIndexOf(&apos;.&apos;);  
-                String pkg = ((n == -1) ? &quot;&quot; : name.substring(0, n + 1));  
-                if (proxyPkg == null) {  
-                    proxyPkg = pkg;  
-                } else if (!pkg.equals(proxyPkg)) {  
-                    throw new IllegalArgumentException(  
-                        &quot;non-public interfaces from different packages&quot;);  
-                }  
-            }  
-        }  
-        // 对于公共接口的包名，默认为com.sun.proxy  
-        if (proxyPkg == null) {  
-            proxyPkg = ReflectUtil.PROXY_PACKAGE + &quot;.&quot;;  
-        }  
-        // 获取计数  
-        long num = nextUniqueNumber.getAndIncrement();  
-        // 默认情况下，代理类的完全限定名为：com.sun.proxy.$Proxy0，com.sun.proxy.$Proxy1……依次递增  
-        String proxyName = proxyPkg + proxyClassNamePrefix + num;  
-        // 这里才是真正的生成代理类的字节码的地方  
-        byte[] proxyClassFile = ProxyGenerator.generateProxyClass(  
-            proxyName, interfaces);  
-        try {  
-            // 根据二进制字节码返回相应的Class实例  
-            return defineClass0(loader, proxyName,  
-                                proxyClassFile, 0, proxyClassFile.length);  
-        } catch (ClassFormatError e) {  
-            throw new IllegalArgumentException(e.toString());  
-        }  
-    }  
-}  
-</code></pre><p></p></pre><br>　　看看怎么生成字节码<p></p>
-<pre>
-
-<pre><code>public static byte[] generateProxyClass(final String var0, Class[] var1) {  
-    ProxyGenerator var2 = new ProxyGenerator(var0, var1);  
-    final byte[] var3 = var2.generateClassFile();  
-    // 这里根据参数配置，决定是否把生成的字节码（.class文件）保存到本地磁盘，我们可以通过把相应的class文件保存到本地，再反编译来看看具体的实现，这样更直观  
-    if(saveGeneratedFiles) {  
-        AccessController.doPrivileged(new PrivilegedAction() {  
-            public Void run() {  
-                try {  
-                    FileOutputStream var1 = new FileOutputStream(ProxyGenerator.dotToSlash(var0) + &quot;.class&quot;);  
-                    var1.write(var3);  
-                    var1.close();  
-                    return null;  
-                } catch (IOException var2) {  
-                    throw new InternalError(&quot;I/O exception saving generated file: &quot; + var2);  
-                }  
-            }  
-        });  
-    }  
-    return var3;  
-}  
-</code></pre><p></p></pre><br>　　这是反编译的生成代理类<p></p>
-<p><pre><br>    package com.sun.proxy;<br>    import com.mikan.proxy.HelloWorld;<br>    import java.lang.reflect.InvocationHandler;<br>    import java.lang.reflect.Method;<br>    import java.lang.reflect.Proxy;<br>    import java.lang.reflect.UndeclaredThrowableException;<br>    public final class $Proxy0 extends Proxy implements HelloWorld {<br>      private static Method m1;<br>      private static Method m3;<br>      private static Method m0;<br>      private static Method m2;<br>      public $Proxy0(InvocationHandler paramInvocationHandler) {<br>        super(paramInvocationHandler);<br>      }<br>      public final boolean equals(Object paramObject) {<br>        try {<br>          return ((Boolean)this.h.invoke(this, m1, new Object[] { paramObject })).booleanValue();<br>        }<br>        catch (Error|RuntimeException localError) {<br>          throw localError;<br>        }<br>        catch (Throwable localThrowable) {<br>          throw new UndeclaredThrowableException(localThrowable);<br>        }<br>      }<br>      public final void sayHello(String paramString) {<br>        try {<br>          this.h.invoke(this, m3, new Object[] { paramString });<br>          return;<br>        }<br>        catch (Error|RuntimeException localError) {<br>          throw localError;<br>        }<br>        catch (Throwable localThrowable) {<br>          throw new UndeclaredThrowableException(localThrowable);<br>        }<br>      }<br>      public final int hashCode() {<br>        try {<br>          return ((Integer)this.h.invoke(this, m0, null)).intValue();<br>        }<br>        catch (Error|RuntimeException localError) {<br>          throw localError;<br>        }<br>        catch (Throwable localThrowable) {<br>          throw new UndeclaredThrowableException(localThrowable);<br>        }<br>      }<br>      public final String toString() {<br>        try {<br>          return (String)this.h.invoke(this, m2, null);<br>        }<br>        catch (Error|RuntimeException localError) {<br>          throw localError;<br>        }<br>        catch (Throwable localThrowable) {<br>          throw new UndeclaredThrowableException(localThrowable);<br>        }<br>      }<br>      static {<br>        try {<br>          m1 = Class.forName(“java.lang.Object”).getMethod(“equals”, new Class[] { Class.forName(“java.lang.Object”) });<br>          m3 = Class.forName(“com.mikan.proxy.HelloWorld”).getMethod(“sayHello”, new Class[] { Class.forName(“java.lang.String”) });<br>          m0 = Class.forName(“java.lang.Object”).getMethod(“hashCode”, new Class[0]);<br>          m2 = Class.forName(“java.lang.Object”).getMethod(“toString”, new Class[0]);<br>          return;<br>        }<br>        catch (NoSuchMethodException localNoSuchMethodException) {<br>          throw new NoSuchMethodError(localNoSuchMethodException.getMessage());<br>        }<br>        catch (ClassNotFoundException localClassNotFoundException) {<br>          throw new NoClassDefFoundError(localClassNotFoundException.getMessage());<br>        }<br>      }<br>    }<br> </pre><br>　　恩，大致如此，其实吧就是把源码考了过来，读了一下就这样。<br>　　继承了Proxy类，实现了代理的接口，由于java不能多继承，这里已经继承了Proxy类了，不能再继承其他的类，所以JDK的动态代理不支持对实现类的代理，只支持接口的代理。<br>　　提供了一个使用InvocationHandler作为参数的构造方法。<br>　　流程：<br>　　１．Proxy的这个newProxyInstance方法返回生成的代理类。<br>　　２．这个Proxy的这个newProxyInstance方法的getProxyClass0方法返回代理类的class，没有加载，没有初始化。<br>　　３．这个方法通过ProxyClassFactory这个内部类获取生成的class.<br>　　４．上面那个内部类的apply方法调用ProxyGenerator.generateProxyClass生成class文件的Byte数组。然后组合生成代理类的class返回给newProxyInstance然后在通过反射生成对象返回。</p>
-
-          
-        
-      
-    </div>
-    
-    
-    
-
-    
-
-    
-
-    
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </div>
-  
-  
-  
-  </article>
-
-
-    
   </section>
 
   
   <nav class="pagination">
-    <a class="extend prev" rel="prev" href="/page/8/"><i class="fa fa-angle-left"></i></a><a class="page-number" href="/">1</a><span class="space">&hellip;</span><a class="page-number" href="/page/8/">8</a><span class="page-number current">9</span><a class="page-number" href="/page/10/">10</a><span class="space">&hellip;</span><a class="page-number" href="/page/12/">12</a><a class="extend next" rel="next" href="/page/10/"><i class="fa fa-angle-right"></i></a>
+    <a class="extend prev" rel="prev" href="/page/8/"><i class="fa fa-angle-left"></i></a><a class="page-number" href="/">1</a><span class="space">&hellip;</span><a class="page-number" href="/page/8/">8</a><span class="page-number current">9</span><a class="page-number" href="/page/10/">10</a><span class="space">&hellip;</span><a class="page-number" href="/page/13/">13</a><a class="extend next" rel="next" href="/page/10/"><i class="fa fa-angle-right"></i></a>
   </nav>
 
 
@@ -1817,7 +1659,7 @@ ctorInstance(memory);  //2：初始化对象
               
                 <a href="/archives/">
               
-                  <span class="site-state-item-count">118</span>
+                  <span class="site-state-item-count">121</span>
                   <span class="site-state-item-name">日志</span>
                 </a>
               </div>

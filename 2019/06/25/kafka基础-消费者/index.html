@@ -79,17 +79,17 @@
 
 
 
-<meta name="description" content="消费者与消费组　　每个消费者都有一个对应的消费组，当消息发送到主题后。只会被投递给订阅他的每个消费组中的某一个消费者。 　　按照kafka默认原则。主题X有a,b,c,d4个分区，有2个消费者组A（C0，C1,C2,C3）4个消费者，B(C4,C5)2个消费者都订阅了这个主题，那么消费者A组中每个消费者都分配一个分区，">
+<meta name="description" content="消费者与消费组　　每个消费者都有一个对应的消费组，当消息发送到主题后。只会被投递给订阅他的每个消费组中的某一个消费者。 　　按照kafka默认原则。主题X有a,b,c,d。4个分区，有2个消费者组A（C0，C1,C2,C3）4个消费者，B(C4,C5)2个消费者都订阅了这个主题，那么消费者A组中每个消费者都分配一个分区">
 <meta property="og:type" content="article">
 <meta property="og:title" content="kafka入门003 -消费者">
 <meta property="og:url" content="https://skydh.github.io/2019/06/25/kafka基础-消费者/index.html">
 <meta property="og:site_name" content="why are you so happy">
-<meta property="og:description" content="消费者与消费组　　每个消费者都有一个对应的消费组，当消息发送到主题后。只会被投递给订阅他的每个消费组中的某一个消费者。 　　按照kafka默认原则。主题X有a,b,c,d4个分区，有2个消费者组A（C0，C1,C2,C3）4个消费者，B(C4,C5)2个消费者都订阅了这个主题，那么消费者A组中每个消费者都分配一个分区，消费者B每个消费者分配2个分区。消费者只能消费自己所分配分区的消息。换句话说，消">
+<meta property="og:description" content="消费者与消费组　　每个消费者都有一个对应的消费组，当消息发送到主题后。只会被投递给订阅他的每个消费组中的某一个消费者。 　　按照kafka默认原则。主题X有a,b,c,d。4个分区，有2个消费者组A（C0，C1,C2,C3）4个消费者，B(C4,C5)2个消费者都订阅了这个主题，那么消费者A组中每个消费者都分配一个分区，消费者B每个消费者分配2个分区。消费者只能消费自己所分配分区的消息。换句话说，">
 <meta property="og:locale" content="zh-Hans">
-<meta property="og:updated_time" content="2019-07-15T13:13:17.212Z">
+<meta property="og:updated_time" content="2019-10-21T08:32:04.239Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="kafka入门003 -消费者">
-<meta name="twitter:description" content="消费者与消费组　　每个消费者都有一个对应的消费组，当消息发送到主题后。只会被投递给订阅他的每个消费组中的某一个消费者。 　　按照kafka默认原则。主题X有a,b,c,d4个分区，有2个消费者组A（C0，C1,C2,C3）4个消费者，B(C4,C5)2个消费者都订阅了这个主题，那么消费者A组中每个消费者都分配一个分区，消费者B每个消费者分配2个分区。消费者只能消费自己所分配分区的消息。换句话说，消">
+<meta name="twitter:description" content="消费者与消费组　　每个消费者都有一个对应的消费组，当消息发送到主题后。只会被投递给订阅他的每个消费组中的某一个消费者。 　　按照kafka默认原则。主题X有a,b,c,d。4个分区，有2个消费者组A（C0，C1,C2,C3）4个消费者，B(C4,C5)2个消费者都订阅了这个主题，那么消费者A组中每个消费者都分配一个分区，消费者B每个消费者分配2个分区。消费者只能消费自己所分配分区的消息。换句话说，">
 
 
 
@@ -305,8 +305,8 @@
 
       
         <h2 id="消费者与消费组"><a href="#消费者与消费组" class="headerlink" title="消费者与消费组"></a>消费者与消费组</h2><p>　　每个消费者都有一个对应的消费组，当消息发送到主题后。只会被投递给订阅他的每个消费组中的某一个消费者。</p>
-<p>　　按照kafka默认原则。主题X有a,b,c,d4个分区，有2个消费者组A（C0，C1,C2,C3）4个消费者，B(C4,C5)2个消费者都订阅了这个主题，那么消费者A组中每个消费者都分配一个分区，消费者B每个消费者分配2个分区。消费者只能消费自己所分配分区的消息。换句话说，消费者组之间是共享的，消费组中的消费者是互斥的。</p>
-<p>　　同时我们可以动态的增加消费者增加消费能力，比如B消费者组，我给他再加2个消费者，那么这个B消费者组就会的4个消费者就会被一个分区一个消费者，如果在加一个消费者没什么卵用，因为分区数目&lt;消费者数目，没有多余的分区可以分配给消费者了。同时，假设组内某个实例挂掉了，Kafka能够自动检测到，然后把这个Failed实例之前负责的分区转移给其他活着的消费者。这个过程就是Kafka中大名鼎鼎的“重平衡”（Rebalance）。</p>
+<p>　　按照kafka默认原则。主题X有a,b,c,d。4个分区，有2个消费者组A（C0，C1,C2,C3）4个消费者，B(C4,C5)2个消费者都订阅了这个主题，那么消费者A组中每个消费者都分配一个分区，消费者B每个消费者分配2个分区。消费者只能消费自己所分配分区的消息。换句话说，消费者组之间是共享的，消费组中的消费者是互斥的。</p>
+<p>　　同时我们可以动态的增加消费者增加消费能力，比如B消费者组，我给他再加2个消费者，那么这个B消费者组就会的4个消费者就会被一个分区一个消费者，如果再加一个消费者没什么卵用，因为分区数目&lt;消费者数目，没有多余的分区可以分配给消费者了。同时，假设组内某个实例挂掉了，Kafka能够自动检测到，然后把这个Failed实例之前负责的分区转移给其他活着的消费者。这个过程就是Kafka中大名鼎鼎的“重平衡”（Rebalance）。</p>
 <p>　　消息中间件有２种消息投递方式：即点对点模型（Peer to Peer，P2P）和发布订阅模型。这里面的点对点指的是同一条消息只能被下游的一个消费者消费，其他消费者则不能染指。而发布订阅则是将消息发送到某个主题，消息订阅者都可以从这个主题里面获取消息。<br>　　对于kafka来说。所有的消费者都是一个消费组的时候就是点对点模型，消费者隶属于不同消费者组时，则是发布订阅模型。</p>
 <h2 id="消息格式"><a href="#消息格式" class="headerlink" title="消息格式"></a>消息格式</h2><pre><code>public class ConsumerRecord&lt;K, V&gt; {
     public static final long NO_TIMESTAMP = RecordBatch.NO_TIMESTAMP;
@@ -387,7 +387,7 @@ public class PartitionInfo {
                 for (ConsumerRecord&lt;String, String&gt; record : records.records(tp))
                     System.out.printf(record.value());
             }
-</code></pre><p>　　同理，也可以更具消息主题进行区分消费。主要用到了下面的方法：</p>
+</code></pre><p>　　同理，也可以根据消息主题进行区分消费。主要用到了下面的方法：</p>
 <pre><code>  public Iterable&lt;ConsumerRecord&lt;K, V&gt;&gt; records(String topic) {
     if (topic == null)
         throw new IllegalArgumentException(&quot;Topic must be non-null.&quot;);
@@ -398,7 +398,7 @@ public class PartitionInfo {
     }
     return new ConcatenatedIterable&lt;&gt;(recs);
 }
-</code></pre><h2 id="位移提交"><a href="#位移提交" class="headerlink" title="位移提交"></a>位移提交</h2><p>　　在kafka服务器端每个消息有个offset用来表示消息所在分区的位置，我们用偏移量来表示，而消费者端也有一个offset，表示消费者消费到分区的哪个消息了，我们用位移来表示。<br>　　消费者消费的消息都是没有消费的，因此这个位移必须保存且持久化，这个位移保存在kafka内部的主题_consumer_offsets中，消费者在消费完消息后，需要再这里提交消费位移的提交。记住消费者要提交的消费位移不是已经消费的消息位置的最后一个，而是已消费消息位置+1，这个没有消费的位置。而committed offset则表示已经提交过的消费位移。</p>
+</code></pre><h2 id="位移提交"><a href="#位移提交" class="headerlink" title="位移提交"></a>位移提交</h2><p>　　在kafka服务器端每个消息有个offset用来表示消息所在分区的位置，我们用偏移量来表示，而消费者端也有一个offset，表示消费者消费到分区的哪个消息了，我们用位移来表示。<br>　　消费者消费的消息都是没有消费的，因此这个位移必须保存且持久化，这个位移保存在kafka内部的主题_consumer_offsets中，每个消费组一个消费位移。消费者在消费完消息后，需要再这里提交消费位移的提交。记住消费者要提交的消费位移不是已经消费的消息位置的最后一个，而是已消费消息位置+1，这个没有消费的位置。而committed offset则表示已经提交过的消费位移。</p>
 <pre><code>@Override
 public long position(TopicPartition partition) {
     return position(partition, Duration.ofMillis(defaultApiTimeoutMs));
@@ -615,7 +615,7 @@ public void onPartitionsRevoked(Collection&lt;TopicPartition&gt; partitions) {}
               
                 <a href="/archives/">
               
-                  <span class="site-state-item-count">118</span>
+                  <span class="site-state-item-count">121</span>
                   <span class="site-state-item-name">日志</span>
                 </a>
               </div>
