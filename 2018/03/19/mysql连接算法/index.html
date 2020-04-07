@@ -86,7 +86,7 @@
 <meta property="og:site_name" content="why are you so happy">
 <meta property="og:description" content="联接算法是MySQL数据库处理联接的物理策略，目前支持Nested-Loops Join算法，时间复杂度为O(N)有索引，无的话为o(N2).这个是没有索引的表联接      For each row r in R do         For each row s in S do             If r and s satisfy the join condition">
 <meta property="og:locale" content="zh-Hans">
-<meta property="og:updated_time" content="2019-05-23T01:02:50.548Z">
+<meta property="og:updated_time" content="2020-01-09T03:12:32.613Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="mysql联接算法">
 <meta name="twitter:description" content="联接算法是MySQL数据库处理联接的物理策略，目前支持Nested-Loops Join算法，时间复杂度为O(N)有索引，无的话为o(N2).这个是没有索引的表联接      For each row r in R do         For each row s in S do             If r and s satisfy the join condition">
@@ -323,7 +323,7 @@
                Then output the tuple <r, s="">
 </r,></pre>
 
-<p>　　对于对于联接的列含有索引的情况，外部表的每条记录不再需要扫描整张内部表，只需要扫描内部表上的索引即可得到联接的判断结果。<br>　　根据前面描述的Simple Nested-Loops Join算法，优化器在一般情况下总是选择将联接列含有索引的表作为内表。如果两张表R和S在联接列上都有索引，并且索引的高度相同，那么优化器会选择记录数少的表作为外部表，这是因为内部表的扫描次数总是索引的高度，与记录的数量无关。</p>
+<p>　　对于对于联接的列含有索引的情况，外部表(驱动表，也就是需要全表扫描的表)的每条记录不再需要扫描整张内部表，只需要扫描内部表上的索引即可得到联接的判断结果。<br>　　根据前面描述的Simple Nested-Loops Join算法，优化器在一般情况下总是选择将联接列含有索引的表作为内表。如果两张表R和S在联接列上都有索引，并且索引的高度相同，那么优化器会选择记录数少的表作为外部表，这是因为内部表的扫描次数总是索引的高度，与记录的数量无关。</p>
 <p>　　如果联接表没有索引时，Simple Nested-Loops Join算法扫描内部表很多次，执行效率会非常差。而Block Nested-Loops Join算法就是针对没有索引的联接情况设计的，其使用Join Buffer（联接缓存）来减少内部循环取表的次数。<br>　　对这个没有太大注意，反正效率不高就是了。最好还是加上索引用第一个最好了。<br>　　对于left join 那么一定是左边的表作为外部表，即使右边表没有索引而自身有索引。<br>　　对于　right join 那么一定是右边的表作为外部表，即使左侧表无索引，而右侧表有索引。</p>
 <p>　　为了效率：<br>　　１．我们一般左连接，那么希望２表连接的话，小数据量的放到左边。<br>　　２．左连接，左边表字段是否有索引不关心，右边表必须要有索引。<br>　　３．表连接最好加上索引，否则另外一个算法效率很低。<br>　　４.内连接比左右连接方便，是因为内连接可以自身优化左右表的顺序。原则如下：１，若都有索引，默认数据量小的表作为外部表。即时加了索引缩小范围。２，若只有一个表有索引，那么默认没有索引的表作为外部表。３，若都没有索引，那么默认Block Nested-Loops Join算法。<br>　　ps:这里的小表：是指按照各自的条件过滤后，这些判断是要走索引的，不然和全表扫描没区别了。计算参与join的各个字段的总数据量，这个总数据量小的，就是小表。</p>
 
@@ -430,7 +430,7 @@
               
                 <a href="/archives/">
               
-                  <span class="site-state-item-count">121</span>
+                  <span class="site-state-item-count">127</span>
                   <span class="site-state-item-name">日志</span>
                 </a>
               </div>
@@ -474,7 +474,7 @@
     <footer id="footer" class="footer">
       <div class="footer-inner">
         <script async src="https://dn-lbstatics.qbox.me/busuanzi/2.3/busuanzi.pure.mini.js"></script>
-<div class="copyright">&copy; <span itemprop="copyrightYear">2019</span>
+<div class="copyright">&copy; <span itemprop="copyrightYear">2020</span>
   <span class="with-love">
     <i class="fa fa-user"></i>
   </span>

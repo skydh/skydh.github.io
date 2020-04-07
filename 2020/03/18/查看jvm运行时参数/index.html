@@ -1,0 +1,774 @@
+<!DOCTYPE html>
+
+
+
+  
+
+
+<html class="theme-next pisces use-motion" lang="zh-Hans">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css" />
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=5.1.3" rel="stylesheet" type="text/css" />
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=5.1.3">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=5.1.3">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=5.1.3">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=5.1.3" color="#222">
+
+
+
+
+
+  <meta name="keywords" content="Hexo, NexT" />
+
+
+
+
+
+
+
+
+
+
+<meta name="description" content="PrintFlagsFinal   java -XX:+PrintFlagsFinal  -version  查看虚拟机默认参数 jps  专门查看java进程的  jps  jps -l查看完全参数 jinfo  jinfo是查看运行时进程的详细信息。比如  jinfo -flag MaxHeapSize 11956">
+<meta property="og:type" content="article">
+<meta property="og:title" content="查看jvm运行时参数">
+<meta property="og:url" content="https://skydh.github.io/2020/03/18/查看jvm运行时参数/index.html">
+<meta property="og:site_name" content="why are you so happy">
+<meta property="og:description" content="PrintFlagsFinal   java -XX:+PrintFlagsFinal  -version  查看虚拟机默认参数 jps  专门查看java进程的  jps  jps -l查看完全参数 jinfo  jinfo是查看运行时进程的详细信息。比如  jinfo -flag MaxHeapSize 11956  查看这个java进程的最大堆大小  jinfo -flag UseG1GC">
+<meta property="og:locale" content="zh-Hans">
+<meta property="og:updated_time" content="2020-03-25T05:12:40.516Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="查看jvm运行时参数">
+<meta name="twitter:description" content="PrintFlagsFinal   java -XX:+PrintFlagsFinal  -version  查看虚拟机默认参数 jps  专门查看java进程的  jps  jps -l查看完全参数 jinfo  jinfo是查看运行时进程的详细信息。比如  jinfo -flag MaxHeapSize 11956  查看这个java进程的最大堆大小  jinfo -flag UseG1GC">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Pisces',
+    version: '5.1.3',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: true,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    duoshuo: {
+      userId: '0',
+      author: '博主'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="https://skydh.github.io/2020/03/18/查看jvm运行时参数/"/>
+
+
+
+
+
+  <title>查看jvm运行时参数 | why are you so happy</title>
+  
+
+
+
+
+
+
+
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/"  class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">why are you so happy</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle">clear 航</p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br />
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />
+            
+            归档
+          </a>
+        </li>
+      
+
+      
+    </ul>
+  
+
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="https://skydh.github.io/2020/03/18/查看jvm运行时参数/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="董航">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="why are you so happy">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">查看jvm运行时参数</h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2020-03-18T09:05:20+08:00">
+                2020-03-18
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+          
+
+          
+          
+
+          
+            <span class="post-meta-divider">|</span>
+            <span class="page-pv"><i class="fa fa-file-o"></i>
+            <span class="busuanzi-value" id="busuanzi_value_page_pv" ></span>
+            </span>
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <h1 id="PrintFlagsFinal"><a href="#PrintFlagsFinal" class="headerlink" title="PrintFlagsFinal"></a>PrintFlagsFinal</h1><p>   java -XX:+PrintFlagsFinal  -version<br>  查看虚拟机默认参数</p>
+<h1 id="jps"><a href="#jps" class="headerlink" title="jps"></a>jps</h1><p>  专门查看java进程的<br>  jps<br>  jps -l查看完全参数</p>
+<h1 id="jinfo"><a href="#jinfo" class="headerlink" title="jinfo"></a>jinfo</h1><p>  jinfo是查看运行时进程的详细信息。比如<br>  jinfo -flag MaxHeapSize 11956<br>  查看这个java进程的最大堆大小<br>  jinfo -flag UseG1GC  11956<br>  查看是否使用了G1垃圾回收器<br>  输出是XX:-UseG1GC，其中-表示没有使用</p>
+<h1 id="jstat"><a href="#jstat" class="headerlink" title="jstat"></a>jstat</h1><p>  jstat查看jvm的统计信息<br>  类加载，垃圾回收信息，jit编译信息</p>
+<pre><code>jstat -class 11956
+Loaded  Bytes  Unloaded  Bytes     Time
+28968 58273.9      301   462.6      39.13
+
+
+jstat -gc 11956
+S0C    S1C    S0U    S1U      EC       EU        OC         OU       MC     MU    CCSC   CCSU   YGC     YGCT    FGC    FGCT     GCT
+512.0  1024.0  0.0    0.0   145920.0  2871.8   453120.0   246336.3  193100.0 179678.6 26240.0 21961.4   1578   12.603 1484   410.614  423.217
+</code></pre><p>  S0C,S0U,S1U,S0U,s0,s1区的使用量和总量<br>  EC,EU：Eden区的总量和使用<br>  OC,OU,Old区的总量和使用<br>  MC，MU,Metaspace区总量和使用，其中这个metaspace是存放Class对象的。<br>  CCSC,CCSU,压缩类空间总量和使用。<br>  YGC,YGCT，YoungGC的次数和时间<br>  FGC,FGCT：FullGC的次数和时间<br>  GCT，总GC的时间。</p>
+<p>ps 通过官网 <a href="https://docs.oracle.com/javase/8/docs/technotes/tools/unix/jstat.html#BEHHGFAE来查询" target="_blank" rel="noopener">https://docs.oracle.com/javase/8/docs/technotes/tools/unix/jstat.html#BEHHGFAE来查询</a></p>
+<h1 id="如何导出内存镜像文件"><a href="#如何导出内存镜像文件" class="headerlink" title="如何导出内存镜像文件"></a>如何导出内存镜像文件</h1><p>  1，内存溢出是自动导出，加上2个参数<br>  -XX:+HeapDumpOnOutOfMemoryError<br>  -XX:HeapDumpPath=./<br>  2,Jmap导出<br>  jmap -dump:format=b,file=heap.hprof 11956<br>  导出的文件用mat打开，可以查看到对象的数量和大小。可以分析内存溢出的问题。</p>
+<h1 id="jstack"><a href="#jstack" class="headerlink" title="jstack"></a>jstack</h1><p>   打印jvm里面所有的线程，看看cpu暴增的原因之类的。java线程的状态有new,runnable,blocked,waiting,timed_waiting,terminated,<br>  cpu飙高，可能是死循环。或者死锁。cpu过大可能导致新的请求无法处理。<br>  方案：<br>  1，查看cpu那个进程高。<br>  2，打印jstack 11569 -&gt;11.txt.<br>  3,top -p 7792 -H,打印所有的线程。找出高的线程，然后将其从10进制转换为16进制，得到一个id<br>  4，在打印的文件里面找到这个id对应的线程，然后分析。具体代码。</p>
+<p>  deadlock。</p>
+<h1 id="JVisuaIVM"><a href="#JVisuaIVM" class="headerlink" title="JVisuaIVM"></a>JVisuaIVM</h1><p>  可视化监控工具，可以监控远程和本地。<br>  里面有很多功能，和jstack,jmap类似，几乎包含了上面所有的命令以及mat,里面有个抽样的功能，</p>
+<p>   其中cpu抽样，可以看到哪个方法的执行时间。从而针对性的优化代码</p>
+<p>   内存抽样，可以看到每个类占用的内存实例数等信息。可以看到那些对象可能导致内存泄漏。</p>
+<h1 id="Btrace"><a href="#Btrace" class="headerlink" title="Btrace"></a>Btrace</h1><p>  在程序不重启，正在运行的时候修改动态的修改字节码。<br>  下载btrace，然后加入到环境变量，写好脚本，然后执行 btrace pid 脚本，执行完，字节码就加入到运行的环境里面了。只要是java代码都可以拦截。</p>
+<p>  参数，返回值，异常都可以获取到，还可以判断某一行代码是否执行</p>
+<p>  注意点：1.只能本地执行。不能远程使用。<br>         2.修改了字节码，退出时不会回复</p>
+<h1 id="tomcat"><a href="#tomcat" class="headerlink" title="tomcat"></a>tomcat</h1><p>  1,tomcat远程debug<br>  基于JDWP协议，定义了调试器和java虚拟机之间的协议。<br>  主要是修改服务器上tomcat的配置，然后调试。如果是个普通的java进程需要修改这个java进程的启动脚本，加上一些配置。</p>
+<p>  2.tomcat-manager<br>   tomcat自带的，还是修改tomact配置，增加用户，增加配置。可以查看tomcat很多信息，比如有哪些应用。且对其进行处理。查看线程信息之类的。以及线程处理时间之类的。</p>
+<p>  3.psi-probe<br>  先下载probe这个项目源码，然后打包，将其war包放入到tomcat的webapp下面，即可，启动tomcat即可。tomcat的配置和上面一样。</p>
+<p>  4,tomcat优化<br>  1，内存优化<br>  2，线程优化<br>  主要需要配置maxConnections最大连接数。acceptCount：连接满了之后的新的连接进入队列，超出队列，则拒绝请求。maxThread:工作线程数，和cpu相关…<br>  3.配置优化<br>  autoDeploy,周期性检查是否有新的应用加了进来，但是会浪费一个线程资源。默认为true，建议为false.<br>  enableLookups:开启后会对请求做一个dns查询，浪费性能。<br>  reloadable:监控web-inf/classes和web-inf/lib目录，浪费性能。默认没有开启。<br>  还有设置协议为nio,<br>  还可以禁用session，存到redis里面。</p>
+<h1 id="nginx"><a href="#nginx" class="headerlink" title="nginx"></a>nginx</h1><p>   可以通过ngxtop,动态查看访问最多的ip,访问最多的返回码等信息。<br>   Mginx-rrd是个图形化工具，这个工具统计的信息可能滞后，因为它是通过定时器来统计的。<br>   优化：<br>   增加工作线程，增加并发连接数，默认是一个工作线程，1024个连接。<br>   一般多少个cpu，就多少个工作线程，启用epoll网络模型。<br>   启用长连接。浏览器和nginx之间是有长连接的，但是Nginx和后端服务之间是没有长连接的，需要配置。<br>   启用缓存，压缩。<br>   操作系统优化。</p>
+<h1 id="jvm调优"><a href="#jvm调优" class="headerlink" title="jvm调优"></a>jvm调优</h1><p>jvm内存结构<br>程序计数器：这个就是线程私有的，存放的是线程正在执行指令的地址。<br>java虚拟机栈：线程私有的，生命周期和线程一样，里面的元素是栈帧，每一个栈帧的入栈到出栈意味着一个方法的执行调用和结束。栈帧存放的是方法的局部变量表，返回值信息，方法出口灯<br>java堆，分为新生代，老年代，线程共享的，每一个实例都是在堆里面分配内存的。<br>java方法区，线程公有的，存放，常量。被虚拟机加载的类信息，编译器编译后的代码。（运行时常量池：各种常量信息，在类加载后放进去存放。）</p>
+<p>ps：java本地代码，就是采用编译方式启动java进程，然后代码会被jit编译为机器码，放入到metaspace里面</p>
+<p>判断对象是否回收的算法<br>可达性分析算法，从根节点到这个对象是否可达。<br>根节点很多：类加载器，Thread，虚拟机栈的本地变量表，常量应用，垃圾回收的时候，通过这些根节点来进行可达性分析。</p>
+<p>垃圾回收算法<br> 标记-清除：做可达性分析之后，标记所有可回收的对象，标记完成后统一回收。缺点效率不高，产生大量内存碎片。<br>复制算法，吧内存划分为大小一样的2块，每次使用其中一块，当其中一块无法分配内存后，进行垃圾回收，吧可达的对象复制到另外一块上，再把这块用的空间一次性清除。<br>优点，简单高效<br>缺点，内存利用不高<br>标记-整理。先判断哪些对象是可达的，然后统一向一端移动，然后清除掉边界外单位内存<br>相对于标记清除，少了内存碎片，但是更加耗时。</p>
+<p>一般来说，yong区使用复制算法，old区采用标记清除或者标记整理算法。</p>
+<p>对象分配：<br>对象优先分配到Eden区，大对象直接到老年代，存活时间长的对象进入老年代。</p>
+<p>垃圾回收器<br>串行收集器Serial:Serial,Serial Old，单线程的垃圾回收器。当内存不够时，虚拟机会启动一个单线程的垃圾回收器。<br>并行收集器Parallel: Prallel Scavenge,Parallel Old,吞吐量<br>并行：指多条垃圾回收线程并行工作，用户线程仍然处于等待状态。适合科学计算，后台处理等弱交互场景，</p>
+<p>并发收集器Concurrent:CMS,G1,停顿时间。</p>
+<p>并发：指多条垃圾回收线程和用户线程并行，也许是交替进行，垃圾回收的时候不会停止用户程序的运行，适合web，对相应时间有要求的应用</p>
+<p>停顿时间：垃圾收集器做垃圾回收中断应用执行的时间。XX:MaxGCPauseMillis</p>
+<p>吞吐量：华仔垃圾回收的时间和花在应用时间的占比-XXGCRimeRatio=<n>,垃圾收集时间栈：1/1+n</n></p>
+<p>-XX:+UseSerialGX -XX:+UseSerialOldGC<br>使用串行，一般不使用</p>
+<p>-XX:+UseParallelGC,-XX:+UseParallelGC<br>使用并行，吞吐量优先<br>Server模式下默认收集器。cms是old区的，</p>
+<p>并发<br>CMS:XX:+UseConcMarkSweepGC -XX:+UseParNewGC<br>G1:-XX+UseG1GC</p>
+<p>由于虚拟机采用分带算法<br>new               old<br>Serial             SerialOld<br>parNew             SerialOld<br>ParaLLelScavenge   SerialOld<br>Serial             CMS<br>ParNew             CMS<br>G1                 G1</p>
+<p>其中CMS可能退化为SerialOld,在担保分配空间失败后</p>
+<p>如何选择垃圾回收器</p>
+<p>1.调整堆的大小让服务器自己选择<br>2.如果内存小于100，串行<br>3，如果单核，且没有停顿时间的要求，串行或者jvm自己选。<br>4，如果允许停止时间超过一秒，选择并行或者jvm自己选。<br>5，响应时间很重要，不能超过一秒，使用并发垃圾回收器。</p>
+<p>使用并行垃圾回收器，<br>-XX:+UseParallelGC手动开启<br>-XX：ParallelGCThread=<n>,多少个GC线程。<br>cpu&gt;=8 N=5<br>Cpu&lt;8 N=CPU</n></p>
+<p>并行垃圾回收器有个自适应的特性。内存不够了会自动变大。<br>因此一般不使用。</p>
+<p>CMS并发<br>低停顿，低延迟<br>老年代</p>
+<p>收集过程。<br>1，初始标记，标记GCroot，这个过程需要停止应用程序。<br>2，并发标记。<br>3，并发预处理<br>4，重新标记，也是需要停止应用的，<br>5，并发清除<br>6，并发重置 </p>
+<p>缺点，cpu敏感，浮动垃圾，空间碎片。标记清除算法。</p>
+<p>CMS参数优化<br>-XX:ConcGCThreads,并发的GC线程数<br>-XX:+UseCMSCompactAtFullCollection：fullGC之后会做压缩，减少内存碎片。<br>可视化GC日志分析工具<br>-XX:CMSFullGCsBeforCompaction:多少次FullGC之后压缩一次。<br>-XX:CMSInitiatingOccupancyFraction:触发FullGC,老年代占了多少比例后会触发这个fullGC，92%<br>-XX：+CMSScavengeBeforRemark:fullGC之前先做YGC。</p>
+<p>G1垃圾回收器<br>大内存，小停顿，同时是新生代和老年代。<br>G1里面没有物理意义的新生代和老年代，他是一个个的region，多个region构成了逻辑上的新生代和老年代。<br>StaB,GC开始的时候存活对象的快照。<br>RSet：记录了其他region里面引用了本region对象的关系。<br>G1 YoungGC<br>新生代进入Eden区<br>存活对象进入su区<br>存活时间长的对象进入Old区。<br>和其他一样</p>
+<p>没有fuLLGC 只有MixedGC<br>回收Young区和部分Old区。</p>
+<p>global concurent marking（全局标记）<br>1,标记GC root,stw<br>2，标记存活Region<br>3.标记存活对象。<br>4.重新标记，stw<br>5.部分stw</p>
+<p>MixGC时机</p>
+<p>根据参数来设定，InitiatingHeapOccupancyPercent,默认45%，就会触发global concurent marking</p>
+<p>G1HeapWastePercent<br>再global concurent marking之后，我们可以判断有多少对象需要回收，在每次YGC之后，和MixEdGC之前，会检查参数是否达到了，如果达到了就会MixedGC</p>
+<p>是否需要切换到G1<br>1.50%堆被存活对象占用<br>2，对象分配速度快<br>3，垃圾回收时间长</p>
+<p>GC日志简析<br>1吞吐量（应用线程时间和总时间的比例）和停顿时间</p>
+<p>通过工具分析<br>1.在线 gceasy.io<br>2.GCViewer</p>
+<p>具体的分析都可以在orcal官网查看<br>首先要打印gc日志，输入一些参数，会让gc的时候把文件打印出来。在线工具更加方便</p>
+<p>ParallelGC调优原则<br>1.不要设置最大对内存<br>2.优先设置吞吐量目标<br>3.吞吐量达不到要求，调大最大内存，不要让os使用swap，如果还达不到降低吞吐量。<br>4.吞吐量能达到，GC时间长，设置停顿时间目标</p>
+<p>就是不断尝试。分析gc次数。 </p>
+<p>G1最佳实践<br>1.年轻代：避免使用-XMn,-XX：NewRatio,等显示设置young区大小，会覆盖暂停时间目标。<br>2.暂停时间目标：不要太苛刻，其吞吐量目标是90%的应用时间和10%的垃圾回收时间，太严格影响吞吐量。<br>3.MixGC</p>
+<p>分析gC的原因。</p>
+<h1 id="字节码"><a href="#字节码" class="headerlink" title="字节码"></a>字节码</h1><p>1，先编译一个java文件，生成class文件<br>2，找到其所在的目录<br>3，执行 javap -verbose aaa.class-&gt;test1.txt</p>
+<h1 id="intern区别"><a href="#intern区别" class="headerlink" title="intern区别"></a>intern区别</h1><p>1.6  常量池没有，加进去，有，不管<br>1.7 常量池没有，加个指向堆对象的引用。</p>
+
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2019/12/26/spring常用注解/" rel="next" title="spring常用注解">
+                <i class="fa fa-chevron-left"></i> spring常用注解
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2020/03/25/java线程，线程池，juc系列/" rel="prev" title="java线程，线程池系列">
+                java线程，线程池系列 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <p class="site-author-name" itemprop="name">董航</p>
+              <p class="site-description motion-element" itemprop="description">clear 航</p>
+          </div>
+
+          <nav class="site-state motion-element">
+
+            
+              <div class="site-state-item site-state-posts">
+              
+                <a href="/archives/">
+              
+                  <span class="site-state-item-count">127</span>
+                  <span class="site-state-item-name">日志</span>
+                </a>
+              </div>
+            
+
+            
+
+            
+
+          </nav>
+
+          
+
+          <div class="links-of-author motion-element">
+            
+          </div>
+
+          
+          
+
+          
+          
+
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#PrintFlagsFinal"><span class="nav-number">1.</span> <span class="nav-text">PrintFlagsFinal</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#jps"><span class="nav-number">2.</span> <span class="nav-text">jps</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#jinfo"><span class="nav-number">3.</span> <span class="nav-text">jinfo</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#jstat"><span class="nav-number">4.</span> <span class="nav-text">jstat</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#如何导出内存镜像文件"><span class="nav-number">5.</span> <span class="nav-text">如何导出内存镜像文件</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#jstack"><span class="nav-number">6.</span> <span class="nav-text">jstack</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#JVisuaIVM"><span class="nav-number">7.</span> <span class="nav-text">JVisuaIVM</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Btrace"><span class="nav-number">8.</span> <span class="nav-text">Btrace</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#tomcat"><span class="nav-number">9.</span> <span class="nav-text">tomcat</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#nginx"><span class="nav-number">10.</span> <span class="nav-text">nginx</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#jvm调优"><span class="nav-number">11.</span> <span class="nav-text">jvm调优</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#字节码"><span class="nav-number">12.</span> <span class="nav-text">字节码</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#intern区别"><span class="nav-number">13.</span> <span class="nav-text">intern区别</span></a></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <script async src="https://dn-lbstatics.qbox.me/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+<div class="copyright">&copy; <span itemprop="copyrightYear">2020</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">董航</span>
+
+  
+</div>
+
+
+<div class="powered-by">
+<i class="fa fa-user-md"></i><span id="busuanzi_container_site_uv">
+  本站访客数:<span id="busuanzi_value_site_uv"></span>
+</span>
+</div>
+
+  <div class="powered-by">由 <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a> 强力驱动</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">主题 &mdash; <a class="theme-link" target="_blank" href="https://github.com/iissnan/hexo-theme-next">NexT.Pisces</a> v5.1.3</div>
+
+
+
+
+        
+<div class="busuanzi-count">
+  <script async src="https://dn-lbstatics.qbox.me/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+
+  
+    <span class="site-uv">
+      <i class="fa fa-user"></i>
+      <span class="busuanzi-value" id="busuanzi_value_site_uv"></span>
+      
+    </span>
+  
+
+  
+    <span class="site-pv">
+      <i class="fa fa-eye"></i>
+      <span class="busuanzi-value" id="busuanzi_value_site_pv"></span>
+      
+    </span>
+  
+</div>
+
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/canvas-nest/canvas-nest.min.js"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.3"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.3"></script>
+
+
+
+  
+  
+
+
+  <script type="text/javascript" src="/js/src/affix.js?v=5.1.3"></script>
+
+  <script type="text/javascript" src="/js/src/schemes/pisces.js?v=5.1.3"></script>
+
+
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.3"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.3"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.3"></script>
+
+
+
+  
+
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>

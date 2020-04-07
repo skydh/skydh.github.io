@@ -232,6 +232,1469 @@
   
   
   <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="https://skydh.github.io/2017/12/27/volatile,原子变量和ThreadLocal/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="董航">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="why are you so happy">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                <a class="post-title-link" href="/2017/12/27/volatile,原子变量和ThreadLocal/" itemprop="url">volatile,原子变量和ThreadLocal</a></h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2017-12-27T15:00:13+08:00">
+                2017-12-27
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            <h1 id="概念"><a href="#概念" class="headerlink" title="概念"></a>概念</h1><h2 id="多线程中的变量"><a href="#多线程中的变量" class="headerlink" title="多线程中的变量"></a>多线程中的变量</h2><p>　　首先我介绍的是volatile关键字，其次是原子变量，最后则是ThreadLocal线程本地变量</p>
+<h2 id="java基本内存模型"><a href="#java基本内存模型" class="headerlink" title="java基本内存模型"></a>java基本内存模型</h2><p>　　用到volatile这个关键字以及后面的原子变量之前，我们必须先了解一下什么是java基本内存模型。<br>　　先明确几个概念：<br>　　主内存：主内存就是所有线程共享的内存，对于一个共享变量来说，主内存存放其真实数据（本尊数据）<br>　　线程工作内存：线程对数据操作时，都会有自己的工作内存，对共享变量操作前，会先从主内存中获取到值，操作完后在回写回去。
+　　</p>
+<h2 id="volatile"><a href="#volatile" class="headerlink" title="volatile"></a>volatile</h2><p>　　现在有２个线程Ａ，Ｂ，他们要主内存中间的一个变量s=0;此时A线程要修改这个共享变量，它是先获取到这个值复制到线程工作内存里面去，然后在线程工作内存里面把这个值修改了，然后把这个值再写到主内存里面去。此时B读取这个s变量，那么值可能是0，也可能是线程A所修改的值。<br>　　使用volatile这个关键字可以避免上述这种情况（使用锁来对变量加锁或者synchronized开销太大）。<br>　　针对上述的例子，volatile的可见性保证了不会出现上述问题。<br>　　什么是可见性呢？<br>　　当一个线程修改了变量的值，新的值会立刻同步到主内存当中。而其他线程读取这个变量的时候，也会从主内存中拉取最新的变量值。<br>　　当然这种可见性不是原子性哦。当遇到以下情况会有问题<br>　　１．多个线程同时修改变量且修改时依赖变量本身。<br>　　２．多个volatile变量维护一个条件，若是别的线程对其多个变量修改，那么可能造成条件的不成立。<br>　　针对上述情况于是有了原子变量（后面介绍），保证了其原子性。<br>　　volatile还有一个特性就是禁止指令重排序。那么什么是指令重排序呢？<br>　　指令重排序：编译器的字节码的重排序。cpu指令的重排序。<br>　　指令重排序的目的是在不改变单线程下程序的逻辑下，优化程序执行效率。对于多线程于是就有了问题。有的程序时单线程下，调换一下顺序也没什么的，但是，对于多线程，调换一下顺序，可能回到其他线程造成大的影响。<br>　　而volatile则是解决了这个问题，他利用了内存屏障来来辅助解决了这个。</p>
+<h2 id="原子变量"><a href="#原子变量" class="headerlink" title="原子变量"></a>原子变量</h2><p>　　说到原子变量就不得不说CAS。<br>　　什么是ＣＡＳ呢？<br>　　就是更新一个值的时候，查询内存中的值，和自己要更新前获取到的值是否一致，若是一致，那么更新。<br>　　与synchronized相比，cas是乐观锁，我认为并发不会修改到我的值，不加锁，只是提前获取到值，要更新的时候在比对一下，若是内存的值和我的值一致，那么更新，否则不更新。而synchronized则是不管什么直接加锁的。因此是悲观锁。<br>　　什么是ABA问题？<br>　　3个线程A,B,C对cas变量a修改。A,B线程获取到了变量a,A修改变量为b,B线程阻塞，C线程获取到变量b,并把b改成了a,B线程不阻塞了，继续执行，执行成功，这就是ABA问题。这个B线程不应该执行的，但是还是执行了。如这个变量是个对象，其引用没有变化，但是具体指变了，那么会出大问题的。解决方案就是在cas变量上加个版本号或者时间戳来限定。<br>　　具体demo就是Atomic开头的类。具体我就不详细说了。<br>　　与加锁相比这个更加轻量级。</p>
+<h2 id="ThreadLocal"><a href="#ThreadLocal" class="headerlink" title="ThreadLocal"></a>ThreadLocal</h2><p>　　线程本地变量是说，每个线程都有同一个变量的独有拷贝ThreadLocal是一个泛型类，接受一个类型参数T，它只有一个空的构造方法。这个直接看个ｄｅｍｏ</p>
+<p><pre><br>package thread;</pre></p>
+<p>public class ThreadLocal001 {<br>    static ThreadLocal<integer> local = new ThreadLocal<integer>();</integer></integer></p>
+<pre><code>public static void main(String[] args) throws InterruptedException {
+    Thread child = new Thread() {
+        @Override
+        public void run() {
+            System.out.println(&quot;child&quot; + local.get());
+            local.set(200);
+            System.out.println(&quot;child&quot; + local.get());
+        }
+    };
+    local.set(100);
+    child.start();
+    child.join();
+    System.out.println(&quot;main&quot; + local.get());
+}
+</code></pre><p>}<br><br>　　结果如下：</p>
+<p><pre><br>childnull<br>child200<br>main100<br></pre><br>　　这说明，main线程对local变量的设置对child线程不起作用，child线程对local变量的改变也不会影响main线程，它们访问的虽然是同一个变量local，但每个线程都有自己的独立的值，这就是线程本地变量的含义。</p>
+<h2 id="ThreadLocal原理解析。"><a href="#ThreadLocal原理解析。" class="headerlink" title="ThreadLocal原理解析。"></a>ThreadLocal原理解析。</h2><p>　　Thread类里面有一个属性：</p>
+<pre><code>ThreadLocal.ThreadLocalMap threadLocals = null;
+</code></pre><p>　　ThreadLocal 里面的set 方法：</p>
+<pre><code>   public void set(T value) {
+    //获取当前线程
+    Thread t = Thread.currentThread();
+    //获取当前线程的ThreadLocalMap对象。
+    ThreadLocalMap map = getMap(t);
+    //有则把值放进去，没有则创建ThreadLocalMap对象。
+    if (map != null)
+        map.set(this, value);
+    else
+
+        createMap(t, value);
+}
+</code></pre><p>　　ThreadLocal的getMap方法：</p>
+<pre><code>ThreadLocalMap getMap(Thread t) {
+    return t.threadLocals;
+}
+</code></pre><p>　　ThreadLocal的createMap方法：</p>
+<pre><code>void createMap(Thread t, T firstValue) {
+    t.threadLocals = new ThreadLocalMap(this, firstValue);
+}
+</code></pre><p>　　我们发现值是存在当前线程的的一个内部类里面，存的就是当前threadlocal和值的键值对。</p>
+<p>　　ThreadLocalMap的构造方法：</p>
+<pre><code>ThreadLocalMap(ThreadLocal&lt;?&gt; firstKey, Object firstValue) {
+        //创建一个数组，数组对象为entity,初始化大小为16
+        table = new Entry[INITIAL_CAPACITY];
+        int i = firstKey.threadLocalHashCode &amp; (INITIAL_CAPACITY - 1);
+        //根据ThreadLocal的hash值确定其数组位置，在将值放进去
+        table[i] = new Entry(firstKey, firstValue);
+        size = 1;
+        setThreshold(INITIAL_CAPACITY);
+    }
+</code></pre><p>　　ThreadLocalMap的set方法：</p>
+<pre><code>private void set(ThreadLocal&lt;?&gt; key, Object value) {
+
+       // We don&apos;t use a fast path as with get() because it is at
+       // least as common to use set() to create new entries as
+       // it is to replace existing ones, in which case, a fast
+       // path would fail more often than not.
+
+       Entry[] tab = table;
+       int len = tab.length;
+       int i = key.threadLocalHashCode &amp; (len-1);
+
+       for (Entry e = tab[i];
+            e != null;
+            e = tab[i = nextIndex(i, len)]) {
+           ThreadLocal&lt;?&gt; k = e.get();
+
+           if (k == key) {
+               e.value = value;
+               return;
+           }
+
+           if (k == null) {
+               replaceStaleEntry(key, value, i);
+               return;
+           }
+       }
+
+       tab[i] = new Entry(key, value);
+       int sz = ++size;
+       if (!cleanSomeSlots(i, sz) &amp;&amp; sz &gt;= threshold)
+           rehash();
+   }
+</code></pre><p>　　从什么这些我们可以看出来，具体的值是存在Thread对象里面的，因此不同线程之间相互没有影响。具体一点。每个Thread类里面有个属性： ThreadLocal.ThreadLocalMap threadLocals = null。显然这个属性类是ThreadLocal的内部类。我们看看ThreadLocal的get方法：</p>
+<pre><code>public T get() {
+    Thread t = Thread.currentThread();
+    ThreadLocalMap map = getMap(t);
+    if (map != null) {
+        ThreadLocalMap.Entry e = map.getEntry(this);
+        if (e != null) {
+            @SuppressWarnings(&quot;unchecked&quot;)
+            T result = (T)e.value;
+            return result;
+        }
+    }
+    return setInitialValue();
+}
+</code></pre><p>　　我们先获取到当前Thread类，然后的到其ThreadLocalMap类属性，我们的值就存在里面。这个类的属性如下：Entry[]数组，这个key和value分别是ThreadLocal，value。完美解释。</p>
+<p>　　内存泄漏的问题,我们看2段代码即可明白。</p>
+<pre><code>static class Entry extends WeakReference&lt;ThreadLocal&lt;?&gt;&gt; {
+       /** The value associated with this ThreadLocal. */
+       Object value;
+
+       Entry(ThreadLocal&lt;?&gt; k, Object v) {
+           //这里让key放到上层父类处理，使其变成弱引用
+           super(k);
+           value = v;
+       }
+   }
+</code></pre><p>　　首先来说，如果把ThreadLocal置为null，那么意味着Heap中的ThreadLocal实例不在有强引用指向，只有弱引用存在，因此GC是可以回收这部分空间的，也就是key是可以回收的。但是value却存在一条从Current Thread过来的强引用链。因此只有当Current Thread销毁时，value才能得到释放。<br>　　因此，只要这个线程对象被gc回收，就不会出现内存泄露，但在threadLocal设为null和线程结束这段时间内不会被回收的，就发生了我们认为的内存泄露。最要命的是线程对象不被回收的情况，比如使用线程池的时候，线程结束是不会销毁的，再次使用的，就可能出现内存泄露。事实上，在ThreadLocalMap中的set/getEntry方法中，会对key为null（也即是ThreadLocal为null）进行判断，如果为null的话，那么是会对value置为null的。</p>
+<p>   避免方法，先将value remove掉，</p>
+<p>　　</p>
+<p>　　</p>
+
+          
+        
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="https://skydh.github.io/2017/12/07/java线程的并发加锁控制/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="董航">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="why are you so happy">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                <a class="post-title-link" href="/2017/12/07/java线程的并发加锁控制/" itemprop="url">java线程的并发加锁控制</a></h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2017-12-07T13:03:24+08:00">
+                2017-12-07
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            <h2 id="synchronized和Lock的加锁机制"><a href="#synchronized和Lock的加锁机制" class="headerlink" title="synchronized和Lock的加锁机制"></a>synchronized和Lock的加锁机制</h2><p>　　synchronized关键字加锁。<br>　　第一，我们先明确几个概念。<br>　　我们使用synchronized关键字时，锁不是加在代码上，而是加在对象上。<br>　　我先准备了一个测试类来验证信息，Counter类是一个公共线程信息类</p>
+<pre>  package thread;
+
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.concurrent.locks.Condition;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
+
+public class Counter {
+
+    public final Lock lock = new ReentrantLock();
+    private Condition condition = lock.newCondition();
+    private volatile int a = 1;
+    private Students stu = new Students();
+
+    public int geta() {
+        return a;
+    }
+
+    public synchronized void add() {
+        a++;
+        try {
+            SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+            System.out.println("add开始执行" + df.format(new Date()));
+            Thread.sleep(10000);
+            System.out.println("add is ing");
+            System.out.println("add执行结束" + df.format(new Date()));
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public synchronized void add1() {
+        a++;
+        try {
+            SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+            System.out.println("add1开始执行" + df.format(new Date()));
+            Thread.sleep(10000);
+            System.out.println("add1 is ing");
+            System.out.println("add1开始执行" + df.format(new Date()));
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void add2() {
+        synchronized (stu) {
+            SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+            System.out.println("add2开始执行" + df.format(new Date()));
+            System.out.println("add2 is ing");
+            System.out.println("add2开始执行" + df.format(new Date()));
+        }
+    }
+
+    public static synchronized void addStatic() {
+
+        try {
+            SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+            System.out.println("addStatic开始执行" + df.format(new Date()));
+            Thread.sleep(10000);
+            System.out.println("addStatic is ing");
+            System.out.println("addStatic开始执行" + df.format(new Date()));
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void add3() {
+
+        lock.lock();
+        try {
+            System.out.println("进入add3");
+            a++;
+
+            Thread.sleep(10000);
+            System.out.println("add3");
+
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+        lock.unlock();
+    }
+
+    public void add4() {
+
+
+
+        lock.lock();
+        System.out.println("进入add4");
+        try {
+            Thread.sleep(10000);
+        } catch (InterruptedException e) {
+
+            e.printStackTrace();
+        }
+        System.out.println("add4");
+
+        condition.signal();
+        lock.unlock();
+
+    }
+
+
+
+}
+ </pre>
+　　创建一个Counter类的对象，这个对象里面一共有4个锁，第一个就是counter对象锁，第二个就是students对象锁，第三个就是Students这个类的锁，因为每个类都是Class类的对象。第四个就是ReentrantLock这个可重入锁。
+　　这几个概念明确后，写几个demo来测试说明下:
+<pre>  
+package thread;
+
+public class Test003 {
+
+    public class Thread1 extends Thread {
+        private Counter counter;
+
+        public Thread1(Counter counter) {
+            this.counter = counter;
+        }
+
+        public void run() {
+            counter.add();
+        }
+    }
+
+    public class Thread2 extends Thread {
+        private Counter counter;
+
+        public Thread2(Counter counter) {
+            this.counter = counter;
+        }
+
+        public void run() {
+            counter.add1();
+        }
+    }
+
+    public class Thread3 extends Thread {
+        private Counter counter;
+
+        public Thread3(Counter counter) {
+            this.counter = counter;
+        }
+
+        public void run() {
+            counter.add2();
+        }
+    }
+
+    public class ThreadStatic extends Thread {
+        public void run() {
+            Counter.addStatic();
+        }
+    }
+
+    public class Thread4 extends Thread {
+        private Counter counter;
+
+        public Thread4(Counter counter) {
+            this.counter = counter;
+        }
+
+        public void run() {
+            counter.add3();
+        }
+    }
+
+    public class Thread5 extends Thread {
+        private Counter counter;
+
+        public Thread5(Counter counter) {
+            this.counter = counter;
+        }
+
+        public void run() {
+            counter.add4();
+        }
+    }
+}
+
+ </pre>
+　　这些是即将要调用的线程类，已来方便我们使用测试。
+第一种情况：
+<pre>
+public static void main(String[] args) throws InterruptedException {
+
+        Counter counter = new Counter();
+        Test003 test003 = new Test003();
+        Thread1 thread1 = test003.new Thread1(counter);
+        Thread2 thread2 = test003.new Thread2(counter);
+
+        thread1.start();
+        thread2.start();
+
+    }
+</pre>
+　　结果如下：
+<pre>
+add1开始执行2017-12-21 14:28:48
+add1 is ing
+add1开始执行2017-12-21 14:28:58
+add开始执行2017-12-21 14:28:58
+add is ing
+add执行结束2017-12-21 14:29:08
+
+</pre>
+　　结果解析：无论执行多少次，要么add1先执行，要么add先执行，但是任意一个没有执行完，另一个是不会执行的，即便调用了sleep方法，为什么呢。因为这2个线程公用一个对象，而调用的方法都加了synchronized的方法，由于第一个执行执行方法的将获得对象锁。其余的线程就无法获取到对象锁，只能进入等待队列。
+　　第二种情况：
+<pre>
+public static void main(String[] args) throws InterruptedException {
+        Counter counter = new Counter();
+        Test003 test003 = new Test003();
+        Thread1 thread1 = test003.new Thread1(counter);
+        Thread3 thread3 = test003.new Thread3(counter);
+        thread1.start();
+        thread3.start();
+    }
+</pre>
+　　结果如下
+<pre>
+add2开始执行2017-12-21 14:41:10
+add2 is ing
+add开始执行2017-12-21 14:41:10
+add2开始执行2017-12-21 14:41:10
+add is ing
+add执行结束2017-12-21 14:41:20</pre>
+　　结果解析：２个线程交叉执行，虽然都加了锁，但是是不同的对象锁，因此交叉执行。
+第三种情况：
+<pre>
+public static void main(String[] args) throws InterruptedException {
+        Counter counter = new Counter();
+        Counter counter1 = new Counter();
+        Test003 test003 = new Test003();
+        Thread1 thread1 = test003.new Thread1(counter);
+        Thread2 thread2 = test003.new Thread2(counter1);
+        thread1.start();
+        thread2.start();
+    }
+</pre>
+　　结果如下：
+<pre>
+add开始执行2017-12-21 14:45:03
+add1开始执行2017-12-21 14:45:03
+add1 is ing
+add is ing
+add1开始执行2017-12-21 14:45:13
+add执行结束2017-12-21 14:45:13</pre>
+　　结果解析：虽然都是一个类，一个代码，但是是２个对象，synchronized这个关键字加锁是加到对象身上去了。而这个2个线程锁持有的Counter对象时不一样的，因此锁也是不一样的，故交叉执行很正常。
+　　第四种情况：
+<pre>
+public static void main(String[] args) throws InterruptedException {
+        Counter counter = new Counter();
+        Test003 test003 = new Test003();
+        Thread1 thread1 = test003.new Thread1(counter);
+        ThreadStatic threadStatic = test003.new ThreadStatic();
+        thread1.start();
+        threadStatic.start();
+    }
+</pre>
+　　结果如下：
+<pre>
+addStatic开始执行2017-12-21 18:35:55
+add开始执行2017-12-21 18:35:55
+addStatic is ing
+add is ing
+addStatic开始执行2017-12-21 18:36:05
+add执行结束2017-12-21 18:36:05</pre>
+　　结果解析：结果交叉执行为何，因为静态方法是属于类本身的，那么在这个静态方法上加的synchronized，那么这个锁则对应的是类本身，那么2个线程执行普通方法和静态方法（都加了synchronized关键字）时是并发执行的了。
+　　第五种情况：
+<pre>
+public static void main(String[] args) throws InterruptedException {
+        Counter counter = new Counter();
+        Test003 test003 = new Test003();
+        Thread4 thread4 = test003.new Thread4(counter);
+        Thread5 thread5 = test003.new Thread5(counter);
+        thread4.start();
+        thread5.start();
+    }
+</pre>
+　　结果如下：
+<pre>
+进入add4
+add4
+进入add3
+add3</pre>
+　　结果解析：同一个Counter对象那么对应同一个ReentrantLock锁。那么这2个线程所执行的方法都加了ReentrantLock,那么执行的时候注定要加锁等待，所以无法并发执行，结果按顺序执行。
+
+
+## 并发条件控制
+　　正如大家所知，synchronized关键字对应了wait()方法和notify（）方法来控制并发控制，那么lock呢，也对应一系列的方法来处理。我们使用Condition这个类的方法来加以控制，下面，我将展示这2个加锁方式的控制的简单实现
+　　第一个：lock的条件控制
+<pre>
+
+
+    public final Lock lock = new ReentrantLock();
+    private Condition condition = lock.newCondition();
+    private volatile int a = 1;
+    public void add3() {
+        System.out.println("进入add3");
+        lock.lock();
+        try {
+            a++;
+            System.out.println("add3");
+            condition.await();
+            System.out.println("add31");
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+        lock.unlock();
+    }
+
+    public void add4() {
+        System.out.println("add4");
+        while (true) {
+            if (a > 1) {
+                System.out.println("进入循环");
+                lock.lock();
+                System.out.println("add4");
+                System.out.println("add41");
+                condition.signal();
+                lock.unlock();
+                break;
+            }
+        }
+    }
+public static void main(String[] args) throws InterruptedException {
+        Counter counter = new Counter();
+        Test003 test003 = new Test003();
+        Thread4 thread4 = test003.new Thread4(counter);
+        Thread5 thread5 = test003.new Thread5(counter);
+        thread4.start();
+        thread5.start();
+    }
+</pre>
+　　结果如下
+<pre>
+add4
+进入add3
+add3
+进入循环
+add4
+add41
+add31</pre>
+　　结果解析：２个线程无论谁先执行，先获取到锁的总是add3()方法。因为a=1,无法获取到锁，因此先执行add3方法，在放弃锁并进入到等待队列，然后a>1了，那么add4有机会执行代码了。在唤醒add3()方法，恩，完美。
+
+　　第二种情况：使用Object类的wait方法。
+<pre>
+    private volatile int a = 1;
+    public void add() {
+
+        synchronized (this) {
+            try {
+                SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+                System.out.println("add开始执行" + df.format(new Date()));
+                // Thread.sleep(10000);
+                a++;
+                wait();
+                System.out.println("add is ing");
+                System.out.println("add执行结束" + df.format(new Date()));
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
+    public void add1() {
+        while (true) {
+            if (a > 1) {
+                synchronized (this) {
+                    SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+                    System.out.println("add1开始执行" + df.format(new Date()));
+                    // Thread.sleep(10000);
+                    System.out.println("add1 is ing");
+                    System.out.println("add1开始执行" + df.format(new Date()));
+                    notify();
+                }
+                break;
+            }
+        }
+    }
+    public static void main(String[] args) throws InterruptedException {
+
+        Counter counter = new Counter();
+
+        Test003 test003 = new Test003();
+        Thread1 thread1 = test003.new Thread1(counter);
+
+        Thread2 thread2 = test003.new Thread2(counter);
+
+        thread1.start();
+        thread2.start();
+        thread1.join();
+}</pre>
+
+<p>　结果如下</p>
+<p><pre><br>add开始执行2017-12-21 19:32:23<br>add1开始执行2017-12-21 19:32:23<br>add1 is ing<br>add1开始执行2017-12-21 19:32:23<br>add is ing<br>add执行结束2017-12-21 19:32:23</pre><br>　　结果解析：逻辑和上面一样，只是不同的实现方式罢了。</p>
+<p>　　wait()方法在这里要再次说下，他是在加了synchronized这个关键字的对象调用的，不然报错。还有Thread类的join()方法源码里面的wait()方法是让主线程进入等待队列，并且等待这个锁，当这个子线程执行完后，则会自动调用notify方法，让等待子线程对象锁的主线程可以继续执行，恩，完美解释join（）方法。</p>
+<p>　　</p>
+<p>　　
+　　</p>
+
+          
+        
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="https://skydh.github.io/2017/11/29/java线程的常用方法和属性介绍/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="董航">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="why are you so happy">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                <a class="post-title-link" href="/2017/11/29/java线程的常用方法和属性介绍/" itemprop="url">java线程的常用方法和属性介绍</a></h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2017-11-29T20:59:07+08:00">
+                2017-11-29
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            <h2 id="start"><a href="#start" class="headerlink" title="start()"></a>start()</h2><p>　　start方法是Thread 类的方法，在这个方法中会调用native方法（start0()）来启动线程，为该线程分配资源。</p>
+<h2 id="sleep"><a href="#sleep" class="headerlink" title="sleep()"></a>sleep()</h2><p>　　sleep方法有2个方法。</p>
+<p><pre>   public static native void sleep(long millis) </pre></p>
+<p><pre><br>throws InterruptedException;<br>  public static void sleep(long millis, int nanos)<br>    throws InterruptedException {<br>        if (millis &lt; 0) {<br>            throw new IllegalArgumentException(“timeout value is negative”);<br>        }</pre></p>
+<pre><code>    if (nanos &lt; 0 || nanos &gt; 999999) {
+        throw new IllegalArgumentException(
+                            &quot;nanosecond timeout value out of range&quot;);
+    }
+
+    if (nanos &gt;= 500000 || (nanos != 0 &amp;&amp; millis == 0)) {
+        millis++;
+    }
+
+    sleep(millis);
+}
+</code></pre><p><br>　　看了源码，发现第二个纳秒级别的没什么用，实际上还是毫秒级别。<br>　　sleep方法在进入阻塞队列时不会释放当前线程所持有的锁。</p>
+<h2 id="yield"><a href="#yield" class="headerlink" title="yield()"></a>yield()</h2><p>　　该方法会让当前线程交出cpu权限，但是不能确定具体时间，和sleep方法一样不会释放当前线程所持有的锁，该方法会让线程直接进入就绪状态，很好理解。目的是为了让同等优先级的线程获得cpu执行的机会。</p>
+<h2 id="join"><a href="#join" class="headerlink" title="join()"></a>join()</h2><p>　　该方法是让当前线程阻塞，直到调用该方法的线程执行完毕。源码分析</p>
+<p><pre> public final synchronized void join(long millis)<br>    throws InterruptedException {<br>        long base = System.currentTimeMillis();<br>        long now = 0;</pre></p>
+<pre><code>    if (millis &lt; 0) {
+        throw new IllegalArgumentException(&quot;timeout value is negative&quot;);
+    }
+
+    if (millis == 0) {
+        while (isAlive()) {
+            wait(0);
+        }
+    } else {
+        while (isAlive()) {
+            long delay = millis - now;
+            if (delay &lt;= 0) {
+                break;
+            }
+            wait(delay);
+            now = System.currentTimeMillis() - base;
+        }
+    }
+} 
+</code></pre><p> <br>　　这个是join的源码，代码很清晰，如果调用该方法的对象线程已启动，那么当前线程释放该对象锁，并进入条件等待队列里面，等待改线程执行完（线程如果在同步代码块中结束会自动调用notifyAll()方法来唤醒等待队列里面的线程）</p>
+<h2 id="wait-notifyAll-notify"><a href="#wait-notifyAll-notify" class="headerlink" title="wait() ,notifyAll(),notify()"></a>wait() ,notifyAll(),notify()</h2><p>　　这3个方法一般一同出现。且都是Object类的方法，用来辅助操作线程类。<br>　　这3个方法都必须在同步代码块中，不然就会报错。<br>　　wait()方法会让当前线程释放锁，并进入到条件等待队列。<br>　　notify()方法会随机唤醒条件等待队列的任意一个线程，并将其放到锁池里面。<br>　　notifyAll()方法则是唤醒条件等待队列的所有线程，并将其都放到锁池里面。<br>　　而锁池里面的线程来竞争所需要的对象锁，成功获取到锁的线程将加入到就绪队列里面。</p>
+<h2 id="interrupt-isInterrupted-interrupted"><a href="#interrupt-isInterrupted-interrupted" class="headerlink" title="interrupt(),isInterrupted(),interrupted()"></a>interrupt(),isInterrupted(),interrupted()</h2><p>　　这3个方法表示线程的中断，这个很有意思，分多钟情况讨论。（在java中，中断不是强制停止改线程，而是给线程一个信号，让其自行处理何时退出）<br>　　isInterrupted：就是返回对应线程的中断标志位是否为true。<br>　　interrupted：返回当前线程的中断标志位是否为true，但它还有一个重要的副作用，就是清空中断标志位，也就是说，连续两次调用<br>　　interrupted()，第一次返回的结果为true，第二次一般就是false 。<br>　　interrupt：表示中断对应的线程。</p>
+<p>　　中断线程分情况讨论：<br>　　1.还没start，或者已经结束，无效果<br>　　2.运行中，中断无效，直到只能设置个中断位，直到线程走完或者进入阻塞。<br>　　3.锁池，中断无效。<br>　　4.阻塞，等待，会抛出异常，可以中断。<br>　　ps(io等待大多都是可以中断的，但是inputStream的read不会相应中断。)<br>　　中断不好使，因此最好自己在线程类里面提供关闭方法。比如</p>
+<p><pre> class MyThread extends Thread{<br>        private volatile boolean isStop = false;<br>        @Override<br>        public void run() {<br>            int i = 0;<br>            while(!isStop){<br>                i++;<br>            }<br>        }</pre></p>
+<pre><code>    public void setStop(boolean stop){
+        this.isStop = stop;
+    }
+}
+</code></pre><p> </p>
+<h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><p>　　在这里我没有写具体的例子，因为例子大家可以自己写测试下，太占篇幅了，这里只举出一些源码。</p>
+
+          
+        
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="https://skydh.github.io/2017/11/23/java线程的3种创建方式及优缺点/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="董航">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="why are you so happy">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                <a class="post-title-link" href="/2017/11/23/java线程的3种创建方式及优缺点/" itemprop="url">java线程的3种创建方式及优缺点</a></h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2017-11-23T22:09:25+08:00">
+                2017-11-23
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            <h2 id="线程创建简介"><a href="#线程创建简介" class="headerlink" title="线程创建简介"></a>线程创建简介</h2><p>　　1.在java中表示线程的是Thread类。无论是那种方式创建线程，本质上都是创建Thread类的对象。<br><img src="https://raw.githubusercontent.com/skydh/picture/master/thread_003.png" alt="aaa"><br>　　２.Thread类继承Runnable接口，且也有以Runnable作为参数的构造方法。<br><img src="https://raw.githubusercontent.com/skydh/picture/master/thread_002.png" alt="aaa"><br>　　３．FutureTask这个类也实现了Runnable接口，故也可以作为参数传进Thread 里面来创建线程。</p>
+<h2 id="线程的创建"><a href="#线程的创建" class="headerlink" title="线程的创建"></a>线程的创建</h2><h3 id="继承Thread类"><a href="#继承Thread类" class="headerlink" title="继承Thread类"></a>继承Thread类</h3><pre>package thread;
+
+/**
+ * 继承thread类来创建线程
+ * 
+ * @author dh
+ *
+ */
+public class ExtendsThread extends Thread {
+
+    public void run() {
+        for (int i = 0; i < 10; i++) {
+            System.out.println(Thread.currentThread().getName() + "    _"+i);
+        }
+    }
+
+}
+</pre>
+### 实现Runnable接口
+ <pre>package thread;
+
+/**
+ * 实现 Runnable接口
+ * 
+ * @author dh
+ *
+ */
+public class ImplementRunnable implements Runnable {
+    private int i;
+
+    public ImplementRunnable(int i) {
+        this.i = i;
+    }
+
+    @Override
+    public void run() {
+
+        for (; i < 20; i++) {
+            System.out.println(Thread.currentThread().getName() + "   _" + i);
+        }
+    }
+
+}
+</pre>
+### 实现Callable接口
+ <pre>package thread;
+
+import java.util.concurrent.Callable;
+
+/**
+ * 
+ * @author dh
+ *
+ */
+public class ImplementCallable implements Callable<string> {
+
+    private int i;
+
+    public ImplementCallable(int i) {
+        this.i = i;
+    }
+
+    @Override
+    public String call() throws Exception {
+        for (; i < 20; i++) {
+            System.out.println(Thread.currentThread().getName() + "   _" + i);
+
+        }
+        return "1";
+    }
+
+}
+</string></pre>
+### 创建线程
+<pre>package thread;
+
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.FutureTask;
+/**
+ * 
+ * @author dh
+ *
+ */
+public class TestD {
+
+    public static void main(String[] args) throws InterruptedException, ExecutionException {
+        ExtendsThread et = new ExtendsThread();
+        et.run();
+
+
+
+        ImplementRunnable imr = new ImplementRunnable(0);
+        Thread thread = new Thread(imr);
+        thread.start();
+        Thread thread1 = new Thread(imr);
+        thread1.start();
+
+
+        ImplementCallable implCallable = new ImplementCallable(1);
+        FutureTask<string> ft = new FutureTask<string>(implCallable);
+        Thread thread2 = new Thread(ft);
+        thread2.start();
+        System.out.println(ft.get());
+
+    }
+
+}
+}
+</string></string></pre>
+
+<p>结果如下：</p>
+<pre>main    _0
+main    _1
+main    _2
+main    _3
+main    _4
+main    _5
+main    _6
+main    _7
+main    _8
+main    _9
+Thread-1   _0
+Thread-2   _0
+Thread-1   _1
+Thread-2   _2
+Thread-1   _3
+Thread-2   _4
+Thread-1   _5
+Thread-2   _6
+Thread-1   _7
+Thread-2   _8
+Thread-1   _9
+Thread-2   _10
+Thread-1   _11
+Thread-2   _12
+Thread-1   _13
+Thread-2   _14
+Thread-1   _15
+Thread-2   _16
+Thread-1   _17
+Thread-2   _18
+Thread-1   _19
+Thread-3   _1
+Thread-3   _2
+Thread-3   _3
+Thread-3   _4
+Thread-3   _5
+Thread-3   _6
+Thread-3   _7
+Thread-3   _8
+Thread-3   _9
+Thread-3   _10
+Thread-3   _11
+Thread-3   _12
+Thread-3   _13
+Thread-3   _14
+Thread-3   _15
+Thread-3   _16
+Thread-3   _17
+Thread-3   _18
+Thread-3   _19
+1
+</pre>
+
+<h2 id="3种方式创建的优缺点"><a href="#3种方式创建的优缺点" class="headerlink" title="3种方式创建的优缺点"></a>3种方式创建的优缺点</h2><p>1.继承Thread显然有个很大的缺点，java是单继承了，如果继承了Thread那么就无法继承其他类。但是继承Thread编写简单，实现方便。<br><br></p>
+<p>2.实现Runnable接口和Callable接口。大致一样，区别就是Callable接口的实现可以有返回值，且可以抛出显示异常。其余大致一样。<br>他们的优势是实现接口，那么实现类可以有其他父类，避免的Thread的问题，其次可以用一个实现了该接口的对象来创建多个线程，从而方便一些基本的资源共享，因为是同一个对象。</p>
+
+          
+        
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="https://skydh.github.io/2017/11/23/java线程的基本概念/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="董航">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="why are you so happy">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                <a class="post-title-link" href="/2017/11/23/java线程的基本概念/" itemprop="url">java线程的基本概念</a></h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2017-11-23T11:32:08+08:00">
+                2017-11-23
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            <h2 id="进程和线程"><a href="#进程和线程" class="headerlink" title="进程和线程"></a>进程和线程</h2><h3 id="进程的诞生"><a href="#进程的诞生" class="headerlink" title="进程的诞生"></a>进程的诞生</h3><p>　　操作系统中有2个任务A,B,任务A先执行，执行到一半需要io,因此要大量时间，在这个时间段内cpu是空闲的，浪费了资源，于是就有进程，当A暂时无法利用cpu,但是又不能销毁时，就把它暂存起来，让B来执行。B执行完或者需要A执行时，根据暂存的信息回复过来。<br><br><br>　　每个进程都对应一定的内存空间，并且只能使用自己的内存空间，并且保留程序的运行状态，这个也为进程切换提供了基础。</p>
+<h3 id="线程的诞生"><a href="#线程的诞生" class="headerlink" title="线程的诞生"></a>线程的诞生</h3><p>　　第一，多核处理器的出现，为了更好的利用多核处理器，避免资源的浪费。第二程序的需要，人们需要在一个程序中并发执行任务。比如播放器边播放视频，我们还要可以边品论，显然要并发执行。第三。一个程序中出现了阻塞（io）而导致程序不能继续进行，这个很影响体验和操作，因此我们需要多线程，把这些耗时的操作都丢到子线程里面去，这样程序就可以继续走下去了。<br><br></p>
+<h3 id="线程的基本概念和注意点"><a href="#线程的基本概念和注意点" class="headerlink" title="线程的基本概念和注意点"></a>线程的基本概念和注意点</h3><p>　　1.对操作系统来说，资源分配的基本单位是进程，而调度的基本单位是线程。<br><br><br>　　2.对于一个程序来说，不一定多线程的效率就高，不能盲目的使用，多线程的使用和具体业务场景（交互之类的），以及机器的特性，比如是多核还是单核的机器等<br><br><br>    3.每个线程表示一条单独的执行流，有自己的程序计数器，有自己的栈，但线程之间可以共享内存，它们可以访问和操作相同的对象。<br><br><br>　　4.java是单线程编程语言，你要是不主动创建线程，那么就默认只有主线程，当然jvm还是会有其他很多后台精灵线程存在的，比如垃圾回收<br>（Erlang就是一种并发编程语言，每一个函数都可以当做独立的任务来驱动）</p>
+<h3 id="java线程的状态"><a href="#java线程的状态" class="headerlink" title="java线程的状态"></a>java线程的状态</h3><p><img src="https://raw.githubusercontent.com/skydh/picture/master/thread_001.png" alt="aaa"><br>　　１．新建：创建一个线程对象<br><br><br>　　２．可运行：线程调用了start方法，存在于可运行线程池中。<br><br><br>　　３．运行态：线程获取到了cpu使用权。<br><br><br>　　４．阻塞态：第一：运行的线程调用对象的wait()方法（该方法只存在于同步加锁代码块中），让出锁，进入等待队列。只用同样调用该对象的线程使用notify()方法才会进入到锁池中。　第二：运行的线程获取一个加锁的资源时，若该资源被占用，进入锁队列中，只用当锁队列中的线程获取到了加锁的对象资源时，才会进入到可运行状态中。第三：运行的线程执行sleep()或者join()方法，或者io,该线程会阻塞队列，等时间到，或者io完成，会自动进入可运行状态。<br><br><br>　　５．死亡：线程执行完，或者异常中断退出。</p>
+
+          
+        
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="https://skydh.github.io/2017/11/21/浅析https/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="董航">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="why are you so happy">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                <a class="post-title-link" href="/2017/11/21/浅析https/" itemprop="url">浅析https</a></h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2017-11-21T11:29:33+08:00">
+                2017-11-21
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            <h2 id="基本属性定义"><a href="#基本属性定义" class="headerlink" title="基本属性定义"></a>基本属性定义</h2><h3 id="对称加密"><a href="#对称加密" class="headerlink" title="对称加密"></a>对称加密</h3><p>　　对称加密是最快速、最简单的一种加密方式，加密（encryption）与解密（decryption）用的是同样的密钥（secret key）</p>
+<h3 id="非对称加密"><a href="#非对称加密" class="headerlink" title="非对称加密"></a>非对称加密</h3><p>　　非对称加密算法需要两个密钥：公开密钥（publickey）和私有密钥（privatekey）。公开密钥与私有密钥是一对，如果用公开密钥对数据进行加密，只有用对应的私有密钥才能解密；如果用私有密钥对数据进行加密，那么只有用对应的公开密钥才能解密。因为加密和解密使用的是两个不同的密钥，所以这种算法叫作非对称加密算法。经典的非对称加密算法有RSA算法。原理是利用了乘法不可逆和大数因子很难分解，2个大质数。</p>
+<h3 id="2种加密算法的优缺点"><a href="#2种加密算法的优缺点" class="headerlink" title="2种加密算法的优缺点"></a>2种加密算法的优缺点</h3><p>　　对称加密，加密效果很好，速度快。但是在传输中如何安全是个问题。<br><br><br>　　非对称加密，利于传输，但是速度慢，消耗性能，且加密内容不能超过公钥长度。</p>
+<h3 id="数字证书"><a href="#数字证书" class="headerlink" title="数字证书"></a>数字证书</h3><p>　　数字证书就是互联网通讯中标志通讯各方身份信息的一串数字，提供了一种在Internet上验证通信实体身份的方式，数字证书不是数字身份证，而是身份认证机构盖在数字身份证上的一个章或印（或者说加在数字身份证上的一个签名）。它是由权威机构——CA机构，又称为证书授权（Certificate Authority）中心发行的，人们可以在网上用它来识别对方的身份，简单来说就是包含服务器方基本信息和公钥信息和数字签名的证书。</p>
+<h3 id="数字签名"><a href="#数字签名" class="headerlink" title="数字签名"></a>数字签名</h3><p>　　将报文按双方约定的HASH算法计算得到一个固定位数的报文摘要。在数学上保证：只要改动报文中任何一位，重新计算出的报文摘要值就会与原先的值不相符。这样就保证了报文的不可更改性。<br>　　将该报文摘要值用发送者的私人密钥加密，然后连同原报文一起发送给接收者，而产生的报文即称数字签名，简单来说就是对证书的基本信息进行摘要缩减后再用ca的公钥生成的一个签名。</p>
+<h2 id="https的诞生"><a href="#https的诞生" class="headerlink" title="https的诞生"></a>https的诞生</h2><p><img src="https://raw.githubusercontent.com/skydh/picture/master/https_001.png" alt="aaa"><br><br><br>　　A和B进行通信，如果不加密这个hello信息会被中间人直接获取到，如果是账号密码信息，这将是一场灾难。<br>　　加密分为对称加密和非对称加密，显然，对称加密速度快一点，那么我们使用对称加密来给我们的信息加密<br><img src="https://raw.githubusercontent.com/skydh/picture/master/https_002.png" alt="aaa"><br>　　那么又有问题了，对于服务器端和客户端进行消息传递，我是如何把对称密钥s交给你，就算交给你了，别人来向我请求消息时，我如果也用密钥s，那么加密将毫无意义，如果每个客户端都存一个特定的密钥，那么服务器内存也将不够。<br><img src="https://raw.githubusercontent.com/skydh/picture/master/https_003.png" alt="aaan"><br>　　那么我们只能用非对称加密来进行加密了，你瞧，就算中间人截取到了消息，用公钥打开后能开到信息，也无法得到私钥来修改，那么客户端得到的将是安全完整的消息。但是我们一直用非对称加密是不是太慢了。<br><img src="https://raw.githubusercontent.com/skydh/picture/master/https_004.png" alt="aaan"><br>　　你看，我们可以先用非对称加密把随机生成的对称加密密钥发送到客户端，这样除了一开始我们使用非对称加密，后面的整个会话都用对称加密来处理，完美。<br><img src="https://raw.githubusercontent.com/skydh/picture/master/https_005.png" alt="aaan"><br>　　咦，又出现问题了，客户端向服务器端请求公钥时，整个公钥直接被掉包，那么后续的岂不是都不行了。<br>还好，你有张良计我有过墙梯。<br><img src="https://raw.githubusercontent.com/skydh/picture/master/https_006.png" alt="aaan"><br>　　我们服务器端可以向公证处请求证书，也就是数字证书，数字证书如何保证通信安全呢。第一:证书里面有个报文，包含了服务器端信息，域名，摘要算法，以及公钥，第二：有一个是对这些信息摘要后用CA私钥加密生成的数字签名。<br><br><br>　　客户端得到证书后用报文信息中的摘要算法对报文进行进行摘要，获取到的摘要和用CA公钥解开的数字签名一致，那么这个证书是安全的了，否则不安全。对了ＣＡ的公钥就在本地浏览器的证书里面。<br><br><br>　　为什么这样做？<br><br><br>　　如果报文有了一丝丝的修改，那么生成的摘要就会发生变化。通过这个来判断报文是否修改。<br>　　为什么不直接对报文加密？<br><br><br>　　因为非对称加密是有限制的，加密的信息不能比公钥长，报文信息可能会比较多，那么最好就是生成一个摘要，对摘要进行加密。<br><br><br>  　　各位大佬，如果对上面的有问题，发我邮箱验证。donghang49@outlook.com</p>
+<p>图片取自网络</p>
+
+          
+        
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
     <link itemprop="mainEntityOfPage" href="https://skydh.github.io/2017/11/20/创表语句转实体类/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -394,7 +1857,7 @@
               
                 <a href="/archives/">
               
-                  <span class="site-state-item-count">121</span>
+                  <span class="site-state-item-count">127</span>
                   <span class="site-state-item-name">日志</span>
                 </a>
               </div>
@@ -438,7 +1901,7 @@
     <footer id="footer" class="footer">
       <div class="footer-inner">
         <script async src="https://dn-lbstatics.qbox.me/busuanzi/2.3/busuanzi.pure.mini.js"></script>
-<div class="copyright">&copy; <span itemprop="copyrightYear">2019</span>
+<div class="copyright">&copy; <span itemprop="copyrightYear">2020</span>
   <span class="with-love">
     <i class="fa fa-user"></i>
   </span>

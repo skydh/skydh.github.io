@@ -232,6 +232,1159 @@
   
   
   <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="https://skydh.github.io/2018/07/10/hashmap/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="董航">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="why are you so happy">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                <a class="post-title-link" href="/2018/07/10/hashmap/" itemprop="url">hashmap</a></h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2018-07-10T10:44:58+08:00">
+                2018-07-10
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            <h2 id="基本信息"><a href="#基本信息" class="headerlink" title="基本信息"></a>基本信息</h2><p>　　HashMap可以接受null键值和值，而Hashtable则不能；HashMap是非synchronized;HashMap很快；以及HashMap储存的是键值对。</p>
+<h2 id="注意点"><a href="#注意点" class="headerlink" title="注意点"></a>注意点</h2><p>　　１．当两个对象的hashcode相同会发生什么？<br>　　因为hashcode相同，所以它们的bucket位置相同，‘碰撞’会发生。因为HashMap使用链表存储对象，这个Entry(包含有键值对的Map.Entry对象)会存储在链表中。<br>　　２．如果两个键的hashcode相同，你如何获取值对象？<br>　　找到bucket位置之后，会调用keys.equals()方法去找到链表中正确的节点，最终找到要找的值对象。<br>　　３．如果HashMap的大小超过了负载因子(load factor)定义的容量，怎么办？<br>　　默认的负载因子大小为0.75，也就是说，当一个map填满了75%的bucket时候，和其它集合类(如ArrayList等)一样，将会创建原来HashMap大小的两倍的bucket数组，来重新调整map的大小，并将原来的对象放入新的bucket数组中。这个过程叫作rehashing，因为它调用hash方法找到新的bucket位置。<br>　　４．为什么String, Interger这样的wrapper类适合作为键？<br>　　Ｓtring, Interger这样的wrapper类作为HashMap的键是再适合不过了，而且String最为常用。因为String是不可变的，也是final的，而且已经重写了equals()和hashCode()方法了。其他的wrapper类也有这个特点。不可变性是必要的，因为为了要计算hashCode()，就要防止键值改变，如果键值在放入时和获取时返回不同的hashcode的话，那么就不能从HashMap中找到你想要的对象。不可变性还有其他的优点如线程安全。如果你可以仅仅通过将某个field声明成final就能保证hashCode是不变的，那么请这么做吧。因为获取对象的时候要用到equals()和hashCode()方法，那么键对象正确的重写这两个方法是非常重要的。如果两个不相等的对象返回不同的hashcode的话，那么碰撞的几率就会小些，这样就能提高HashMap的性能。</p>
+<h2 id="简单实现一个hashmap"><a href="#简单实现一个hashmap" class="headerlink" title="简单实现一个hashmap"></a>简单实现一个hashmap</h2><pre><code>package base_struct.hashmap;
+
+/**
+     * 基于链表数组的实现
+     * @author dh
+     * @param &lt;V&gt;
+     * @param &lt;K&gt;
+     *
+*/
+public class DhHashMap&lt;K, V&gt; {
+private class Entry&lt;K,V&gt;{
+    int hash;
+    K key;
+    V value;
+    Entry&lt;K,V&gt; next;
+    Entry(int hash, K key, V value, Entry&lt;K, V&gt; next) {
+        this.hash = hash;
+        this.key = key;
+        this.value = value;
+        this.next = next;
+    }
+}
+private static final int DEFAULT_CAPACITY = 1 &lt;&lt; 4;
+
+private Entry&lt;K, V&gt;[] table;
+
+private int capacity;
+
+private int size;
+public DhHashMap(int capacity) {
+    if (capacity &lt; 0) {
+        throw new IllegalArgumentException();
+    } else {
+        table = new Entry[capacity];
+        size = 0;
+        this.capacity = capacity;
+    }
+}
+public int size() {
+    return size;
+}
+public boolean isEmpty() {
+    return size == 0 ? true : false;}
+
+/**
+ * 这个hash算法采用位运算提高了效率,由于采用位运算，因此默认长度最好是2的幂最好
+ * @param key
+ * @return
+ */
+private int hash(Object key) {
+    return (key == null) ? 0 : key.hashCode()&amp;(capacity-1);
+}
+
+/**
+ * 按照以前邏輯，默认key一样则只修改value,
+ * @param key
+ * @param value
+ */
+public void put(K key, V value) {
+    if (key == null) {
+        throw new IllegalArgumentException();
+    }
+    int hash = hash(key);
+    Entry&lt;K, V&gt; nEntry = new Entry&lt;K, V&gt;(hash, key, value, null);
+    Entry&lt;K, V&gt; entry = table[hash];
+    while (entry != null) {
+        if (entry.key.equals(key)) {
+            entry.value = value;
+            return;
+        }
+        entry = entry.next;
+    }
+    nEntry.next = table[hash];
+    table[hash] = nEntry;
+    size++;
+}
+/**
+ * h很简单的逻辑，找到确认的hash值后，一个个遍历
+ * @param key
+ * @return
+ */
+public V get(K key) {
+    if (key == null) {
+        throw new IllegalArgumentException();
+    }
+    int hash = hash(key);
+    Entry&lt;K, V&gt; entry = table[hash];
+    while (entry != null) {
+        if (entry.key.equals(key)) {
+            return entry.value;
+        }
+        entry = entry.next;
+    }
+    return null;
+}
+}
+</code></pre><h2 id="gt-gt-gt-操作符"><a href="#gt-gt-gt-操作符" class="headerlink" title="&gt;&gt;&gt;操作符"></a>&gt;&gt;&gt;操作符</h2><p>　这个操作符的作用是将当前整数，转换为２进制后，右移。比如<br>２&gt;&gt;&gt;1,就是10右移1位剩下了一个1，就是1。<br>　　案例如下：<br>    public static void main(String [] args)<br>    {<br>        System.out.println(4&gt;&gt;&gt; 1);<br>    }<br>　　结果是２．<br>    public static void main(String [] args)<br>    {<br>        System.out.println(4&gt;&gt;&gt; 2);<br>    }<br>　　结果是１</p>
+<h2 id="1-8增加了对其优化。"><a href="#1-8增加了对其优化。" class="headerlink" title="1.8增加了对其优化。"></a>1.8增加了对其优化。</h2><p>　　其原因是hash的的平均分布可能有问题，有可能导致链表过长，从而使得效率变的很低。因此加了一个新的结构红黑树，如果说1.8之前的hashMap是数组+链表，那么现在版本的就是数组+链表+红黑树。当链表长度<8时，默认以前的方式加元素，也就是数组+链表，当链表>8时则将链表转换为红黑树。（红黑树是一个自平衡的二叉查找树，其插入删除时为了保持红黑树的平衡特征，回自旋来保证，可以将其理解为一个具有自平衡的查找2叉树）</8时，默认以前的方式加元素，也就是数组+链表，当链表></p>
+<h2 id="hashmap线程不安全"><a href="#hashmap线程不安全" class="headerlink" title="hashmap线程不安全"></a>hashmap线程不安全</h2><p>　　hashmap没有做加锁处理，举个简单例子，2个线程插入一个数据，其hashcode都是一样的，在极端情况下，可能导致插入少了一个数据。</p>
+<h2 id="java-1-8源码分析"><a href="#java-1-8源码分析" class="headerlink" title="java 1.8源码分析"></a>java 1.8源码分析</h2><p>　　这里只分析下put方法，get方法很简单，自己去看看。突然觉得put方法也很简单。</p>
+<pre><code>  final V putVal(int hash, K key, V value, boolean onlyIfAbsent,
+               boolean evict) {
+    Node&lt;K,V&gt;[] tab; Node&lt;K,V&gt; p; int n, i;
+    if ((tab = table) == null || (n = tab.length) == 0)
+        n = (tab = resize()).length;
+    if ((p = tab[i = (n - 1) &amp; hash]) == null)
+        tab[i] = newNode(hash, key, value, null);
+    else {
+        Node&lt;K,V&gt; e; K k;
+        if (p.hash == hash &amp;&amp;
+            ((k = p.key) == key || (key != null &amp;&amp; key.equals(k))))
+            e = p;
+        else if (p instanceof TreeNode)
+            e = ((TreeNode&lt;K,V&gt;)p).putTreeVal(this, tab, hash, key, value);
+        else {
+            for (int binCount = 0; ; ++binCount) {
+                if ((e = p.next) == null) {
+                    p.next = newNode(hash, key, value, null);
+                    if (binCount &gt;= TREEIFY_THRESHOLD - 1) // -1 for 1st
+                        treeifyBin(tab, hash);
+                    break;
+                }
+                if (e.hash == hash &amp;&amp;
+                    ((k = e.key) == key || (key != null &amp;&amp; key.equals(k))))
+                    break;
+                p = e;
+            }
+        }
+        if (e != null) { // existing mapping for key
+            V oldValue = e.value;
+            if (!onlyIfAbsent || oldValue == null)
+                e.value = value;
+            afterNodeAccess(e);
+            return oldValue;
+        }
+    }
+    ++modCount;
+    if (++size &gt; threshold)
+        resize();
+    afterNodeInsertion(evict);
+    return null;
+}
+</code></pre><p>　　这里我直接说下流程：</p>
+<ul>
+<li>先判断table是否为空，为空，则创建table。</li>
+<li><p>在判断key所在table的位置是否为null,空的话直接创建链表node。否则进入else。</p>
+</li>
+<li><p>else里面先判断这个链表node的key是否和要put的key一样，一样则覆盖</p>
+</li>
+<li>在判断是否是树节点，是的话，插入树节点的方式插入数据。</li>
+<li>否则，遍历链表，要么找到一样的key覆盖，要么创建新的节点，如果是创建节点，那么再判断这个链表长度是否&gt;=8，是的话则将链表转换为红黑树。</li>
+<li>再然后，覆盖的已经返回了，创建新节点的，走下一步，hashmap的size加一。在判断是否大于限定值，大于的话则是则扩张table。</li>
+<li>好了 over，，，</li>
+</ul>
+<pre><code> /** Implementation for put and putIfAbsent */
+final V putVal(K key, V value, boolean onlyIfAbsent) {
+    if (key == null || value == null) throw new NullPointerException();
+    int hash = spread(key.hashCode());
+    int binCount = 0;
+    for (Node&lt;K,V&gt;[] tab = table;;) {
+        Node&lt;K,V&gt; f; int n, i, fh;
+        if (tab == null || (n = tab.length) == 0)
+            tab = initTable();
+        else if ((f = tabAt(tab, i = (n - 1) &amp; hash)) == null) {
+            if (casTabAt(tab, i, null,
+                         new Node&lt;K,V&gt;(hash, key, value, null)))
+                break;                   // no lock when adding to empty bin
+        }
+        else if ((fh = f.hash) == MOVED)
+            tab = helpTransfer(tab, f);
+        else {
+            V oldVal = null;
+            synchronized (f) {
+                if (tabAt(tab, i) == f) {
+                    if (fh &gt;= 0) {
+                        binCount = 1;
+                        for (Node&lt;K,V&gt; e = f;; ++binCount) {
+                            K ek;
+                            if (e.hash == hash &amp;&amp;
+                                ((ek = e.key) == key ||
+                                 (ek != null &amp;&amp; key.equals(ek)))) {
+                                oldVal = e.val;
+                                if (!onlyIfAbsent)
+                                    e.val = value;
+                                break;
+                            }
+                            Node&lt;K,V&gt; pred = e;
+                            if ((e = e.next) == null) {
+                                pred.next = new Node&lt;K,V&gt;(hash, key,
+                                                          value, null);
+                                break;
+                            }
+                        }
+                    }
+                    else if (f instanceof TreeBin) {
+                        Node&lt;K,V&gt; p;
+                        binCount = 2;
+                        if ((p = ((TreeBin&lt;K,V&gt;)f).putTreeVal(hash, key,
+                                                       value)) != null) {
+                            oldVal = p.val;
+                            if (!onlyIfAbsent)
+                                p.val = value;
+                        }
+                    }
+                }
+            }
+            if (binCount != 0) {
+                if (binCount &gt;= TREEIFY_THRESHOLD)
+                    treeifyBin(tab, i);
+                if (oldVal != null)
+                    return oldVal;
+                break;
+            }
+        }
+    }
+    addCount(1L, binCount);
+    return null;
+}
+</code></pre><p>　　这个是ConcurrentHashMap的put源码。</p>
+<ul>
+<li>先根据key计算出位置，然后这个位置为null则cas看看可否插入值成功。</li>
+<li>判断是否需要扩容</li>
+<li>加锁写数据，和hashmap类似</li>
+</ul>
+
+          
+        
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="https://skydh.github.io/2018/07/09/CountDownLatch/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="董航">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="why are you so happy">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                <a class="post-title-link" href="/2018/07/09/CountDownLatch/" itemprop="url">CountDownLatch 用法</a></h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2018-07-09T15:13:26+08:00">
+                2018-07-09
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            <pre><code>package test;
+import java.util.concurrent.CountDownLatch;
+public class Test {
+ public static void main(String[] args) {   
+     final CountDownLatch latch = new CountDownLatch(2)；
+     new Thread(){
+         public void run() {
+             try {
+                 System.out.println(&quot;子线程&quot;+Thread.currentThread().getName()+&quot;正在执行&quot;);
+                Thread.sleep(3000);
+                System.out.println(&quot;子线程&quot;+Thread.currentThread().getName()+&quot;执行完毕&quot;);
+                latch.countDown();
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+         };
+     }.start();
+
+     new Thread(){
+         public void run() {
+             try {
+                 System.out.println(&quot;子线程&quot;+Thread.currentThread().getName()+&quot;正在执行&quot;);
+                 Thread.sleep(3000);
+                 System.out.println(&quot;子线程&quot;+Thread.currentThread().getName()+&quot;执行完毕&quot;);
+                 latch.countDown();
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+         };
+     }.start();
+
+     try {
+         System.out.println(&quot;等待2个子线程执行完毕...&quot;);
+        latch.await();
+        System.out.println(&quot;2个子线程已经执行完毕&quot;);
+        System.out.println(&quot;继续执行主线程&quot;);
+            } catch (InterruptedException e) {
+        e.printStackTrace();
+        }
+     }
+}
+</code></pre><p>　　对于这个类来说，这就是个计数器，设置了一个值，这个值不为０则调用其await()方法时，其线程将持续等待。这个功能的作用就是在一个方法里面可以异步的启动一个线程让异步从而加快运行。</p>
+
+          
+        
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="https://skydh.github.io/2018/07/02/spring mvc流程分析 /">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="董航">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="why are you so happy">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                <a class="post-title-link" href="/2018/07/02/spring mvc流程分析 /" itemprop="url">spring mvc 流程</a></h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2018-07-02T10:21:42+08:00">
+                2018-07-02
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            <h2 id="什么是spring-mvc"><a href="#什么是spring-mvc" class="headerlink" title="什么是spring mvc"></a>什么是spring mvc</h2><p>　　Spring MVC本质上还是一个Servlet,他封装了一套通用的方案，使得我们开发时只需要写核心的业务逻辑，不需要写Servlet。而Servlet也是对底层Socket的封装，使得我们开发变得简单。</p>
+<h2 id="一个简单mvc-流程"><a href="#一个简单mvc-流程" class="headerlink" title="一个简单mvc 流程"></a>一个简单mvc 流程</h2><ul>
+<li>首先浏览器向服务器发送一个请求。</li>
+<li>服务器接受到连接创建一个socket线程和浏览器建立连接，紧接着创建request,reponse对象，然后交接给Servlet容器。</li>
+<li>打断下，预先知识，DispatcherServlet类继承实现 FrameworkServlet抽象类， FrameworkServlet抽象类继承HttpServlet抽象类。HttpServlet抽象类最终实现Servlet接口，因此最顶级的接口是Servlet接口。</li>
+<li>下面说的方法本质上都是DispatcherServlet类的，然后进入service方法（ FrameworkServlet抽象类实现的），然后调用父类的service方法（HttpServlet），在这个方法里面从HttpServletRequest对象里面获取到http请求方式，比如get，post等，在这些方法里面。统一调用了processRequest方法（FrameworkServlet抽象类实现的）在这个方法里面，LocaleContext，ServletRequestAttributes这2个从HttpServletRequest对象取出来，放到其上下文里面去。</li>
+<li>然后进入doService方法，在这个方法里面设置了诸如上下文，等信息到request对象里面，然后请求传递走到doDispatch方法里面了。</li>
+<li>先调用checkMultipart方法判断是否上传请求。然后调用getHandler方法来获取handle，进入RequestMappingHandlerMapping.getHandler方法来获取handle.</li>
+</ul>
+
+          
+        
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="https://skydh.github.io/2018/06/25/es入门/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="董航">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="why are you so happy">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                <a class="post-title-link" href="/2018/06/25/es入门/" itemprop="url">Elasticsearch入门</a></h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2018-06-25T09:31:00+08:00">
+                2018-06-25
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            <h2 id="Elasticsearch-和-solr"><a href="#Elasticsearch-和-solr" class="headerlink" title="Elasticsearch 和 solr"></a>Elasticsearch 和 solr</h2><p>　　Elasticsearch更加精简，大多高级功能是依靠插件完成的。而solr很全面，包含了大部分的高级功能，可以从下载大小就可以看出来。<br>　　２者都是基于Lucene这个基于java的搜索类库。<br>　　根据文档（未测试）Elasticsearch的实时搜索效率明显高于solr。<br>　　由于小且精简，因此入门简单。</p>
+<h2 id="Elasticsearch-安装"><a href="#Elasticsearch-安装" class="headerlink" title="Elasticsearch 安装"></a>Elasticsearch 安装</h2><p>　　本次安装基于Windows10。<br>　　官网下载：<a href="https://www.elastic.co/downloads/elasticsearch" target="_blank" rel="noopener">https://www.elastic.co/downloads/elasticsearch</a>。<br>　　下载的zip包，下载解压，然后运行bin\elasticsearch.bat这个Windows批处理文件。<br>   使用下面命令启动es，你可以运行多次这个命令，只要node.name不一样，cluster.name一样，那么就是一个集群。</p>
+<pre><code>elasticsearch.bat -E node.name=node2 -E cluster.name=dh -E path.data=node2  -d
+</code></pre><p>　　然后打开浏览器输入　<a href="http://localhost:9200/" target="_blank" rel="noopener">http://localhost:9200/</a>。看看是否返回了有效信息。<br>　　安装node.js，grunt(网上搜索)。<br>　　下载head插件。<a href="https://github.com/mobz/elasticsearch-head" target="_blank" rel="noopener">https://github.com/mobz/elasticsearch-head</a><br>　　修改Elasticsearch的配置文件config/elasticsearch.yml<br>　　修改一下ES的监听地址，这样别的机器也可以访问<br>　　network.host: 0.0.0.0<br>　　增加新的参数，这样head插件可以访问es<br>　　http.cors.enabled: true<br>　　http.cors.allow-origin: “*”<br>　　然后在下载的head插件的解压文件夹的根路径下，运行，npm install 安装其所依赖的各种插件。<br>　　最后启动　grunt server。访问<a href="http://localhost:9100/" target="_blank" rel="noopener">http://localhost:9100/</a><br>　　安装完毕。</p>
+<p>   ps:kabana,logstash配合使用时版本必须一致。</p>
+<h2 id="健康颜色"><a href="#健康颜色" class="headerlink" title="健康颜色"></a>健康颜色</h2><p>   绿色就是在这个集群上，可以分配所有的主分片和副本分片<br>   黄色，意味着只能分配主分片<br>   红色，意味着主分片也无法分配</p>
+<h2 id="面向文档（Nosql）"><a href="#面向文档（Nosql）" class="headerlink" title="面向文档（Nosql）"></a>面向文档（Nosql）</h2><p>　　Elasticsearch 是 面向文档 的，意味着它是以文档来进行存储数据的。Elasticsearch 不仅存储文档，而且能索引每个文档的内容使之可以被检索。在 Elasticsearch 中，你是对文档进行索引、检索、排序和过滤–而不是对行列数据（关系数据库）。这是一种完全不同的思考数据的方式，也是 Elasticsearch 能支持复杂全文检索的原因。</p>
+<h2 id="索引"><a href="#索引" class="headerlink" title="索引"></a>索引</h2><p>　　在Elasticsearch里面，索引有很多个意思。<br>　　１．名词：一个索引就是类似于关系数据库的一个数据库，是一个存储关系型文档的地方。<br>　　２．动词：索引一个文档就是存储一个文档到索引（名词）中以便于它可以被检索和查询到，类似于关系数据库的insert关键字。<br>　　３．倒排索引：如果说关系数据库的索引的数据结构是B+树，那么Elasticsearch采用了一个叫倒排索引的结构达到相同的目的。</p>
+<h2 id="创建和基本查询"><a href="#创建和基本查询" class="headerlink" title="创建和基本查询"></a>创建和基本查询</h2><p>　　打开Elasticsearch的head插件，然后连接Elasticsearch。在复合查询中，输入url <a href="http://localhost:9200/megacorp/employee/3/,提交方式选择put,内容：{}(json)。即可创建一个索引文档。其中" target="_blank" rel="noopener">http://localhost:9200/megacorp/employee/3/,提交方式选择put,内容：{}(json)。即可创建一个索引文档。其中</a> <a href="http://localhost:9200" target="_blank" rel="noopener">http://localhost:9200</a> 是Elasticsearch的地址。而megacorp上上面提到的名词索引。employee是类型。3为该数据的特定id。<br>　　插入成功后，可以GET /megacorp/employee/３　查询出你插入的数据。<br>　　往里面多插入几条数据，以便于学习测试。<br>　　 /megacorp/employee/_search　这个就是查出这个索引这个类型的所有数据。<br>　　在head这个插件的复合查询里面，有2个行，第一行就是输入上面的url,下面的行，加入查询参数：?q=last_name:Smith<br>　　后面有更加复杂的ELS查询：<br>　　<a href="http://localhost:9200/" target="_blank" rel="noopener">http://localhost:9200/</a><br>　　megacorp/employee/_search/<br>　　post<br>　　{<br>    “query” : {<br>        “bool”: {<br>            “must”: {<br>                “match” : {<br>                    “last_name” : “smith”<br>                }<br>            },<br>            “filter”: {<br>                “range” : {<br>                    “age” : { “gt” : 30 }<br>                }<br>            }<br>        }<br>    }<br>}<br>　　也可以用上面的方式(match)实现全文检索。结果会按照匹配度按顺序排下来。但是想要不全文检索，具体查询，那么就用这个（match_phrase）</p>
+<h2 id="文档的更新"><a href="#文档的更新" class="headerlink" title="文档的更新"></a>文档的更新</h2><p>  在 Elasticsearch 中文档是 不可改变 的，不能修改它们。 相反，如果想要更新现有的文档，需要 重建索引 或者进行替换，在内部，Elasticsearch 已将旧文档标记为已删除，并增加一个全新的文档。 尽管你不能再对旧版本的文档进行访问，但它并不会立即消失。当继续索引更多的数据，Elasticsearch 会在后台清理这些已删除文档。删除逻辑也是。这点和mysql的删除很类似，都是逻辑删除！但是意义不一样~~~</p>
+<h2 id="冲突处理"><a href="#冲突处理" class="headerlink" title="冲突处理"></a>冲突处理</h2><p>　　当多个端同时处理一个文档的值的时候，可能出现值丢失的情况。因此我们需要加锁，就像对mysql的处理一样。有2个方式，第一个就是悲观加锁，要获取这个数据，那么你要先获得锁，但是效率存在问题，第二个就是用乐观锁，类似java原子类的CAS的思想，我假设你没有变化。有变化，我就重新获取值进行处理，而我们的文档存在一个叫version的字段，可以用来判断。我们可以通过api来指定version来确认。</p>
+<pre><code>PUT /website/blog/1?version=1 
+{
+  &quot;title&quot;: &quot;My first blog entry&quot;,
+  &quot;text&quot;:  &quot;Starting to get the hang of this...&quot;
+}
+</code></pre><p>　　当然大部分情况下，我们使用mysql作为主要的数据存储，而Elasticsearch主要作为检索用的，如果多个进程进行数据同步，就会出现那个问题。我们在数据库里面就有了版本号，那么我们也可以用这个版本号作为判断条件，是否更新。</p>
+<h2 id="请求合并"><a href="#请求合并" class="headerlink" title="请求合并"></a>请求合并</h2><p>　　es可以将多个请求合并成一个，避免单独处理每个请求花费的网络延时和开销。 如果你需要从 Elasticsearch 检索很多文档，那么使用 multi-get 或者 mget API 来将这些检索请求放在一个请求中，将比逐个文档请求更快地检索到全部文档。</p>
+<pre><code>_mget
+{
+       &quot;docs&quot; : [
+  {
+     &quot;_index&quot; : &quot;website&quot;,
+     &quot;_type&quot; :  &quot;blog&quot;,
+     &quot;_id&quot; :    2
+  },
+  {
+     &quot;_index&quot; : &quot;website&quot;,
+     &quot;_type&quot; :  &quot;pageviews&quot;,
+     &quot;_id&quot; :    1,
+     &quot;_source&quot;: &quot;views&quot;
+  }
+       ]
+}
+</code></pre><h2 id="分布式存储"><a href="#分布式存储" class="headerlink" title="分布式存储"></a>分布式存储</h2><p>　　我们知道我们一个索引对应多个分片，每个分片又有多个副本，那么我们索引一个文档时，文档会被存储到主分片里面，但是应该存到具体哪个分片里面呢？是有个hash算法，根据id计算出一个值，然后对分片数取模，即可。</p>
+<p>　　以下是在主副分片和任何副本分片上面 成功新建，索引和删除文档所需要的步骤顺序：<br>　　１．客户端向 Node 1 发送新建、索引或者删除请求。<br>　　２．节点使用文档的 _id 确定文档属于分片 0 。请求会被转发到 Node 3<code>，因为分片 0 的主分片目前被分配在</code>Node 3 上。<br>　　３．Node 3 在主分片上面执行请求。如果成功了，它将请求并行转发到 Node 1 和 Node 2 的副本分片上。一旦所有的副本分片都报告成功, Node 3 将向协调节点报告成功，协调节点向客户端报告成功。</p>
+<p>　　以下是从主分片或者副本分片检索文档的步骤顺序：</p>
+<p>　　1、客户端向 Node 1 发送获取请求。</p>
+<p>　　2、节点使用文档的 _id 来确定文档属于分片 0 。分片 0 的副本分片存在于所有的三个节点上。 在这种情况下，它将请求转发到 Node2 。</p>
+<p>　　3、Node 2 将文档返回给 Node 1 ，然后将文档返回给客户端。</p>
+<p>　　在处理读取请求时，协调结点在每次请求的时候都会通过轮询所有的副本分片来达到负载均衡。</p>
+<p>　　在文档被检索时，已经被索引的文档可能已经存在于主分片上但是还没有复制到副本分片。 在这种情况下，副本分片可能会报告文档不存在，但是主分片可能成功返回文档。 一旦索引请求成功返回给用户，文档在主分片和副本分片都是可用的。</p>
+<p>　　以下是部分更新一个文档的步骤：</p>
+<p>　　１．客户端向 Node 1 发送更新请求。<br>　　２．它将请求转发到主分片所在的 Node 3 。<br>　　３．Node 3 从主分片检索文档，修改 _source 字段中的 JSON ，并且尝试重新索引主分片的文档。 如果文档已经被另一个进程修改，它会重试步骤 3 ，超过 retry_on_conflict 次后放弃。<br>　　４．如果 Node 3 成功地更新文档，它将新版本的文档并行转发到 Node 1 和 Node 2 上的副本分片，重新建立索引。 一旦所有副本分片都返回成功， Node 3 向协调节点也返回成功，协调节点向客户端返回成功。</p>
+<h2 id="集群"><a href="#集群" class="headerlink" title="集群"></a>集群</h2><p>　　Elasticsearch可以垂直扩展（购买性能更好的机器），也可以水平扩展（扩展多个节点），一个运行中的Elasticsearch实例就是一个节点，具有多个相同cluster.name配置的节点组成。其共同承担数据和负载的压力。<br>　　集群有个叫集群健康的值，3个状态。<br>　　green：所有主分片和副分片都正常。<br>　　yellow:所有主分片正常，但是副分片有的不正常。<br>　　red:存在主分片不正常。<br>　　我们上面提到的名词索引实际上指向一个或者多个分片。一个分片是底层的工作单元，保存了全部数据的一部分，Elasticsearch利用分片将数据分发到集群各处的，分片是数据的容器，文档保存在分片中。分片分配到集群的各个节点里面。<br>　　一个分片可以是主分片和副本分片，索引内的任何一个文档都是属于主分片的，所以主分片决定了索引能保存的最大数据量。副本分片是主分片的copy，为了保障数据安全的。<br>　　水平扩容后，分片后自动重新分配的。<br>　　一个Elasticsearch实例就是一个节点。一个索引默认五个主分片，五个副分片。<br>　　当你只有一个节点的时候，创建一个索引的集群健康值一定是黄色。因为副本分片都是 unassigned —— 它们都没有被分配到任何节点。 在同一个节点上既保存原始数据又保存副本是没有意义的，因为一旦失去了那个节点，我们也将丢失该节点上的所有副本数据。当你再启动一个名字一样的节点的时候，集群健康值就是绿色了。<br>　　然后我们在启动第三个节点，发现一个索引的１０个分片均匀分配到３个节点里面了。<br>   因此我们发现Elasticsearch的动态扩展能力极强。<br>　　写操作我们只能通过主分片进行，读操作我们可以从主副分片都可以。当我们创建的节点吵过１０个后，我们可以将副本重新设置，来获取更大的并发量。</p>
+<h2 id="java-操作-Elasticsearch"><a href="#java-操作-Elasticsearch" class="headerlink" title="java 操作 Elasticsearch"></a>java 操作 Elasticsearch</h2><p>　　代码如下：<br>　　maven依赖：</p>
+<pre><code>&lt;dependency&gt;
+    &lt;groupId&gt;org.elasticsearch.client&lt;/groupId&gt;
+    &lt;artifactId&gt;transport&lt;/artifactId&gt;
+    &lt;version&gt;6.3.0&lt;/version&gt;
+&lt;/dependency&gt;
+</code></pre><p>　　代码：</p>
+<pre><code>import java.net.InetAddress;
+import org.elasticsearch.action.get.GetResponse;
+import org.elasticsearch.client.transport.TransportClient;
+import org.elasticsearch.common.settings.Settings;
+import org.elasticsearch.common.transport.TransportAddress;
+import org.elasticsearch.transport.client.PreBuiltTransportClient;
+public class TestEsClient {
+    public static void main(String[] args) {
+        try {
+            Settings settings = Settings.builder().put(&quot;cluster.name&quot;, &quot;elasticsearch&quot;).build();
+            // 创建client
+            TransportClient client = new PreBuiltTransportClient(settings)
+                    .addTransportAddress(new TransportAddress(InetAddress.getByName(&quot;127.0.0.1&quot;), 9300));
+            // 搜索数据
+            GetResponse response = client.prepareGet(&quot;megacorp&quot;, &quot;employee&quot;, &quot;1&quot;).execute().actionGet();
+            // 输出结果
+            System.out.println(response.getSourceAsString());
+            // 关闭client
+            client.close();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+}
+</code></pre><p>　　结果输出：</p>
+<pre><code>{&quot;first_name&quot;:&quot;John&quot;,&quot;last_name&quot;:&quot;Smith&quot;,&quot;age&quot;:25,&quot;about&quot;:&quot;I love to go rock climbing&quot;,&quot;interests&quot;:[&quot;sports&quot;,&quot;music&quot;]}
+</code></pre><h2 id="小结"><a href="#小结" class="headerlink" title="小结"></a>小结</h2><p>　　大致这样，具体要用的时候细看吧。ps:关于java代码操作Elasticsearch，要切记，maven版本和Elasticsearch版本不能差距太大哦，不然是连不上的</p>
+
+          
+        
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="https://skydh.github.io/2018/06/19/BigDecimal计算精度问题/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="董航">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="why are you so happy">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                <a class="post-title-link" href="/2018/06/19/BigDecimal计算精度问题/" itemprop="url">BigDecimal精度问题</a></h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2018-06-19T20:41:46+08:00">
+                2018-06-19
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            <h2 id="介绍"><a href="#介绍" class="headerlink" title="介绍"></a>介绍</h2><p>　　１．商业计算使用BigDecimal。<br>　　２．使用参数为String的构造函数。<br>　　３．BigDecimal都是不可变的，每一步的运算时，都会产生一个新的对象。所以在做加减乘除后千万要保存操作后的值。</p>
+<h2 id="案例"><a href="#案例" class="headerlink" title="案例"></a>案例</h2><p>　　代码１：</p>
+<pre><code>public class Test001 {
+    public static void main(String args[]) {
+        BigDecimal a = new BigDecimal(1.5);
+        BigDecimal a1 = new BigDecimal(329.530);
+        System.out.println(a.multiply(a1).setScale(2, BigDecimal.ROUND_HALF_UP));
+    }
+}
+</code></pre><p>　　输出：</p>
+<pre><code>494.29
+</code></pre><p>　　代码２：</p>
+<pre><code>public class Test001 {
+    public static void main(String args[]) {
+        BigDecimal a = new BigDecimal(&quot;1.5&quot;);
+    　　BigDecimal a1 = new BigDecimal(&quot;329.530&quot;);
+        System.out.println(a.multiply(a1).setScale(2, BigDecimal.ROUND_HALF_UP));
+    }
+}
+</code></pre><p>　　输出：</p>
+<pre><code>494.30
+</code></pre><p>  计算器输出结果：</p>
+<pre><code>489.30
+</code></pre><p>　　原因解析：<br>　　JDK的描述：参数为dubbo的构造方法的结果具有一定的不可预知性，认为java在写入new BigDecimal(0.1)中这个0.1不是标准的0.1可能是一个无限趋近于0.1的一个小数，虽然表面上等于他。</p>
+<h2 id="源码"><a href="#源码" class="headerlink" title="源码"></a>源码</h2><pre><code>public BigDecimal multiply(BigDecimal multiplicand) {
+    int productScale = checkScale((long) scale + multiplicand.scale);
+    if (this.intCompact != INFLATED) {
+        if ((multiplicand.intCompact != INFLATED)) {
+            return multiply(this.intCompact, multiplicand.intCompact, productScale);
+        } else {
+            return multiply(this.intCompact, multiplicand.intVal, productScale);
+        }
+    } else {
+        if ((multiplicand.intCompact != INFLATED)) {
+            return multiply(multiplicand.intCompact, this.intVal, productScale);
+        } else {
+            return multiply(this.intVal, multiplicand.intVal, productScale);
+        }
+    }
+}
+</code></pre><p>　　在这个地方就是判断是不是字符串的，这个this.intCompact 是获取到参数的整数值，如果获取到时一大串数字，那就是dubbo参数传进来的，这里进行判断，从而获取到不同的值。进入到不同的方法进行运算。其实运算原理大致说下，小数转换为整数计算，最后除以１０的ｎ次方即可。</p>
+
+          
+        
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="https://skydh.github.io/2018/06/19/ControllerAdvice注解/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="董航">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="why are you so happy">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                <a class="post-title-link" href="/2018/06/19/ControllerAdvice注解/" itemprop="url">ControllerAdvice用法解析</a></h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2018-06-19T20:32:58+08:00">
+                2018-06-19
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            <h2 id="简介"><a href="#简介" class="headerlink" title="简介"></a>简介</h2><p>　　通过@ControllerAdvice注解可以将对于控制器的全局配置放在同一个位置。<br>　　注解了@Controller的类的方法可以使用@ExceptionHandler、@InitBinder、@ModelAttribute注解到方法上。<br>　　@ControllerAdvice注解将作用在所有注解了@RequestMapping的控制器的方法上<br>　　@ExceptionHandler：用于全局处理控制器里的异常。</p>
+<h2 id="用法"><a href="#用法" class="headerlink" title="用法"></a>用法</h2><pre><code>@ControllerAdvice
+@ResponseBody
+public class BusinessExceptionHandler {
+    @ExceptionHandler(value = Exception.class)
+    public JsonBackData exceptionHandler(HttpServletRequest request, Exception e) {
+        e.printStackTrace();
+        JsonBackData back = new JsonBackData();
+        if (e instanceof BusinessException) {
+            BusinessException ex = (BusinessException) e;
+            back.setSuccess(false);
+            back.setBackMsg(ex.getMessage());
+        }
+        return back;
+    }
+</code></pre><p>　　加了这个全局配置的Bean后，以前我的代码是这样的：</p>
+<pre><code>@RequestMapping(value = &quot;queryDetail&quot;)
+@ResponseBody
+public JsonBackData queryDetail(@RequestParam String id) {
+    JsonBackData back = new JsonBackData();
+    try {
+        OpenSourceThrottleAdjustVO vo = openSourceThrottlePlanQueryService.findById(id);
+        back.setBackData(vo);
+        back.setSuccess(true);
+        back.setBackMsg(&quot;查询详细信息成功&quot;);
+    } catch (BusinessException e) {
+        back.setSuccess(false);
+        back.setBackMsg(&quot;查询详细信息失败:&quot; + e.getMessage());
+    }
+    return back;
+}
+</code></pre><p> 　多了很多无关信息。几乎每个类都要try catch一下，代码极度冗余。<br>但是加了上面的全局处理控制器的异常处理后。代码就变成了下面的了。</p>
+<pre><code>@RequestMapping(value = &quot;queryDetail&quot;)
+@ResponseBody
+public JsonBackData queryDetail(@RequestParam String id) {
+    JsonBackData back = new JsonBackData();
+    OpenSourceThrottleAdjustVO vo = openSourceThrottlePlanQueryService.findById(id);
+    back.setBackData(vo);
+    back.setSuccess(true);
+    back.setBackMsg(&quot;查询详细信息成功&quot;);
+    return back;
+}
+</code></pre>
+          
+        
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
     <link itemprop="mainEntityOfPage" href="https://skydh.github.io/2018/06/12/原因/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -712,761 +1865,6 @@
 
 
     
-      
-
-  
-
-  
-  
-  
-
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-  
-  
-  
-  <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="https://skydh.github.io/2018/05/15/java和线程/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="董航">
-      <meta itemprop="description" content="">
-      <meta itemprop="image" content="/images/avatar.gif">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="why are you so happy">
-    </span>
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-                
-                <a class="post-title-link" href="/2018/05/15/java和线程/" itemprop="url">java和线程</a></h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">发表于</span>
-              
-              <time title="创建于" itemprop="dateCreated datePublished" datetime="2018-05-15T20:06:48+08:00">
-                2018-05-15
-              </time>
-            
-
-            
-
-            
-          </span>
-
-          
-
-          
-            
-          
-
-          
-          
-
-          
-
-          
-
-          
-
-        </div>
-      </header>
-    
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          
-            <h2 id="线程的实现"><a href="#线程的实现" class="headerlink" title="线程的实现"></a>线程的实现</h2><p>　　线程是CPU调度的基本单位，正如前面说的，一个进程的线程可以共享进程资源。也有自己独立的工作区间。在java中，Thread类的关键方法全是Native的。下面是实现线程的3种方式。</p>
-<h3 id="使用内核线程实现"><a href="#使用内核线程实现" class="headerlink" title="使用内核线程实现"></a>使用内核线程实现</h3><p>　　内核线程就是直接由操作系统内核支持的线程，这种线程由内核来完成线程切换，内核通过线程进行调度，负责将线程任务映射到各个处理器上，每个线程可以视为内核的一个分身，这样操作系统就有能力同时处理很多事情，支持多线程的内核叫多线程内核。但是程序一般不会直接使用内核线程，而是使用内核线程的高级接口，轻量级进程，每个轻量级进程都有一个内核线程支持，也是一对一的关系。但是这个轻量级线程是基于内核线程实现的，因此很浪费系统资源。</p>
-<h3 id="用户线程实现"><a href="#用户线程实现" class="headerlink" title="用户线程实现"></a>用户线程实现</h3><p>　　一个线程不是内核线程那就是用户线程。狭义上来说就是建立在用户空间的线程库上，用户线程的建立，同步，销毁，调度完全在用户态执行。不需要内核的帮助，由于不需要切换到内核态，因此操作是快速且低消耗的，可以支持规模大的线程熟练。缺点是，没有内核的支援，线程的创建，切换，等都需要用户程序自己解决。</p>
-<h3 id="用户线程-轻量级线程混合"><a href="#用户线程-轻量级线程混合" class="headerlink" title="用户线程+轻量级线程混合"></a>用户线程+轻量级线程混合</h3><p>　　把上面的２个一起使用，线程还是创建在用户空间里面，而轻量级线程则作为用户线程和内核线程的桥梁。这样就可以使用内核提供的线程调度功能</p>
-<h3 id="java线程的实现"><a href="#java线程的实现" class="headerlink" title="java线程的实现"></a>java线程的实现</h3><p>　　JDK1.2之前是用户线程实现的，1.2中线程魔性替换为基于操作系统原生线程模型。至于现在是什么模型，看虚拟机自身的实现。</p>
-<h3 id="java线程的调度"><a href="#java线程的调度" class="headerlink" title="java线程的调度"></a>java线程的调度</h3><p>　　线程调度分为２种方式：协同式线程调度，抢占式线程调度。<br>　　协同式线程调度：线程的执行时间由线程本身来控制，线程自身的工作执行完了之后，要主动通知系统切换到另外一个线程上，优势是实现简单，而且线程执行完还要通知其他线程，切换操作对开发来说是可知的，所以没有线程同步问题，但是线程执行时间不可控制，如果一个线程代码有问题就会导致这个系统奔溃。<br>　　抢占式调度：每个线程由系统来分配执行时间，线程的切换不由本身决定，在这种调度下，线程的执行时间是系统控制的，不会存在一个线程一直阻塞而导致整个系统奔溃。<br>　　在java中，虽然线程调度是系统自动完成的，但是我们可以设置线程的优先级，但是这种优先级是不靠谱的，因为java线程的实现最终是通过映射到系统线程来实现的。优先级可能对应不上去。</p>
-<h3 id="java线程状态转换"><a href="#java线程状态转换" class="headerlink" title="java线程状态转换"></a>java线程状态转换</h3><p>　　请看前面章节有介绍</p>
-
-          
-        
-      
-    </div>
-    
-    
-    
-
-    
-
-    
-
-    
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </div>
-  
-  
-  
-  </article>
-
-
-    
-      
-
-  
-
-  
-  
-  
-
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-  
-  
-  
-  <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="https://skydh.github.io/2018/05/15/java内存模型/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="董航">
-      <meta itemprop="description" content="">
-      <meta itemprop="image" content="/images/avatar.gif">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="why are you so happy">
-    </span>
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-                
-                <a class="post-title-link" href="/2018/05/15/java内存模型/" itemprop="url">java内存模型</a></h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">发表于</span>
-              
-              <time title="创建于" itemprop="dateCreated datePublished" datetime="2018-05-15T14:18:33+08:00">
-                2018-05-15
-              </time>
-            
-
-            
-
-            
-          </span>
-
-          
-
-          
-            
-          
-
-          
-          
-
-          
-
-          
-
-          
-
-        </div>
-      </header>
-    
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          
-            <h2 id="主内存和工作内存"><a href="#主内存和工作内存" class="headerlink" title="主内存和工作内存"></a>主内存和工作内存</h2><p>　　主内存是所有变量存储的地方，工作内存是当前线程的中要使用变量的主内存的副本，线程对变量的操作就在工作内存里面完成，不能直接修改主内存的变量，不同线程不能直接读写对方工作内存的变量，之间交互必须通过主内存来完成。</p>
-<h2 id="内存之间的交互操作"><a href="#内存之间的交互操作" class="headerlink" title="内存之间的交互操作"></a>内存之间的交互操作</h2><p>　　虚拟机定义了８种原子操作来完成工作内存和主内存的交互。<br>　　lock:将主内存中一个变量标识为一个线程独占的状态。<br>　　unlock:将主内存中被锁住的变量解锁。<br>　　read:将一个变量值从主内存中传输到线程的工作内存中去。<br>　　load:将read操作读取的值放入到工作内存的变量副本中去。<br>　　use:将工作内存中一个变量的值传递给执行引擎，当虚拟机需要使用时就会执行这个操作。<br>　　assign：将执行引擎的值赋值给工作内存的变量。<br>　　store:将工作内存中的值传到主内存中去。<br>　　write:将从工作内存中得到的值放入到主内存的变量中。<br>　　同时有以下规则：<br>　　１．不许read和load，store和write分开执行。<br>　　２．不许线程丢弃assign操作，也就是在工作内存中改变了值，必须同步到主内存中去。<br>　　３．不许一个线程在没有发生assign的操作下就将数据从工作内存同步到主内存中去。<br>　　４．一个变量在同一时刻只许一个线程对其lock.<br>　　５．如果对一个变量lock，就会清空工作内存中该变量的值，在执行引擎使用这个变量前，需要重洗load和assign初始化这个变量的值。<br>　　６．不许对其他线程或者没有lock的线程执行unlock。<br>　　７.对变量执行unlock之前要先将变量同步到主内存中去。</p>
-<h2 id="volatile关键字"><a href="#volatile关键字" class="headerlink" title="volatile关键字"></a>volatile关键字</h2><p>　　可见性：当一个线程修改这个变量的值后，新值对其他变量是可见的。<br>　　禁止指令重排序：指令重排序是在单线程下优化字节码的执行顺序，但是在多线程下可能出现问题，可以看本博客的单例模式下2重锁问题的解释为何要加volatile关键字。这个关键字通过内存屏障来禁止指令重排序。对于加锁和这个关键字，能用这个关键字的就不加锁，看你的业务场景吧。<br>　　这个关键字通过以下规则保证可见性和禁止重排序。<br>　　１．每次使用volatile变量时必须先从主内存中刷新读取最新的值。<br>　　２．每次修改volatile变量时，必须立刻同步数据到主内存。</p>
-<p>　　</p>
-
-          
-        
-      
-    </div>
-    
-    
-    
-
-    
-
-    
-
-    
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </div>
-  
-  
-  
-  </article>
-
-
-    
-      
-
-  
-
-  
-  
-  
-
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-  
-  
-  
-  <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="https://skydh.github.io/2018/05/14/虚拟机字节码执行引擎/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="董航">
-      <meta itemprop="description" content="">
-      <meta itemprop="image" content="/images/avatar.gif">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="why are you so happy">
-    </span>
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-                
-                <a class="post-title-link" href="/2018/05/14/虚拟机字节码执行引擎/" itemprop="url">虚拟机字节码执行引擎</a></h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">发表于</span>
-              
-              <time title="创建于" itemprop="dateCreated datePublished" datetime="2018-05-14T16:07:38+08:00">
-                2018-05-14
-              </time>
-            
-
-            
-
-            
-          </span>
-
-          
-
-          
-            
-          
-
-          
-          
-
-          
-
-          
-
-          
-
-        </div>
-      </header>
-    
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          
-            <h2 id="java到底是解释语言还是编译语言"><a href="#java到底是解释语言还是编译语言" class="headerlink" title="java到底是解释语言还是编译语言"></a>java到底是解释语言还是编译语言</h2><p>　　java他是个混合类型的语言，他解释一行行代码执行，同时将反复执行的热点代码，以方法为单位即时编译。因为一个程序里面执行最多的往往是那20%的代码。</p>
-<h2 id="不同的即时编译器"><a href="#不同的即时编译器" class="headerlink" title="不同的即时编译器"></a>不同的即时编译器</h2><p>　　java有多款即时编译器。C1,C2,Graal,这几款是为了在编译时间和运行效率取个均衡。C1是编译时间短，同时性能差，C2正好和C1相反，编译时间稍长，但是性能更高。<br>　　从 Java 7 开始，HotSpot 默认采用分层编译的方式：热点方法首先会被 C1 编译，而后热点方法中的热点会进一步被 C2 编译。在计算资源充足的情况下，字节码的解释执行和即时编译可同时进行。编译完成后的机器码会在下次调用该方法时启用，以替换原本的解释执行。</p>
-<h2 id="运行时栈帧结构"><a href="#运行时栈帧结构" class="headerlink" title="运行时栈帧结构"></a>运行时栈帧结构</h2><p>　　java代码加载是放到方法区的，但是在运行过程中，每调用一个方法，就生成一个栈帧。栈帧是用于支持虚拟机进行方法调用的和方法执行的数据结构，是虚拟机运行时数据区的虚拟机栈的栈元素，栈帧存储了方法的局部变量表，操作数栈，动态链接，方法返回地址等。<br>　　每一个栈帧需要多大的内存在编译期间就确认了。</p>
-<h3 id="局部变量表"><a href="#局部变量表" class="headerlink" title="局部变量表"></a>局部变量表</h3><p>　　在其，存放方法参数和方法内部定义的局部变量。</p>
-<h3 id="操作数栈"><a href="#操作数栈" class="headerlink" title="操作数栈"></a>操作数栈</h3><p>　　也叫操作栈，是一个后入先出栈，当一个方法开始执行时，操作数栈是空的，在执行过程中，各种字节码指令会往操作数栈写入和提取内容。</p>
-<h3 id="动态连接"><a href="#动态连接" class="headerlink" title="动态连接"></a>动态连接</h3><p>　　每个栈帧都包含一个指向运行时常量池的引用，在Class文件中会有大量符号引用，一部分会在类加载时就直接转换为直接引用，一部分是在运行时转换为直接引用。</p>
-<h3 id="方法返回地址"><a href="#方法返回地址" class="headerlink" title="方法返回地址"></a>方法返回地址</h3><p>　　方法有２个方式退出，第一个是执行引擎遇到返回的字节码指令，正常退出。第二个就是遇到了异常，且没有被处理也会退出，这个是异常完成退出。无论哪种退出都要返回到方法被调用的位置，程序才能继续执行，正常退出时才会有这个值，异常退出时，一般不会保存这个值。</p>
-<h3 id="附加信息"><a href="#附加信息" class="headerlink" title="附加信息"></a>附加信息</h3><p>　　一些不在规范里面描述的信息，例如调试相关的信息，一般吧动态连接，方法返回地址。</p>
-<h2 id="方法调用"><a href="#方法调用" class="headerlink" title="方法调用"></a>方法调用</h2><p>　　在java中没有传统的连接步骤，存放在Class文件的是符号引用。</p>
-<h3 id="解析"><a href="#解析" class="headerlink" title="解析"></a>解析</h3><p>　　在类加载的解析阶段，会将一部分符号引用变成直接引用。这一部分是有要求的，就是方法调用在编译器就确认好了，不会发生变化的调用。<br>　　在java中符合这个规范（编译器可知，运行期不可变的方法）是静态方法属于这个类，私有方法，外部不可访问，这2个类型的方法注定不会被重写或者继承产生其他版本。因此是在编译器就确认好了。</p>
-<h3 id="分派"><a href="#分派" class="headerlink" title="分派"></a>分派</h3><h4 id="静态分派"><a href="#静态分派" class="headerlink" title="静态分派"></a>静态分派</h4><p>　　A a=new B();其中B继承A,其中这个A是静态类型，这个B是实际类型。静态类型编译期间就可以知道确认，而实际类型必须在运行期间在可以确认。编译器不知道一个对象的实际类型是什么，在编译期间。<br>　　在重载中</p>
-<pre><code>public void test(A a){...} ...1
-public void test(B b){...} ...2
-</code></pre><p>　　如果传入A a=new B();把这个对象当参数穿进去，那么调用的是第一个方法，为何？因为这个虚拟机在重载时根据的是参数的静态类型进行判断的，而静态类型却是在编译期间就可以知道的，因此在编译期间就将符号引用确认了。凡是通过静态参数确认的都是静态分配。</p>
-<h4 id="动态分配"><a href="#动态分配" class="headerlink" title="动态分配"></a>动态分配</h4><p>　　动态分配和java中的重写密切相关。动态分配哈java字节码的一些指令相关度很高，他就是更具对象的实际类型类指定的，和对象实际类型相关。这是和java字节码的解析相关的，字节码就是这么解析的。
-　　</p>
-
-          
-        
-      
-    </div>
-    
-    
-    
-
-    
-
-    
-
-    
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </div>
-  
-  
-  
-  </article>
-
-
-    
-      
-
-  
-
-  
-  
-  
-
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-  
-  
-  
-  <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="https://skydh.github.io/2018/05/11/jvm类加载器/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="董航">
-      <meta itemprop="description" content="">
-      <meta itemprop="image" content="/images/avatar.gif">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="why are you so happy">
-    </span>
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-                
-                <a class="post-title-link" href="/2018/05/11/jvm类加载器/" itemprop="url">jvm类加载器</a></h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">发表于</span>
-              
-              <time title="创建于" itemprop="dateCreated datePublished" datetime="2018-05-11T16:55:38+08:00">
-                2018-05-11
-              </time>
-            
-
-            
-
-            
-          </span>
-
-          
-
-          
-            
-          
-
-          
-          
-
-          
-
-          
-
-          
-
-        </div>
-      </header>
-    
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          
-            <h2 id="类与类加载器"><a href="#类与类加载器" class="headerlink" title="类与类加载器"></a>类与类加载器</h2><p>　　对于任意一个类，都是需要加载它的类和其本身确认其在java虚拟机中的唯一性。每一个类加载器都有一个独立的类名称空间。换句话说如果在一个虚拟机中，2个类来源于一个Class文件，但是加载他们的类加载器不一样，那么这2个类也不一样。比如我们自己实现一个类加载器，并且实例化，那么这个对象确实是这个类实例化出来的，但是Class类型却和默认加载出来的Class类型不一样。<br>　　从虚拟机角度讲，虚拟机分为２个，一个是C++语言实现的，是虚拟机的一部分，一部分是java代码实现的。全部继承于java.lang.ClassLoader.<br>　　从开发角度来看，分为３种。<br>　　１．启动类加载器<br>　　这个类加载器是将\lib目录下，或者-Xbootclasspath参数所指定的路径中，且被虚拟机识别的类库加载到虚拟机内存里面。开发者无法直接使用。<br>　　２．扩展类加载器<br>　　这个加载器主要是加载\lib\ext目录下的。开发者可以使用。<br>　　３．应用类加载器<br>　　这个类加载器负责加载Classpath路径下的所指定的类库，也就是用户一般的类，如果代码没有明确定义只用自己的类加载器，那么这个就是程序默认的类加载器。<br>　　４，用户自定义的类加载器<br>　　这个就是开发者自己定义开发的类加载器。</p>
-<h2 id="双亲委派原则"><a href="#双亲委派原则" class="headerlink" title="双亲委派原则"></a>双亲委派原则</h2><p>　　除了启动类加载器外，其余的的类加载器都有自己的父类加载器。加载器的顺序上下就是上面的顺序。其父子关系不是通过继承实现的，而是通过组合实现的。<br>　　该原则是当改类加载收到请求时，他是不会先加载，而是委托给父类加载器，不断委托，当父类加载器无法在其搜索范围内找到这个类时，才会委托给下级加载器。这是个规范，系统的默认是这个，而自定义的类加载器要自己实现。<br>　　使用这个有个好处。就是java类跟随类加载器有了一种优先级的层次关系了，比如Object类存放在\lib目录下，就默认只能是启动类加载器去加载的了，那么这个程序中就只会有一个Object类，程序也更加稳定。</p>
-
-          
-        
-      
-    </div>
-    
-    
-    
-
-    
-
-    
-
-    
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </div>
-  
-  
-  
-  </article>
-
-
-    
-      
-
-  
-
-  
-  
-  
-
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-  
-  
-  
-  <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="https://skydh.github.io/2018/05/10/jvm类加载机制/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="董航">
-      <meta itemprop="description" content="">
-      <meta itemprop="image" content="/images/avatar.gif">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="why are you so happy">
-    </span>
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-                
-                <a class="post-title-link" href="/2018/05/10/jvm类加载机制/" itemprop="url">jvm类加载机制</a></h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">发表于</span>
-              
-              <time title="创建于" itemprop="dateCreated datePublished" datetime="2018-05-10T15:49:31+08:00">
-                2018-05-10
-              </time>
-            
-
-            
-
-            
-          </span>
-
-          
-
-          
-            
-          
-
-          
-          
-
-          
-
-          
-
-          
-
-        </div>
-      </header>
-    
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          
-            <h2 id="类加载时机"><a href="#类加载时机" class="headerlink" title="类加载时机"></a>类加载时机</h2><p>　　类的生命周期为：加载，连接（验证，准备，解析），初始化，使用，卸载。这５大阶段。<br>　　其中，加载，验证，准备，初始化，卸载，这５个阶段的顺序是固定的，解析是可以在初始化之后的。<br>　　对于类的加载，由虚拟机自行把控，但是类的初始化不是的，虚拟机严格规定了５种情况下必须对类进行初始化。<br>　　１．使用new 关键字实例化对象的时候，读取或设置一个类的静态字段，调用一个类的静态方法。<br>　　２．通过java.lang.reflect包对类进行反射调用的时候。<br>　　３．初始化一个类，其父类还没被初始化时，父类必须先进行初始化。<br>　　４．包含main()方法的类，虚拟机会优先进行初始化。<br>　　５．jdk1.7以后的动态语言支持的。<br>　　以下情况不会触发类的初始化。没有触发上面５种情况。<br>　　１.通过子类调用父类的静态变量。不会对子类进行初始化。<br>　　２．通过数组定义来引用类，A[] a=new A[10];A这个类不会触发初始化。<br>　　３．引用类的静态常量时不会触发初始化，因为这个量存放到了常量池里面。这个常量的引用会在编译期间进行传播优化，会将这个常量存到NOInitiazation类的常量池中以后这个类对常量的访问都会被转换为对NOInitiazation类的常量池的引用，因此不会对该类进行初始化。</p>
-<h2 id="加载"><a href="#加载" class="headerlink" title="加载"></a>加载</h2><p>　　加载要做３个事情。<br>　　１．通过一个类的全限定名来获取定义此类的２进制字节流<br>　　２．将这个字节流所代表的的静态存储结构转化为方法区的运行时数据结构。<br>　　３．生成一个java.lang.Class对象来代表这个类，作为访问这个类的入口。<br>　　第一件事就是很开放的有以下方式读取。<br>　　１．从zip包中读取，比如从jar，war读取。<br>　　２．网络中读取，比如Applet.<br>　　３．运行时动态生成，比如java很经典的动态代理。<br>　　４．由其他文件生成<br>　　我们可以用虚拟机自身的类加载器来加载，也可以用我们自身的类加载器来获取字节流。<br>　　数组类的加载与众不同。<br>　　１．如果数组的组件类型是引用类型。数组将在加载这个类型的类加载器的类名称空间＼上标示。<br>　　２．如果数组的组件类型不是引用类型，是常见类型，那么虚拟机会把数组标记为与引导类加载器关联。<br>　　类加载完成后将其放入java内存的中的方法区中（前面提到过java运行时数据分布存储），然后在java内存中（不一定是java堆）创建一个java.lang.Class类对象。</p>
-<h2 id="验证"><a href="#验证" class="headerlink" title="验证"></a>验证</h2><p>　　验证Class文件字节流是否满足当前虚拟机要求。<br>　　１．文件格式验证<br>　　２．元数据验证，主要判断是否符合java语法。<br>　　３．字节码验证，保证程序语法是符合逻辑的。<br>　　４.符号引用验证，对类自身信息外的验证，看看相关类是否可以找到之类的。</p>
-<h2 id="准备"><a href="#准备" class="headerlink" title="准备"></a>准备</h2><p>　　准备阶段为类变量分配内存，并且赋初始值。所需的内存从方法区里面获取，比如 public static int value=123;中，初始值为0，boolean为false,而123则是在初始化时才赋值上去。当然如果是final类型的量，那么是可以在准备阶段赋值123的。</p>
-<h2 id="解析"><a href="#解析" class="headerlink" title="解析"></a>解析</h2><p>　　解析阶段是虚拟机将常量池内的符号引用替换为直接引用的过程。<br>　　符号引用：一组符号来描述所引用的目标，符号可以是任何形式的字面量，只要在使用时可以定位到目标即可，符号引用和虚拟机的内存布局无关，引用的目标不一定加载到内存中。比如，在java编译时，java类不知道所引用类的实际地址，只能用符号引用来代替。<br>　　直接引用就是直接指向目标的指针，相对偏移量，或者句柄等。</p>
-<h2 id="初始化"><a href="#初始化" class="headerlink" title="初始化"></a>初始化</h2><p>　　类的初始化就是类加载的最后一步，也是执行类加载的最后一部分，初始化也就是执行类加载方法的过程。<br>　　１．类加载方法会自动收集所有类变量的赋值动作，和静态代码块合并成的。<br>　　２．类构造方法和类构造函数不一样，他不需要显示调用父类的构造函数，虚拟机会自动保证父类的类构造方法先执行。因此java.lang.Object类的类构造方法最先执行。<br>　　３．类构造方法不是必须的，如果类或者接口里面没有静态代码块，那就没有类构造方法。<br>　　４．接口不能有静态代码块，但是可以有静态变量，所以接口和类一样也会生成类构造方法，但是只有当负借口中定义的变量被使用时，父接口才会初始化。<br>　　５．虚拟机保证一个类在多线程环境中被正确的加锁，同步。
- 　　</p>
-
-          
-        
-      
-    </div>
-    
-    
-    
-
-    
-
-    
-
-    
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </div>
-  
-  
-  
-  </article>
-
-
-    
-      
-
-  
-
-  
-  
-  
-
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-  
-  
-  
-  <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="https://skydh.github.io/2018/05/09/jvm内存分配策略/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="董航">
-      <meta itemprop="description" content="">
-      <meta itemprop="image" content="/images/avatar.gif">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="why are you so happy">
-    </span>
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-                
-                <a class="post-title-link" href="/2018/05/09/jvm内存分配策略/" itemprop="url">jvm内存分配策略</a></h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">发表于</span>
-              
-              <time title="创建于" itemprop="dateCreated datePublished" datetime="2018-05-09T15:05:24+08:00">
-                2018-05-09
-              </time>
-            
-
-            
-
-            
-          </span>
-
-          
-
-          
-            
-          
-
-          
-          
-
-          
-
-          
-
-          
-
-        </div>
-      </header>
-    
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          
-            <h2 id="对象优先在新生代分配"><a href="#对象优先在新生代分配" class="headerlink" title="对象优先在新生代分配"></a>对象优先在新生代分配</h2><p>　　就是新生的对象按照原则一般在新生代内存区给其分配空间。</p>
-<h2 id="大对象直接进入老年态"><a href="#大对象直接进入老年态" class="headerlink" title="大对象直接进入老年态"></a>大对象直接进入老年态</h2><p>　　大对象是指需要大量连续的内存空间的对象，比如非常长的字符串或者数组。因为出现这些对象意味着虚拟机要进行一次垃圾回收才可以安置这些对象，可以在虚拟机启动的时候设置 -XX pretenuresizethreshold 参数 来设置大于这个参数的大对象直接进入老年态。</p>
-<h2 id="长期存活的对象将进入老年态"><a href="#长期存活的对象将进入老年态" class="headerlink" title="长期存活的对象将进入老年态"></a>长期存活的对象将进入老年态</h2><p>　　既然虚拟机采用了分带管理的策略来管理内存，那么如何判断一个对象时应该在老年态还是新生态中。虚拟机给每个对象设置了一个年龄计算器，当对象在Eden出生，并且活过了第一次垃圾回收，那么该对象将进入到Suivivor空间，年龄也会增加一，妹熬过一次就加一，当达到一个阈值时，就会被移动到老年态中，这个阈值默认是15，也可以通过参数配置和设置。</p>
-<h2 id="动态对象年龄判定"><a href="#动态对象年龄判定" class="headerlink" title="动态对象年龄判定"></a>动态对象年龄判定</h2><p>　　为了更好的适应虚拟机的内存整理，虚拟机还有一个原则，如果在新生代的Suivivor空间的相同年龄对象所占的内存大于Suivivor一半时，将大于和等于这个年龄的对象加入到老年代。</p>
-<h2 id="空间分配担保"><a href="#空间分配担保" class="headerlink" title="空间分配担保"></a>空间分配担保</h2><p>　　在新生代发生垃圾回收时，虚拟机都会先检查这个老年态最大可用连续空间是否大于新生代所有对象总空间，如果成立，那么这次垃圾回收是安全的，可以直接进行垃圾回收。如果不成立，就会查看HandlePromotionFailure这个值是否设置开启的，如果开启，就会继续判断老年代最大可用连续空间是否大于历次垃圾回收晋升到老年代对象的平均大小，如果大于，则进行一次啊垃圾回收。如果小于或者这个参数设置为关闭状态，那么就要进行一次啊Full GC。<br>　　为何如此？前面说了，新生代垃圾回收是复制算法，新生代内存分为8:1:1，每次垃圾回收就会将9份的移到剩余一份里面的，可能溢出，那么就用老年代担保，所以如此哦。一般上面的参数会默认设置为开启状态。</p>
-
-          
-        
-      
-    </div>
-    
-    
-    
-
-    
-
-    
-
-    
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </div>
-  
-  
-  
-  </article>
-
-
-    
   </section>
 
   
@@ -1517,7 +1915,7 @@ public void test(B b){...} ...2
               
                 <a href="/archives/">
               
-                  <span class="site-state-item-count">121</span>
+                  <span class="site-state-item-count">127</span>
                   <span class="site-state-item-name">日志</span>
                 </a>
               </div>
@@ -1561,7 +1959,7 @@ public void test(B b){...} ...2
     <footer id="footer" class="footer">
       <div class="footer-inner">
         <script async src="https://dn-lbstatics.qbox.me/busuanzi/2.3/busuanzi.pure.mini.js"></script>
-<div class="copyright">&copy; <span itemprop="copyrightYear">2019</span>
+<div class="copyright">&copy; <span itemprop="copyrightYear">2020</span>
   <span class="with-love">
     <i class="fa fa-user"></i>
   </span>

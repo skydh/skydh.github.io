@@ -232,6 +232,1358 @@
   
   
   <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="https://skydh.github.io/2019/10/10/spring @import/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="董航">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="why are you so happy">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                <a class="post-title-link" href="/2019/10/10/spring @import/" itemprop="url">spring @import注解原理解析</a></h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2019-10-10T16:20:38+08:00">
+                2019-10-10
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            <h1 id="import"><a href="#import" class="headerlink" title="@import"></a>@import</h1><p>　　我们可以用这个注解导入bean到容器里面。</p>
+<h1 id="3个方式"><a href="#3个方式" class="headerlink" title="3个方式"></a>3个方式</h1><h2 id="直接-import"><a href="#直接-import" class="headerlink" title="直接@import"></a>直接@import</h2><p>　　导入的baen</p>
+<pre><code>@Data
+public class User {
+    private Integer id;
+    private String name;
+}
+</code></pre><p>　　导入方法：</p>
+<pre><code>@Configuration
+@Import(value = { User.class })
+public class Config {
+
+}
+</code></pre><h2 id="通过ImportBeanDefinitionRegistrar"><a href="#通过ImportBeanDefinitionRegistrar" class="headerlink" title="通过ImportBeanDefinitionRegistrar"></a>通过ImportBeanDefinitionRegistrar</h2><p>　　还是上面的bean。但是 不是直接导入。</p>
+<pre><code>public class UserServiceBeanDefinitionRegistrar implements ImportBeanDefinitionRegistrar {
+
+public void registerBeanDefinitions(AnnotationMetadata importingClassMetadata, BeanDefinitionRegistry registry) {
+    BeanDefinitionBuilder user = BeanDefinitionBuilder.rootBeanDefinition(User.class);
+    // 通过registry就可以注入到容器里啦
+    registry.registerBeanDefinition(&quot;user&quot;, user.getBeanDefinition());
+}
+}
+</code></pre><p>　　注解方法：</p>
+<pre><code>@Configuration
+@Import(value = { UserServiceBeanDefinitionRegistrar.class })
+public class Config {
+
+}
+</code></pre><h2 id="通过ImportSelector"><a href="#通过ImportSelector" class="headerlink" title="通过ImportSelector"></a>通过ImportSelector</h2><pre><code>public class UserServiceImportSelect implements ImportSelector {
+public String[] selectImports(AnnotationMetadata importingClassMetadata) {
+    return new String[] { User.class.getName() };
+}
+}
+</code></pre><p>　　注解方法：</p>
+<pre><code>@Configuration
+@Import(value = { UserServiceImportSelect.class })
+public class Config {
+
+}
+</code></pre><h2 id="小结"><a href="#小结" class="headerlink" title="小结"></a>小结</h2><p>　　上述３个方法都可以将bean导入到springbean容器里面。</p>
+<h2 id="源码分析"><a href="#源码分析" class="headerlink" title="源码分析"></a>源码分析</h2><p>　　老规矩，我们从springboot的启动开始分析，虽然这直接属于spring那一块。我们从run开始点点点，进入下面方法。</p>
+<pre><code>public ConfigurableApplicationContext run(String... args) {
+        ......
+        refreshContext(context);
+        ......
+}
+</code></pre><p>　　直接关注这个方法，这个方法会调用核心，他是spring容器启动的核心方法。<br>　　然后不断点点，进入到这个核心方法。</p>
+<pre><code>    @Override
+public void refresh() throws BeansException, IllegalStateException {
+    synchronized (this.startupShutdownMonitor) {
+        ．．．．．
+
+        invokeBeanFactoryPostProcessors(beanFactory);
+
+        ．．．．．
+
+
+}
+</code></pre><p>　　这个方法提取出invokeBeanFactoryPostProcessors方法，点进去。</p>
+<pre><code>public static void invokeBeanFactoryPostProcessors(
+        ConfigurableListableBeanFactory beanFactory, List&lt;BeanFactoryPostProcessor&gt; beanFactoryPostProcessors) {
+
+......
+
+List&lt;BeanFactoryPostProcessor&gt; priorityOrderedPostProcessors = new ArrayList&lt;&gt;();
+
+......
+
+invokeBeanFactoryPostProcessors(priorityOrderedPostProcessors, beanFactory);
+
+......
+}
+</code></pre><p>　</p>
+<p>　　进入这个方法后主要有２个方法需要注意。这个接口BeanFactoryPostProcessor的实现类是这个ConfigurationClassPostProcessor。进入invokeBeanFactoryPostProcessors方法。</p>
+<pre><code>private static void invokeBeanFactoryPostProcessors(
+        Collection&lt;? extends BeanFactoryPostProcessor&gt; postProcessors, ConfigurableListableBeanFactory beanFactory) {
+
+    for (BeanFactoryPostProcessor postProcessor : postProcessors) {
+        postProcessor.postProcessBeanFactory(beanFactory);
+    }
+}
+</code></pre><p>　　调用了postProcessBeanFactory方法。然后点点点，进入processConfigBeanDefinitions方法，这个就是处理@import的方法了。</p>
+<pre><code>    public void processConfigBeanDefinitions(BeanDefinitionRegistry registry) {
+......
+parser.parse(candidates);
+......
+
+}
+</code></pre><p>　　进入这个方法，不断进入doProcessConfigurationClass这个方法里面。</p>
+<pre><code>@Nullable
+protected final SourceClass doProcessConfigurationClass(ConfigurationClass configClass, SourceClass sourceClass)
+        throws IOException {
+
+    ......
+    Set&lt;BeanDefinitionHolder&gt; scannedBeanDefinitions =
+                    this.componentScanParser.parse(componentScan, sourceClass.getMetadata().getClassName());
+            // Check the set of scanned definitions for any further config classes and parse recursively if needed
+            for (BeanDefinitionHolder holder : scannedBeanDefinitions) {
+                BeanDefinition bdCand = holder.getBeanDefinition().getOriginatingBeanDefinition();
+                if (bdCand == null) {
+                    bdCand = holder.getBeanDefinition();
+                }
+                if (ConfigurationClassUtils.checkConfigurationClassCandidate(bdCand, this.metadataReaderFactory)) {
+                    parse(bdCand.getBeanClassName(), holder.getBeanName());
+                }
+            }
+        }
+    }
+
+    // Process any @Import annotations
+    processImports(configClass, sourceClass, getImports(sourceClass), true); 
+
+    ......
+    }
+</code></pre><p>　　进去后，第一个方法获取到本项目下所有的bean,然后过滤找到是@Import的bean,再然后在processImports方法里面将其里面的bean注入spring容器进去。</p>
+
+          
+        
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="https://skydh.github.io/2019/10/09/多cookie导致的登录问题/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="董航">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="why are you so happy">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                <a class="post-title-link" href="/2019/10/09/多cookie导致的登录问题/" itemprop="url">多cookie导致的登录问题</a></h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2019-10-09T14:05:23+08:00">
+                2019-10-09
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            <h1 id="问题如下"><a href="#问题如下" class="headerlink" title="问题如下"></a>问题如下</h1><p>　　本系统登录用户中心后，用户中心返回一个cookie给浏览器，浏览器携带cookie访问我们后台服务，后台服务通过cookie，从redis里面获取到信息后，向用户中心发送rpc请求，从而进行权限校验。问题如下，用户中心修改配置后，账号登录变成单端登录，A登录a账号，B登录a账号，B把A挤了下来。但是A不知道，继续访问后台服务，报错，没有权限，但是浏览器端有了新的cookie。再次登录，用户中心报错。</p>
+<h1 id="分析如下"><a href="#分析如下" class="headerlink" title="分析如下"></a>分析如下</h1><p>　　２个方案，用户中心分析这个cookie，选择正确的cookie处理，或者本系统在那个情况下不生成这个cookie。</p>
+<h1 id="源码解析"><a href="#源码解析" class="headerlink" title="源码解析"></a>源码解析</h1><p>　　springmvc 请求一个服务，要经过一系列的过滤器链，而我们使用了springsession,那么其中就有一个优先级很高的一个过滤器SessionRepositoryFilter。核心方法为</p>
+<pre><code>@Override
+protected void doFilterInternal(HttpServletRequest request,
+        HttpServletResponse response, FilterChain filterChain)
+        throws ServletException, IOException {
+    request.setAttribute(SESSION_REPOSITORY_ATTR, this.sessionRepository);
+
+    SessionRepositoryRequestWrapper wrappedRequest = new SessionRepositoryRequestWrapper(
+            request, response, this.servletContext);
+    SessionRepositoryResponseWrapper wrappedResponse = new SessionRepositoryResponseWrapper(
+            wrappedRequest, response);
+
+    try {
+        filterChain.doFilter(wrappedRequest, wrappedResponse);
+    }
+    finally {
+        wrappedRequest.commitSession();
+    }
+}
+</code></pre><p>　　我们注意到，无论如何都要执行的finally代码块。进去观察</p>
+<pre><code>private void commitSession() {
+        HttpSessionWrapper wrappedSession = getCurrentSession();
+        if (wrappedSession == null) {
+            if (isInvalidateClientSession()) {
+                SessionRepositoryFilter.this.httpSessionIdResolver.expireSession(this,
+                        this.response);
+            }
+        }
+        else {
+            S session = wrappedSession.getSession();
+            clearRequestedSessionCache();
+            SessionRepositoryFilter.this.sessionRepository.save(session);
+            String sessionId = session.getId();
+            if (!isRequestedSessionIdValid()
+                    || !sessionId.equals(getRequestedSessionId())) {
+                SessionRepositoryFilter.this.httpSessionIdResolver.setSessionId(this,
+                        this.response, sessionId);
+            }
+        }
+    }
+</code></pre><p>　　最后一行代码会进入CookieHttpSessionIdResolver的setSessionId方法中，我们观察这个方法。</p>
+<pre><code>@Override
+public void setSessionId(HttpServletRequest request, HttpServletResponse response,
+        String sessionId) {
+    if (sessionId.equals(request.getAttribute(WRITTEN_SESSION_ID_ATTR))) {
+        return;
+    }
+    request.setAttribute(WRITTEN_SESSION_ID_ATTR, sessionId);
+    this.cookieSerializer
+            .writeCookieValue(new CookieValue(request, response, sessionId));
+}
+</code></pre><p>　　其会进入DefaultCookieSerializer的writeCookieValue方法里面</p>
+<pre><code>@Override
+public void writeCookieValue(CookieValue cookieValue) {
+    HttpServletRequest request = cookieValue.getRequest();
+    HttpServletResponse response = cookieValue.getResponse();
+
+    StringBuilder sb = new StringBuilder();
+    sb.append(this.cookieName).append(&apos;=&apos;);
+    String value = getValue(cookieValue);
+    if (value != null &amp;&amp; value.length() &gt; 0) {
+        validateValue(value);
+        sb.append(value);
+    }
+    int maxAge = getMaxAge(cookieValue);
+    if (maxAge &gt; -1) {
+        sb.append(&quot;; Max-Age=&quot;).append(cookieValue.getCookieMaxAge());
+        OffsetDateTime expires = (maxAge != 0)
+                ? OffsetDateTime.now().plusSeconds(maxAge)
+                : Instant.EPOCH.atOffset(ZoneOffset.UTC);
+        sb.append(&quot;; Expires=&quot;)
+                .append(expires.format(DateTimeFormatter.RFC_1123_DATE_TIME));
+    }
+    String domain = getDomainName(request);
+    if (domain != null &amp;&amp; domain.length() &gt; 0) {
+        validateDomain(domain);
+        sb.append(&quot;; Domain=&quot;).append(domain);
+    }
+    String path = getCookiePath(request);
+    if (path != null &amp;&amp; path.length() &gt; 0) {
+        validatePath(path);
+        sb.append(&quot;; Path=&quot;).append(path);
+    }
+    if (isSecureCookie(request)) {
+        sb.append(&quot;; Secure&quot;);
+    }
+    if (this.useHttpOnlyCookie) {
+        sb.append(&quot;; HttpOnly&quot;);
+    }
+    if (this.sameSite != null) {
+        sb.append(&quot;; SameSite=&quot;).append(this.sameSite);
+    }
+
+    response.addHeader(&quot;Set-Cookie&quot;, sb.toString());
+}
+</code></pre><p>　　找到了，原来在这里会在response里面写入cookie，在这个方法里面只要我们指定了cookie的name和domain和用户中心传给我们的一样，那么就会解决多cookie问题。</p>
+<p>　　从系统启动开始看，加了EnableRedisHttpSession这个注解，会采用spring session，点进去里面有个@import注解，引入了RedisHttpSessionConfiguration这个配置类，这个类里面配置引入了很多bean。同时继承了一个SpringHttpSessionConfiguration这个抽象类，在这个抽象类里面有2个方法和我们强相关</p>
+<pre><code>@Autowired(required = false)
+public void setCookieSerializer(CookieSerializer cookieSerializer) {
+    this.cookieSerializer = cookieSerializer;
+}
+
+@PostConstruct
+public void init() {
+    CookieSerializer cookieSerializer = (this.cookieSerializer != null)
+            ? this.cookieSerializer
+            : createDefaultCookieSerializer();
+    this.defaultHttpSessionIdResolver.setCookieSerializer(cookieSerializer);
+}
+</code></pre><p>　　第一个方法是当容器中存在CookieSerializer实例时，就注入到这个bean中，第二个方法是这个bean执行完构造方法和所有注入后执行的方法，这个方法里面的逻辑如下，如果上下文不存在CookieSerializer这个实例，那么直接new一个。</p>
+<p>　　那么解决方案就出来。我们可以创建一个bean注入到spring容器里面即可</p>
+<pre><code>@Configuration
+public class CookieConfiguration {
+@Value(&quot;${cookie.name}&quot;)
+private String cookieName;
+
+@Value(&quot;${cookie.domain}&quot;)
+private String domain;
+
+@Bean
+public DefaultCookieSerializer defaultCookieSerializer() {
+    DefaultCookieSerializer serializer = new DefaultCookieSerializer();
+    serializer.setCookieName(cookieName);
+    serializer.setDomainName(domain);
+    return serializer;
+}
+}
+</code></pre><p>　　如此即可，返回时写cookie时，name和domain就指定了，就会覆盖之前的cookie，不会出现2个cookie了。问题解决。</p>
+<h1 id="什么情况下会写入cookie。"><a href="#什么情况下会写入cookie。" class="headerlink" title="什么情况下会写入cookie。"></a>什么情况下会写入cookie。</h1><p>　　再往上走，会发现</p>
+<pre><code>if (!isRequestedSessionIdValid()
+                    || !sessionId.equals(getRequestedSessionId())) 
+</code></pre><p>　　这个条件下，才会执行写入cookie的情况。我们的上述情况一定在这个里面。主要是第一个条件我们看看，点进去看看</p>
+<pre><code>@Override
+    public boolean isRequestedSessionIdValid() {
+        if (this.requestedSessionIdValid == null) {
+            S requestedSession = getRequestedSession();
+            if (requestedSession != null) {
+                requestedSession.setLastAccessedTime(Instant.now());
+            }
+            return isRequestedSessionIdValid(requestedSession);
+        }
+        return this.requestedSessionIdValid;
+    }
+</code></pre><p>　　这个方法主要和requestedSessionIdValid这个值相关。我们通过eclipse的call功能，找到了只有这个方法才对这个属性做了修改。</p>
+<pre><code>@Override
+    public HttpSessionWrapper getSession(boolean create) {
+        HttpSessionWrapper currentSession = getCurrentSession();
+        if (currentSession != null) {
+            return currentSession;
+        }
+        S requestedSession = getRequestedSession();
+        if (requestedSession != null) {
+            if (getAttribute(INVALID_SESSION_ID_ATTR) == null) {
+                requestedSession.setLastAccessedTime(Instant.now());
+                this.requestedSessionIdValid = true;
+                currentSession = new HttpSessionWrapper(requestedSession, getServletContext());
+                currentSession.setNew(false);
+                setCurrentSession(currentSession);
+                return currentSession;
+            }
+        }
+        ........
+    }
+</code></pre><p>　　我省略了一部分代码。他会根据requestedSession来判断是否设值进去，因此进入方法getRequestedSession。</p>
+<pre><code>private S getRequestedSession() {
+        if (!this.requestedSessionCached) {
+            List&lt;String&gt; sessionIds = SessionRepositoryFilter.this.httpSessionIdResolver
+                    .resolveSessionIds(this);
+            for (String sessionId : sessionIds) {
+                if (this.requestedSessionId == null) {
+                    this.requestedSessionId = sessionId;
+                }
+                S session = SessionRepositoryFilter.this.sessionRepository
+                        .findById(sessionId);
+                if (session != null) {
+                    this.requestedSession = session;
+                    this.requestedSessionId = sessionId;
+                    break;
+                }
+            }
+            this.requestedSessionCached = true;
+        }
+        return this.requestedSession;
+    }
+</code></pre><p>　　这里我就不再进入方法内部了，我就直接说这些方法的功能。先获取事先约定好的cookie的value值，然后通过这个value值从redis里面获取对应的hash值，然后组装成session返回给方法，如果不存在，则返回null。最后若是session不存在，那么就会创建一个丢到redis里面去。并且丢到浏览器前端里面。</p>
+<p>　　因此当这个cookie过期，或者cookie在redis里面不存在时就会写入cookie。</p>
+
+          
+        
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="https://skydh.github.io/2019/09/23/springboot 选择日志/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="董航">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="why are you so happy">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                <a class="post-title-link" href="/2019/09/23/springboot 选择日志/" itemprop="url">springboot 选择日志</a></h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2019-09-23T17:55:12+08:00">
+                2019-09-23
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            <h1 id="明确的概念"><a href="#明确的概念" class="headerlink" title="明确的概念"></a>明确的概念</h1><p>　　目前主流的日志框架是logback,log4j,javalogging,这是目前主流的日志框架，其中出了个适配器，相当于接口，slf4j的作者和logback,log4j是一个人，这个接口可以适配logback,log4j</p>
+<h1 id="springboot启动时如何选择日志的呢"><a href="#springboot启动时如何选择日志的呢" class="headerlink" title="springboot启动时如何选择日志的呢"></a>springboot启动时如何选择日志的呢</h1><p>　　我们从springboot启动<br>　　预先知识：</p>
+<ul>
+<li>@Import,这个注解的value是Class类型的数组，我们可以直接传递一些类进去，那么这些类就会被导入到当前ioc容器。或者导入，这些类里面加了@Bean方法返回的对象。同时会将实现ImportSelector接口的selectImports方法返回的类的全限定名导入到ioc容器。</li>
+</ul>
+<p>　　流程如下：</p>
+<p>　　１．启动类上面的@SpringBootApplication注解，点进去，再进去EnableAutoConfiguration注解，上面有个import注解，前面说过了，点进去这个AutoConfigurationImportSelector类，看到selectImports方法：</p>
+<pre><code>@Override
+public String[] selectImports(AnnotationMetadata annotationMetadata) {
+    if (!isEnabled(annotationMetadata)) {
+        return NO_IMPORTS;
+    }
+    AutoConfigurationMetadata autoConfigurationMetadata = AutoConfigurationMetadataLoader
+            .loadMetadata(this.beanClassLoader);
+    AutoConfigurationEntry autoConfigurationEntry = getAutoConfigurationEntry(
+            autoConfigurationMetadata, annotationMetadata);
+    return StringUtils.toStringArray(autoConfigurationEntry.getConfigurations());
+}
+</code></pre><p>　　我们看到第２行代码，点进去</p>
+<pre><code>protected AutoConfigurationEntry getAutoConfigurationEntry(
+        AutoConfigurationMetadata autoConfigurationMetadata,
+        AnnotationMetadata annotationMetadata) {
+    if (!isEnabled(annotationMetadata)) {
+        return EMPTY_ENTRY;
+    }
+    AnnotationAttributes attributes = getAttributes(annotationMetadata);
+    List&lt;String&gt; configurations = getCandidateConfigurations(annotationMetadata,
+            attributes);
+    configurations = removeDuplicates(configurations);
+    Set&lt;String&gt; exclusions = getExclusions(annotationMetadata, attributes);
+    checkExcludedClasses(configurations, exclusions);
+    configurations.removeAll(exclusions);
+    configurations = filter(configurations, autoConfigurationMetadata);
+    fireAutoConfigurationImportEvents(configurations, exclusions);
+    return new AutoConfigurationEntry(configurations, exclusions);
+}
+</code></pre><p>　　我们点到第五行代码点进去</p>
+<pre><code>    protected List&lt;String&gt; getCandidateConfigurations(AnnotationMetadata metadata,
+        AnnotationAttributes attributes) {
+    List&lt;String&gt; configurations = SpringFactoriesLoader.loadFactoryNames(
+            getSpringFactoriesLoaderFactoryClass(), getBeanClassLoader());
+    Assert.notEmpty(configurations,
+            &quot;No auto configuration classes found in META-INF/spring.factories. If you &quot;
+                    + &quot;are using a custom packaging, make sure that file is correct.&quot;);
+    return configurations;
+}
+</code></pre><p>　　不断深入SpringFactoriesLoader.loadFactoryNames方法</p>
+<pre><code>private static Map&lt;String, List&lt;String&gt;&gt; loadSpringFactories(@Nullable ClassLoader classLoader) {
+    MultiValueMap&lt;String, String&gt; result = cache.get(classLoader);
+    if (result != null) {
+        return result;
+    }
+
+    try {
+        Enumeration&lt;URL&gt; urls = (classLoader != null ?
+                classLoader.getResources(FACTORIES_RESOURCE_LOCATION) :
+                ClassLoader.getSystemResources(FACTORIES_RESOURCE_LOCATION));
+        result = new LinkedMultiValueMap&lt;&gt;();
+        while (urls.hasMoreElements()) {
+            URL url = urls.nextElement();
+            UrlResource resource = new UrlResource(url);
+            Properties properties = PropertiesLoaderUtils.loadProperties(resource);
+            for (Map.Entry&lt;?, ?&gt; entry : properties.entrySet()) {
+                String factoryClassName = ((String) entry.getKey()).trim();
+                for (String factoryName : StringUtils.commaDelimitedListToStringArray((String) entry.getValue())) {
+                    result.add(factoryClassName, factoryName.trim());
+                }
+            }
+        }
+        cache.put(classLoader, result);
+        return result;
+    }
+    catch (IOException ex) {
+        throw new IllegalArgumentException(&quot;Unable to load factories from location [&quot; +
+                FACTORIES_RESOURCE_LOCATION + &quot;]&quot;, ex);
+    }
+}
+</code></pre><p>  其中FACTORIES_RESOURCE_LOCATION= “META-INF/spring.factories”<br>　也就是说从当前jar将前面说的key为org.springframework.boot.autoconfigure.EnableAutoConfiguration的value全部拉出来然后反射实例化后注入到spring ioc容器。这些key都是自动化配置的key。再看看后面的步骤。</p>
+<p>　　２。从SpringApplication.run(WebApplication.class, args)<br>进入到    </p>
+<pre><code> */
+public static ConfigurableApplicationContext run(Class&lt;?&gt;[] primarySources,
+        String[] args) {
+    return new SpringApplication(primarySources).run(args);
+}
+</code></pre><p>　　<br>　　这个方法里面创建了SpringApplication对象，进入到其构造方法。</p>
+<pre><code>@SuppressWarnings({ &quot;unchecked&quot;, &quot;rawtypes&quot; })
+public SpringApplication(ResourceLoader resourceLoader, Class&lt;?&gt;... primarySources) {
+    this.resourceLoader = resourceLoader;
+    Assert.notNull(primarySources, &quot;PrimarySources must not be null&quot;);
+    this.primarySources = new LinkedHashSet&lt;&gt;(Arrays.asList(primarySources));
+    this.webApplicationType = WebApplicationType.deduceFromClasspath();
+    setInitializers((Collection) getSpringFactoriesInstances(
+            ApplicationContextInitializer.class));
+    setListeners((Collection) getSpringFactoriesInstances(ApplicationListener.class));
+    this.mainApplicationClass = deduceMainApplicationClass();
+}
+</code></pre><p>　　在setListeners((Collection) getSpringFactoriesInstances(ApplicationListener.class));这行代码里面Class类型是ApplicationListener。这个方法前文讲述过了。这里特别提一下其中有个Listener和本文相关，那就是LoggingApplicationListener这个Listener。然后将其注入到SpringApplication的listeners属性里面。前面方法里面创建对象后立马调用了run方法。进去，这个run方法我就不细说了，都知道。</p>
+<pre><code>try {
+        listeners.running(context);
+    }
+</code></pre><p>　　这行代码最终是启动listeners的，点进去源码可以看到</p>
+<pre><code>@Override
+public void running(ConfigurableApplicationContext context) {
+    context.publishEvent(
+            new ApplicationReadyEvent(this.application, this.args, context));
+}
+</code></pre><p>　　然后我们进入到LoggingApplicationListener这个类的关键代码处</p>
+<pre><code>@Override
+public void onApplicationEvent(ApplicationEvent event) {
+    if (event instanceof ApplicationStartingEvent) {
+        onApplicationStartingEvent((ApplicationStartingEvent) event);
+    }
+    else if (event instanceof ApplicationEnvironmentPreparedEvent) {
+        onApplicationEnvironmentPreparedEvent(
+                (ApplicationEnvironmentPreparedEvent) event);
+    }
+    else if (event instanceof ApplicationPreparedEvent) {
+        onApplicationPreparedEvent((ApplicationPreparedEvent) event);
+    }
+    else if (event instanceof ContextClosedEvent &amp;&amp; ((ContextClosedEvent) event)
+            .getApplicationContext().getParent() == null) {
+        onContextClosedEvent();
+    }
+    else if (event instanceof ApplicationFailedEvent) {
+        onApplicationFailedEvent();
+    }
+}
+</code></pre><p>  执行第一个事件。</p>
+<pre><code>private void onApplicationStartingEvent(ApplicationStartingEvent event) {
+    this.loggingSystem = LoggingSystem
+            .get(event.getSpringApplication().getClassLoader());
+    this.loggingSystem.beforeInitialize();
+}
+</code></pre><p>　　进入LoggingSystem的get方法里面。</p>
+<pre><code>public static LoggingSystem get(ClassLoader classLoader) {
+    String loggingSystem = System.getProperty(SYSTEM_PROPERTY);
+    if (StringUtils.hasLength(loggingSystem)) {
+        if (NONE.equals(loggingSystem)) {
+            return new NoOpLoggingSystem();
+        }
+        return get(classLoader, loggingSystem);
+    }
+    return SYSTEMS.entrySet().stream()
+            .filter((entry) -&gt; ClassUtils.isPresent(entry.getKey(), classLoader))
+            .map((entry) -&gt; get(classLoader, entry.getValue())).findFirst()
+            .orElseThrow(() -&gt; new IllegalStateException(
+                    &quot;No suitable logging system located&quot;));
+}
+</code></pre><p>　　核心出来了在这里，从SYSTEMS这个map里面按顺序取值，而这个map的值是下面的。测试了下。顺序取出的顺序是logback,log4j,javalog。按照上面代码的逻辑，如果上下文存在这个日志类，那么springboot就使用哪个类。显然是优先使用logback</p>
+<pre><code>private static final Map&lt;String, String&gt; SYSTEMS;
+
+static {
+    Map&lt;String, String&gt; systems = new LinkedHashMap&lt;&gt;();
+    systems.put(&quot;ch.qos.logback.core.Appender&quot;,
+            &quot;org.springframework.boot.logging.logback.LogbackLoggingSystem&quot;);
+    systems.put(&quot;org.apache.logging.log4j.core.impl.Log4jContextFactory&quot;,
+            &quot;org.springframework.boot.logging.log4j2.Log4J2LoggingSystem&quot;);
+    systems.put(&quot;java.util.logging.LogManager&quot;,
+            &quot;org.springframework.boot.logging.java.JavaLoggingSystem&quot;);
+    SYSTEMS = Collections.unmodifiableMap(systems);
+}
+</code></pre><p>　　
+　　</p>
+
+          
+        
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="https://skydh.github.io/2019/09/06/java位运算/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="董航">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="why are you so happy">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                <a class="post-title-link" href="/2019/09/06/java位运算/" itemprop="url">java 位运算</a></h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2019-09-06T09:33:20+08:00">
+                2019-09-06
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            <p>ps： 在java中，负数的二进制为，正数的二进制的反码+1。</p>
+<h1 id="左移-lt-lt"><a href="#左移-lt-lt" class="headerlink" title="左移( &lt;&lt; )"></a>左移( &lt;&lt; )</h1><p>　　把数字向左移动，比如 &lt;&lt;2，相当于向左移动2位，相当于做了乘法，乘积为2^2。符号位不变。低数位全部用０来补</p>
+<pre><code>public static void main(String[] arg) {
+    System.out.println(5 &lt;&lt; 2);
+}
+</code></pre><p>　　<br>　　输出为20,相当于5*4=20</p>
+<h1 id="右移-gt-gt"><a href="#右移-gt-gt" class="headerlink" title="右移( &gt;&gt; )"></a>右移( &gt;&gt; )</h1><p>　　把数字向右移动，比如  &gt;&gt;2，相当于向左移动2位，相当于做了除法，除了2^2。符号位不变。正数用０补位，负数用１补位。</p>
+<pre><code>public static void main(String[] arg) {
+    System.out.println(5 &gt;&gt; 2);
+}
+</code></pre><p>　　输出为１</p>
+<h1 id="无符号右移-gt-gt-gt"><a href="#无符号右移-gt-gt-gt" class="headerlink" title="无符号右移( &gt;&gt;&gt; )"></a>无符号右移( &gt;&gt;&gt; )</h1><p>ps：没有无符号左移<br>　　把数字向右移动，比如  &gt;&gt;2，相当于向左移动2位，相当于做了除法，除了2^2。符号位也变。正数没有啥变化，负数的话，变化蛮大的。因为高数位全部都是０来补充。</p>
+<h2 id="位与-amp"><a href="#位与-amp" class="headerlink" title="位与( &amp; )"></a>位与( &amp; )</h2><p>　　将数字转换为２进制后做与运算，每一个数字都要做与运算。２个数进行位与时，将２个数均转换为２进制数，然后按照顺序每一位开始做对应的与运算。均为１才是１，否则，为０.</p>
+<h2 id="位或"><a href="#位或" class="headerlink" title="位或( | )"></a>位或( | )</h2><p>　　将数字转换为２进制后做或运算，每一个数字都要做或运算。２个数进行位或时，将２个数均转换为２进制数，然后按照顺序每一位开始做对应的位或运算。均为０才是０，否则为１.</p>
+<h2 id="位非"><a href="#位非" class="headerlink" title="位非( ~ )"></a>位非( ~ )</h2><p>　　将数字转换为２进制后做非运算，每一个数字都要做非运算。对这个数字每一位都要进行非运算，也就是取反。</p>
+<h2 id="位异或"><a href="#位异或" class="headerlink" title="位异或( ^ )"></a>位异或( ^ )</h2><p>　　将数字转换为２进制后做异或运算，每一个数字都要做异或运算。２个数进行异或时，将２个数均转换为２进制数，然后按照顺序每一位开始做对应的异或运算。均为０，或者均为１，才是0，否则为０.</p>
+
+          
+        
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="https://skydh.github.io/2019/07/08/网关/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="董航">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="why are you so happy">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                <a class="post-title-link" href="/2019/07/08/网关/" itemprop="url">Api网关</a></h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2019-07-08T09:25:25+08:00">
+                2019-07-08
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            <h2 id="什么是网关"><a href="#什么是网关" class="headerlink" title="什么是网关"></a>什么是网关</h2><p>　　网关（英语：Gateway）是转发其他服务器通信数据的服务器，接收从客户端发送来的请求时，它就像自己拥有资源的源服务器一样对请求进行处理。有时客户端可能都不会察觉，自己的通信目标是一个网关。</p>
+<h2 id="api网关"><a href="#api网关" class="headerlink" title="api网关"></a>api网关</h2><p>　　API 网关将各系统对外暴露的服务聚合起来，所有要调用这些服务的系统都需要通过 API 网关进行访问，基于这种方式网关可以对 API 进行统一管控，例如：认证、鉴权、流量控制、协议转换、监控等等。</p>
+<h3 id="面向-Web-或者移动-App"><a href="#面向-Web-或者移动-App" class="headerlink" title="面向 Web 或者移动 App"></a>面向 Web 或者移动 App</h3><p>　　这类场景，在物理形态上类似前后端分离，前端应用通过 API 调用后端服务，需要网关具有认证、鉴权、缓存、服务编排、监控告警等功能。</p>
+<h3 id="面向合作伙伴开放-API"><a href="#面向合作伙伴开放-API" class="headerlink" title="面向合作伙伴开放 API"></a>面向合作伙伴开放 API</h3><p>　　这类场景，主要为了满足业务形态对外开放，与企业外部合作伙伴建立生态圈，此时的 API 网关注重安全认证、权限分级、流量管控、缓存等功能的建设。</p>
+<h3 id="企业内部系统互联互通"><a href="#企业内部系统互联互通" class="headerlink" title="企业内部系统互联互通"></a>企业内部系统互联互通</h3><p>　　对于中大型的企业内部往往有几十、甚至上百个系统，尤其是微服务架构的兴起系统数量更是急剧增加。系统之间相互依赖，逐渐形成网状调用关系不便于管理和维护，需要 API 网关进行统一的认证、鉴权、流量管控、超时熔断、监控告警管理，从而提高系统的稳定性、降低重复建设、运维管理等成本。</p>
+<h3 id="具备的能力"><a href="#具备的能力" class="headerlink" title="具备的能力"></a>具备的能力</h3><h4 id="服务注册和服务接入能力"><a href="#服务注册和服务接入能力" class="headerlink" title="服务注册和服务接入能力"></a>服务注册和服务接入能力</h4><h4 id="网关接入和发布核心功能"><a href="#网关接入和发布核心功能" class="headerlink" title="网关接入和发布核心功能"></a>网关接入和发布核心功能</h4><h4 id="服务安全"><a href="#服务安全" class="headerlink" title="服务安全"></a>服务安全</h4><h4 id="服务管控和治理"><a href="#服务管控和治理" class="headerlink" title="服务管控和治理"></a>服务管控和治理</h4><p>ps:<a href="https://www.infoq.cn/article/api-gateway-architecture-design" target="_blank" rel="noopener">https://www.infoq.cn/article/api-gateway-architecture-design</a></p>
+<h2 id="zuul"><a href="#zuul" class="headerlink" title="zuul"></a>zuul</h2><p>　　我司的api网关服务是基于zuul2实现的。为了搭建一个类似的网关服务，我将详细的搭建一个demo，来跑这个服务。</p>
+<p>　　我先根据网上的教程，搭建了一个简单的eureka注册中心，然后搭建了2个简单的server注册到这个注册中心里面，然后搭建一个简单的基于zuul的网关注册到eureka里面，这个api网关是基于serverId实现的，然后启动一个server，路由访问，成功得到数据。实现这个ZuulFilter这个接口做的效果，默认则是org.springframework.cloud.netflix.zuul.filters这个包下的过滤器的实现。</p>
+<p>　　ps：参考这篇文章</p>
+<pre><code>http://blog.didispace.com/spring-cloud-source-zuul/
+</code></pre><p>　　</p>
+<p>ps(SpringCloud的整体组建包括：Zuul、Ribbon、EureKa、Fein、Hystrix等。其中Zuul就是一个类似APIGateway的组建，Ribbon是类似于Nginx的代理服务器，Eureka用于注册和发现服务，Hystrix可以作为整个架构的断路服务，用于服务降级。Fein可以作为一个Rest服务的提供者，可以供内部服务之间相互调用)</p>
+
+          
+        
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="https://skydh.github.io/2019/06/27/kafka基础-主题和分区/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="董航">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="why are you so happy">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                <a class="post-title-link" href="/2019/06/27/kafka基础-主题和分区/" itemprop="url">kafka入门005 -主题和分区</a></h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2019-06-27T20:40:55+08:00">
+                2019-06-27
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            <h1 id="脚本管理主题信息"><a href="#脚本管理主题信息" class="headerlink" title="脚本管理主题信息"></a>脚本管理主题信息</h1><h2 id="创建主题"><a href="#创建主题" class="headerlink" title="创建主题"></a>创建主题</h2><p>　　在集群配置的时候就说过了　auto.create.topics.enable这个值设置为true时。生产者发送一个没有被创建主题的消息时，会自动创建一个分区数为num.partition默认为1，副本因子为default.replication.factory默认为1的主题。消费者请求某个主题时也会创建一个类似的主题。这样主题不利于管理，因此我们需要将　auto.create.topics.enable设置为false。<br>　　<br>　　我们一般通过这个命令在服务器通过kafka-topics.sh脚本来创建主题。</p>
+<pre><code>./bin/kafka-topics.sh --zookeeper localhost:2181/kafka --create --topic topic-dh --partitions 4 --replication-factor 1
+</code></pre><p>　　这个命令是创建一个叫做topic-dh的主题，分区有4个，副本因子2个。<br>　　配置文件里面有个logs的配置，里面配置了主题和分区。前面也说过了，每个副本必须在不同的broke。我们不仅可以通过刚刚的路径查看log日志文件，也可以通过。<br>　　我们不仅可以通过上述的日志文件查看主题，我们还可以通过zk客户端查看，每创建一个主题就会在zk的/brokers/topics上创建一个同名的实节点。该节点记录了创建该主题分区的分配方案。首先启动这个zk客户端，启动命令如下：<br>　　./zkCli.sh –server 127.0.0.1:2181。<br>　　然后在命令行界面输入获取节点。和书上不一样的是，我的节点信息存放在 /kafka/brokers/topics/topic-demo111。这个目录下面，没有存放在 /brokers/topics/topic-demo111里面。</p>
+<p>　　我们可以通过下面命令查看分区细节信息。</p>
+<pre><code>./bin/kafka-topics.sh --zookeeper localhost:2181/kafka --describe --topic topic-create 
+</code></pre><p>　　来查看信息。</p>
+<p>　　我们可以更加详细的分配主题副本不同节点的分配。</p>
+<pre><code>./bin/kafka-topics.sh --zookeeper localhost:2181/kafka --create --topic topic-createsss --replica-assignment 2:0,0:1,1:2,2:1
+</code></pre><p>　　这很好理解，2个副本，4个分区，分区1的副本是2,0，分区2的副本是0,2之类的。前面说过了，副本必须在不同节点上面，因此如果你设置的节点是一样的，会报错。同时如果设置的分区的副本数不一样也不行，也会报错。比如：2:0,0,2:1这种情况，第二个分区的副本是1个其余分区的副本是2个。2:0,,2:1跳过某个分区也是不行的。<br>　　其次，我在集群配置说了，我们可以在主题里面设置参数从而覆盖broker参数。</p>
+<pre><code>./bin/kafka-topics.sh --zookeeper localhost:2181/kafka --create --topic topic-dh --partitions 4 --replication-factor 1 --config cleanup.policy=compact --config max.message.bytes=10000
+</code></pre><p>　　同时我们创建主题时不能同名。可以加这么一个参数来限定。</p>
+<pre><code>./bin/kafka-topics.sh --zookeeper localhost:2181/kafka --create --topic topic-dh --partitions 4 --replication-factor 1　--if-not-exists
+</code></pre><p>　　kafka内部做埋点处理时会根据主题的名称来命名metrics的名称，且将”.”改成”_”,因此topic.1_2和topic_1_2的metrics的名称都是topic_1_2，因此注意是否重名。<br>　　broke支持指定机架信息，如果制定了机架信息，则在分区副本分配是会尽可能的让分区副本分配到不同机架上，通过参数broke.rack=RACK1来配置的。如果集群里面部分broke指定了机架，部分没有指定，那么依旧会报错。</p>
+<p>　　使用这个脚本创建主题，也就是这个kafka-topic.sh,本质上是调用kafka.admin.TopicCommand这个类实现对主题的管理，我们可以直接使用这个类来创建主题。demo如下：</p>
+<pre><code>String[] opts = new String[] { &quot;--zookeeper&quot;, &quot;:/2181/kafka&quot;, &quot;--create&quot;, &quot;--replication-factor&quot;, &quot;1&quot;,
+            &quot;--topic&quot;, &quot;topic-create-api&quot; };
+    kafka.admin.TopicCommand.main(opts);
+</code></pre><h2 id="分区副本的分配"><a href="#分区副本的分配" class="headerlink" title="分区副本的分配"></a>分区副本的分配</h2><p>　　除了前面说的–replica-assignment参数来直接指定副本分配情况，如果没有的话，则是按照内部逻辑进行处理的，有２个方案。有前面我说的机架信息，和没有机架信息。<br>　　没有机架信息的方案如下：（ps 这是scala代码）</p>
+<pre><code>val rand = new Random
+private def assignReplicasToBrokersRackUnaware(
+nPartitions: Int, //分区数
+replicationFactor: Int, //副本因子
+brokerList: Seq[Int], //集群中broker列表
+fixedStartIndex: Int, //起始索引。默认为-1
+startPartitionId: Int //起始分区编号，默认-1
+): Map[Int, Seq[Int]] //返回值类型
+= {
+val ret = mutable.Map[Int, Seq[Int]]() //声明一个map
+val brokerArray = brokerList.toArray //获取brokerid的列表
+//起始索引小于0,那么从brokerid列表里面获取一个随机的有效值
+val startIndex = if (fixedStartIndex &gt;= 0) fixedStartIndex else rand.nextInt(brokerArray.length)
+//确保起始分区大于0
+var currentPartitionId = math.max(0, startPartitionId)
+//指定副本间隔
+var nextReplicaShift = if (fixedStartIndex &gt;= 0) fixedStartIndex else rand.nextInt(brokerArray.length)
+//这是一个for循环，scala语法看着好难受，遍历所有分区。
+for (_ &lt;- 0 until nPartitions) {
+  if (currentPartitionId &gt; 0 &amp;&amp; (currentPartitionId % brokerArray.length == 0))
+    nextReplicaShift += 1
+  //获取第一个副本索引
+  val firstReplicaIndex = (currentPartitionId + startIndex) % brokerArray.length
+  //生成一个该分区副本集合
+  val replicaBuffer = mutable.ArrayBuffer(brokerArray(firstReplicaIndex))
+  //保存该分区的所有副本分配的broker集合
+  for (j &lt;- 0 until replicationFactor - 1)
+    //为其余副本分配broker
+    replicaBuffer += brokerArray(replicaIndex(firstReplicaIndex, nextReplicaShift, j, brokerArray.length))
+  //保存该分区的副本分配信息
+  ret.put(currentPartitionId, replicaBuffer)
+  //继续下一个分区
+  currentPartitionId += 1
+}
+ret
+}
+private def replicaIndex(firstReplicaIndex: Int, secondReplicaShift: Int, replicaIndex: Int, nBrokers: Int): Int = {
+val shift = 1 + (secondReplicaShift + replicaIndex) % (nBrokers - 1)
+(firstReplicaIndex + shift) % nBrokers
+}
+</code></pre><p>　　这个算法使得分区副本分配的很均匀。差不多正好。<br>　　指定机架信息和没指定机架信息本质上差不多。一个机架可以分配多个broker节点，但是满足下面条件的broker不可哟添加到当前分区的副本列表里面。<br>　　１.此broker所在机架已经有一个broker在这个分区的副本列表里面，且其他机架中没有任何的broken在该分区的副本列表里面。</p>
+<p>　　２.此broker已经在在列表，且其他broker不在。创建主题时实质上是在zookeeper中的/kafka/brokers/topics节点下创建和该主题对应的子节点，并且写入副本分配信息，且在/config/topics节点下创建该节点对应的子节点并且主题配置信息。kafka创建主题的实质上动作是交给控制器异步完成的。<br>　　因此我们可以直接通过创建规则下的节点，来直接创建一个新的主题。这样我们可以绕过一些规则，比如我们创建主题分区的时候都是从０开始计数。我们通过创建zookeeper节点就不用从0开始累加了。</p>
+<h2 id="查看主题"><a href="#查看主题" class="headerlink" title="查看主题"></a>查看主题</h2><p>　　kafka-topics.sh这个命令有５个指令类型：create,list,describe,alter和delete。其中list和describe是查看主题信息的。</p>
+<pre><code>./bin/kafka-topics.sh --zookeeper localhost:2181/kafka -list
+</code></pre><p>　　这个命令是查看当前kafka当前所有可用主题。</p>
+<pre><code>./bin/kafka-topics.sh --zookeeper localhost:2181/kafka --describe --topic topic-create 
+</code></pre><p>　　这个是查看topic-create这个主题的详细信息，可以接多个主题，一次查看多个主题信息。如果没有–topic这个参数则是查看所有主题信息。</p>
+<pre><code>./bin/kafka-topics.sh --zookeeper localhost:2181/kafka --describe  --topics-with-overrides
+</code></pre><p>　　–topics-with-overrides加这个参数则是查看所有使用了覆盖配置的主题。</p>
+<pre><code>./bin/kafka-topics.sh --zookeeper localhost:2181/kafka --describe --topic topic-create --under-replicated-partitions
+</code></pre><p>　　这个参数是查询当前主题所有包含失效副本的分区</p>
+<pre><code>./bin/kafka-topics.sh --zookeeper localhost:2181/kafka --describe --topic topic-create -unavaliable-partitions 
+</code></pre><p> 　　这个参数查看主题中没有lead副本的分区。</p>
+<h2 id="修改主题"><a href="#修改主题" class="headerlink" title="修改主题"></a>修改主题</h2><p>　　当一个主题被创建之后，依然允许我们对其做一定修改，比如修改分区个数，修改配置，通过alter指令来完成的。</p>
+<pre><code>./bin/kafka-topics.sh --zookeeper localhost:2181/kafka --alter --topic topic-create --partitions 3
+</code></pre><p>　　这个是将topic-create的分区修改为3.如此的话可能会有影响。<br>　　目前是不支持分区从多变少的。</p>
+<pre><code>./bin/kafka-topics.sh --zookeeper localhost:2181/kafka --alter --topic topic-create   --config max.message.bytes=10000
+</code></pre><p>　　这个命令是修改这个主题的配置。</p>
+<pre><code>./bin/kafka-topics.sh --zookeeper localhost:2181/kafka --alter --topic topic-create   --delete-config max.message.bytes
+</code></pre><p>　　这个是删除之前的配置。使其恢复默认配置。</p>
+<p>　　我们一般通过kafka-configs.sh脚本来执行修改主题配置信息。</p>
+<h2 id="配置管理"><a href="#配置管理" class="headerlink" title="配置管理"></a>配置管理</h2><p>　　有个脚本kafka-configs.sh是专门对配置进行操作的。可以在运行时修改原有的配置。相对于之前的脚本，主要是可以修改broker,client,users这些配置的配置</p>
+<pre><code>./bin/kafka-configs.sh --zookeeper localhost:2181/kafka --describe --entity-type topics --entity-name topic-create
+</code></pre><p>　　这个脚本支持查询主题，broker,client,users这些配置的配置，根据–entity-type来区分。–entity-name 显然指的是类型名字。这个查出来的仅仅是配置信息。和之前脚本不一样，这个命令本质上是从zookeeper上读取相关节点信息，/config/type/name</p>
+<pre><code>./bin/kafka-configs.sh --zookeeper localhost:2181/kafka --alter --entity-type topics --entity-name topic-create --add-config cleanup.policy=compact,max.message.bytes=10000
+</code></pre><p>　　修改主题使用–add-config来增，改，覆盖之前的配置。</p>
+<pre><code>./bin/kafka-configs.sh --zookeeper localhost:2181/kafka --alter --entity-type topics --entity-name topic-create --delete-config cleanup.policy
+</code></pre><p>　　删除原配置–delete-config，删除之前被覆盖的配置，恢复为默认配置。</p>
+<p>　　使用kafka-configs.sh来修改脚本时，会在对应zookeeper中创建一个节点，并且将变更的配置写入到这个节点。</p>
+<h2 id="删除主题"><a href="#删除主题" class="headerlink" title="删除主题"></a>删除主题</h2><p>　　当某个主题已确定不在使用时，为了节约资源，我们最好删除。</p>
+<pre><code>./bin/kafka-topics.sh --zookeeper localhost:2181/kafka --delete --topic topic-create   
+</code></pre><p>　　这个参数和delete.topic.enable有关，默认为true,如果为false,那么删除操作就会被忽略。同时我们删除内部主题，不存在的主题时都会报错。当然加了–if-exists这个命令后就会忽略报错。<br>　　使用这个命令的本质是在zookeeper上的/admin/delete-topics路径下创建一个和待删除主题同名的节点，和创建主题一样，真正的删除动作是kafka的控制器完成的。 </p>
+<p>　　因此我们可以通过创建一个这样的节点来删除主题。</p>
+<pre><code>create /admin/delete_topics/topic_delete &quot;&quot;
+</code></pre><p>　　如此就删除了这个叫做topic_delete的主题，同理，我们也可以创建按照规则的主题。</p>
+<p>　　更加手动的方式，一个主题其信息元数据存在zookeeper的 /brokers/topics和config/topics路径下的，消息数据则是存在log.dir我们配置的路径下面，我们只需要删除这些东西即可，规则如下：先删除brokers/topics和config/topics路径下的节点，2者顺序任意，然后删除其数据文件。</p>
+<h1 id="KafkaAdminClient"><a href="#KafkaAdminClient" class="headerlink" title="KafkaAdminClient"></a>KafkaAdminClient</h1><pre><code>package com.dh.kafka;
+
+import java.util.Collections;
+import java.util.Properties;
+import java.util.concurrent.ExecutionException;
+import org.apache.kafka.clients.admin.AdminClient;
+import org.apache.kafka.clients.admin.AdminClientConfig;
+import org.apache.kafka.clients.admin.CreateTopicsResult;
+import org.apache.kafka.clients.admin.NewTopic;
+
+/**
+ * 创建主题试试 使用KafkaAdminClient来创建主题。
+* 
+ * @author Lenovo
+ *
+ */
+public class CreateTopic {
+public static void main(String[] args) {
+    String brokerList = &quot;192.168.147.132:9092&quot;;
+    String topic = &quot;topic-admin&quot;;
+    Properties props = new Properties();
+    props.put(AdminClientConfig.BOOTSTRAP_SERVERS_CONFIG, brokerList);
+    props.put(AdminClientConfig.REQUEST_TIMEOUT_MS_CONFIG, 30000);
+    AdminClient client = AdminClient.create(props);
+    NewTopic newTopic = new NewTopic(topic, 4, (short) 1);
+    CreateTopicsResult result = client.createTopics(Collections.singleton(newTopic));
+    try {
+        result.all().get();
+    } catch (InterruptedException | ExecutionException e) {
+        // TODO Auto-generated catch block
+        e.printStackTrace();
+    }
+    client.close();
+}
+}
+</code></pre><p>　　创建主题，给出了案例，很简单，创建主题时，有很多构造方法。我们先看其属性</p>
+<pre><code>public class NewTopic {
+private final String name;
+private final int numPartitions;
+private final short replicationFactor;
+private final Map&lt;Integer, List&lt;Integer&gt;&gt; replicasAssignments;
+private Map&lt;String, String&gt; configs = null;
+｝
+</code></pre><p>　　replicasAssignments这个参数是分区编号－broke列表。可以手动指定分区和broke的分配。configs则是配置的设定，我们可以给主题设置config.从而覆盖broke的配置。</p>
+<p>　　AdminClient使用自己内置的协议来管理发送请求等功能。自己使用相关协议发送，然后再用相关协议解析。</p>
+<h2 id="主题的合法性"><a href="#主题的合法性" class="headerlink" title="主题的合法性"></a>主题的合法性</h2><p>　　我们一般禁止客户端直接创建主题，不利于运维维护。但是前面AdminClient却可以直接创建。kafka有一个参数，叫做creat.topic.policy.class.name默认为null.提供了一个入口用来验证主题创建的合法性。我们自定义一个实现CreateTopicPolicy接口的类，然后让上面的参数指向我们这个类的全限定名。在启动服务，即可。这个类要在服务端，打个jar扔到classpath里面</p>
+<h2 id="优先副本选举"><a href="#优先副本选举" class="headerlink" title="优先副本选举"></a>优先副本选举</h2><p>　　我们创建一个分区为３，副本为３的主题，必须要大于３的broke来支持。然后重启其中一个broke，那么lead副本可能不均衡了。由于消费者都是直接从lead副本交互数据，所以影响蛮大的。而创建和修改主题时，会有一个叫做优先副本的概念，kafka会通过一定的方式促使优先副本的选举为lead副本，从而使得分区平衡。当然不同broke的负载是不一样的，有的高，有的低。<br>　　这个方式是在broke端配置的，将auto.leader.rebalance.enable设置为true（默认也是true）,开启后，kafka的控制器会启动一个定时任务来轮训所有broke节点，计算一个值（非优先副本leader副本/分区总数）超过leader.imbalance.per.broker.percentage默认是0.1，超过这个值就会开启优先副本选举以来分区平衡，定时器的周期是leader.imbalance.check.interval.seconds控制，默认300秒。<br>　　但是生产环境是不建议开启的，选举优先节点时会阻塞业务，不好，而且分区平衡也不是负载均衡。我们可以在一个时间内，手动去执行分区平衡。是通过执行这个脚本命令。</p>
+<pre><code>./bin/kafka-preferred-replica-election.sh --zookeeper localhost:2181/kafka 
+</code></pre><p>　　这个命令是扫描集群里面所有分区，如果分区过多，可能执行失败，因为在选举过程，具体的元数据信息会被存入到zookeeper的/admin/preferred-replica-election节点，如果这些数据超过了zk默认节点大小（默认1M）因此我们可以path-to-json-file参数来小批量的对部分分区执行优先副本选举，通过path-to-json-file来指定一个json文件。</p>
+<h2 id="分区重分配"><a href="#分区重分配" class="headerlink" title="分区重分配"></a>分区重分配</h2><p>　　前面我们创建主题时，下线其中一个broke，这个节点的副本都会变得不可用，如果不修复，这个分区负载会一直这样，新增一个节点，也是如此。我们可以用kafka-reassign-partitions.sh来执行分区重分配的任务。原理就是复制，然后删除。</p>
+
+          
+        
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
     <link itemprop="mainEntityOfPage" href="https://skydh.github.io/2019/06/25/kafka基础-消费者/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -1045,843 +2397,6 @@ public void close() {
 
 
     
-      
-
-  
-
-  
-  
-  
-
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-  
-  
-  
-  <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="https://skydh.github.io/2019/06/18/HikariCP-1/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="董航">
-      <meta itemprop="description" content="">
-      <meta itemprop="image" content="/images/avatar.gif">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="why are you so happy">
-    </span>
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-                
-                <a class="post-title-link" href="/2019/06/18/HikariCP-1/" itemprop="url">HikariCP 笔记</a></h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">发表于</span>
-              
-              <time title="创建于" itemprop="dateCreated datePublished" datetime="2019-06-18T10:03:42+08:00">
-                2019-06-18
-              </time>
-            
-
-            
-
-            
-          </span>
-
-          
-
-          
-            
-          
-
-          
-          
-
-          
-
-          
-
-          
-
-        </div>
-      </header>
-    
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          
-            <h2 id="优势"><a href="#优势" class="headerlink" title="优势"></a>优势</h2><p>　　１．HikariCp优化创建了concurrentBag，增加了并发读写的效率，减少了其他没必要的操作，是的集合性能提高了很多。<br>　　２．使用threadlocal缓存连接以及大量使用cas的机制，避免lock.<br>　　３．使用Javassist来实现动态代理类，实现了字节码的优化。<br>　　４．心跳语句由select 1 变成了ping。<br>　　５．大量的方法内联。效率提高了很多。<br>　　６．代码量少。<br>　　７．FastStatementList代替了Arraylist，去掉了调用get时的范围检查，增加性能。</p>
-<h2 id="声明定义"><a href="#声明定义" class="headerlink" title="声明定义"></a>声明定义</h2><p>　　HikariDataSource：数据源，我们通过其对象来获取连接。</p>
-<p>　　HikariPool：连接池，对资源进行管理。</p>
-<p>　　ConcurrentBag：作为物理连接的共享资源站。</p>
-<p>　　PoolEntry：物理连接的封装。</p>
-<p> 　　获取连接流程getConnection：<br>　　１．HikariDataSource对象调用getConnection来获取连接<br>　　２．调用HikariPool的getConnection获取连接。<br>　　３．调用ConcurrentBag取出一个PoolEntry．然后这个PoolEntry通过createProxyConnection掉用工厂类生成HikariProxyConnection返回。</p>
-<p>　　连接关闭closeConnection()：<br>　　closeConnectionExecutor关闭连接后，会调用fillPool()方法对连接池进行连接填充。同时HikariPool提供evictConnection(Connection)方法对物理连接进行手动关闭。<br>　　连接关闭close():<br>　　HikariProxyConnection调用close方法时调用了PooleEntry的recycle方法，之后通过HikariPool调用了ConcurrentBag的requite放回。（poolEntry通过borrow从bag中取出，再通过requite放回。资源成功回收）。</p>
-<p>　　创建连接createPoolEntry：<br>　　HikariCP中通过独立的线程池addConnectionExecutor进行新连接的生成，连接生成方法为PoolEntryCreator。物理链接的生成只由PoolBase的newConnection()实现，之后封装成PoolEntry，通过Bag的add方法加入ConcurrentBag。当ConcurrentBag存在等待线程，或者有连接被关闭时，会触发IBagItemListener的addBagItem(wait)方法，调用PoolEntryCreator进行新连接的生成。</p>
-<h2 id="连接池到底该多大"><a href="#连接池到底该多大" class="headerlink" title="连接池到底该多大"></a>连接池到底该多大</h2><p>　　２个参数：</p>
-<p>　　maxPoolSize：最大连接数。</p>
-<p>　　minIdle：最小连接数。作者建议这个值和maxPoolSize保持一致作为一个固定大小的连接池。</p>
-<p>　　连接池大家是综合每个应用系统的业务逻辑特性，加上应用硬件配置，加上应用部署数量，再加上db硬件配置和最大允许连接数测试出来的。很难有一个简单公式进行计算。连接数及超时时间设置不正确经常会带来较大的性能问题，并影响整个服务能力的稳定性。具体设置多少，要看系统的访问量，可通过反复测试，找到最佳点。压测很重要。</p>
-<p>　　我们进行判断时，可以从以下几个层面分析：<br>　　系统中多少个线程在进行与数据库有关的工作？多少个线程在等待获取数据库连接？获取数据库连接需要的平均时长是多少？如果平均时长较长，如大于 100ms，则可能说明配置的数据库连接数不足，或存在连接泄漏问题。
-　　</p>
-<p>　　
-　　</p>
-
-          
-        
-      
-    </div>
-    
-    
-    
-
-    
-
-    
-
-    
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </div>
-  
-  
-  
-  </article>
-
-
-    
-      
-
-  
-
-  
-  
-  
-
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-  
-  
-  
-  <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="https://skydh.github.io/2019/06/03/kafka基本概念入门/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="董航">
-      <meta itemprop="description" content="">
-      <meta itemprop="image" content="/images/avatar.gif">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="why are you so happy">
-    </span>
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-                
-                <a class="post-title-link" href="/2019/06/03/kafka基本概念入门/" itemprop="url">kafka入门001 -基本概念</a></h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">发表于</span>
-              
-              <time title="创建于" itemprop="dateCreated datePublished" datetime="2019-06-03T18:37:43+08:00">
-                2019-06-03
-              </time>
-            
-
-            
-
-            
-          </span>
-
-          
-
-          
-            
-          
-
-          
-          
-
-          
-
-          
-
-          
-
-        </div>
-      </header>
-    
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          
-            <p>读书笔记系列，一章一篇。<br>取自深入理解kafka和kafka专栏（极客时间）</p>
-<h2 id="基本概念"><a href="#基本概念" class="headerlink" title="基本概念"></a>基本概念</h2><h3 id="特点"><a href="#特点" class="headerlink" title="特点"></a>特点</h3><h4 id="消息系统"><a href="#消息系统" class="headerlink" title="消息系统"></a>消息系统</h4><p>　　和传统的消息系统一样，但是额外提供，顺序消费，回溯消费。</p>
-<h4 id="存储系统"><a href="#存储系统" class="headerlink" title="存储系统"></a>存储系统</h4><p>　　消息是持久化存储的。</p>
-<h3 id="流式平台处理"><a href="#流式平台处理" class="headerlink" title="流式平台处理"></a>流式平台处理</h3><p>　　kafka不仅为多个流行的流式处理框架提供了可靠的数据来源，还提供了完整的流式处理类库。</p>
-<h2 id="概念"><a href="#概念" class="headerlink" title="概念"></a>概念</h2><h3 id="producer"><a href="#producer" class="headerlink" title="producer"></a>producer</h3><p>　　生产者：生产消息发送给kakfa实例。</p>
-<h3 id="Consumer"><a href="#Consumer" class="headerlink" title="Consumer"></a>Consumer</h3><p>　　消费者：负责消费kafka上面的消息。消费者端采用pull的方式拉去消息，保存了数据的偏移量，当消费者宕机后重新上线，可以根据之前保存的消费位置重新进行消费。
-　</p>
-<h3 id="Broker"><a href="#Broker" class="headerlink" title="Broker"></a>Broker</h3><p>　　一个kafka实例，一个kafka集群里面有多个Broker，也就是多个kafka实例</p>
-<h3 id="ZooKeeper"><a href="#ZooKeeper" class="headerlink" title="ZooKeeper"></a>ZooKeeper</h3><p>　　Zk负责管理kafka集群的的元数据，控制器的选举等。它是一个分布式协调框架，负责协调管理并保存Kafka集群的所有元数据信息，比如集群都有哪些Broker在运行、创建了哪些Topic，每个Topic都有多少分区以及这些分区的Leader副本都在哪些机器上等信息。</p>
-<h3 id="主题"><a href="#主题" class="headerlink" title="主题"></a>主题</h3><p>　　kafka的消息是根据主题来分类。生产者发送的消息都要指定一个主题，消费者消费消息也是订阅主题。</p>
-<h3 id="分区"><a href="#分区" class="headerlink" title="分区"></a>分区</h3><p>　　主题是逻辑上的概念，一个主题可能是多个分区组成的，一个分区只可能会是一个主题的。分区可以看做是一个可追加的日志文件，每个消息在分区里面都有一个偏移量，kafka通过这个偏移量保证顺序消费，但是kafka保证的是分区顺序消费，而不是主题顺序消费。</p>
-<h3 id="副本"><a href="#副本" class="headerlink" title="副本"></a>副本</h3><p>　　一个分区有多个副本，其中一个是lead副本，其余是follow副本，分布在不同的broker里面，lead副本负责读写，其余副本负责和lead副本消息同步，当lead副本故障时，可以选举follow副本继续提供服务。由于副本的同步是异步的，因此可能不一致，所有副本统称为AR，所有和lead副本保持一致的是统称为ISR，与lead副本滞后的副本则统称为osr副本。这2个集合的副本是动态的，当ISR不满足时则将其提到OSR,当OSR更上时，则将其丢到ISR,副本数据的限制和你的当前borker相关，因为多个副本放在一台broken上毫无意思，因此，每个副本在不同的broken上。</p>
-<h3 id="HW"><a href="#HW" class="headerlink" title="HW"></a>HW</h3><p>　　高水位。这个是消费者目前只能拉倒的消息偏移量。这个值是所有副本AR里面保存数据最小值offset。</p>
-<h3 id="LEO"><a href="#LEO" class="headerlink" title="LEO"></a>LEO</h3><p>　　则是记录当前下一条数据写入的offset.</p>
-<h3 id="版本号"><a href="#版本号" class="headerlink" title="版本号"></a>版本号</h3><p>　　kafka-2.11-2.1.1，这个里面2.11是scala的编译器版本，2.1.1是kafka真实的版本。2是大版本，第一个1是小版本号，第二个1是修订号。<br>　　0.7远古版本。<br>　　0.8加了副本机制，但是api是远古版本客户端api，且和新版本不兼容。<br>　　0.9加入了安全认证，权限的功能，新版本生产者api稳定，但是消费者api极其不稳定。<br>　　0.10:加了了kafka Streams。消费者api较为稳定。<br>　　0.11提供幂等性produceapi和事务api.以及对消息做了重构。<br>　　1.0和2.0对stream做了优化，消息没有什么变化。</p>
-<h3 id="简单java代码"><a href="#简单java代码" class="headerlink" title="简单java代码"></a>简单java代码</h3><p>　　ps:注意kafka的server.properrties的listeners要开放出来，其格式为protocoll://hostname:port1。协议+域名ip+端口。第一个协议有很多，默认是PLAINTEXT不开启安全校验，域名要写出来，不写则是默认网卡，但是可能为127.0.0.1导致外部无法访问。还有advertised.listeners作用和listeners类似，主要用于IaaS环境，比如公有云上配备多个网卡，包含了私网网卡和公网网卡。对于这种情况，可以设置advertised.listeners绑定公网ip对外客户端使用。使用listeners绑定私网ip给broker之间通信。</p>
-<p>　　maven依赖</p>
-<pre><code>&lt;dependency&gt;
-    &lt;groupId&gt;org.apache.kafka&lt;/groupId&gt;
-    &lt;artifactId&gt;kafka-clients&lt;/artifactId&gt;
-&lt;/dependency&gt;
-</code></pre><p>　　生产者：</p>
-<pre><code>package com.dh.kafka;
-import java.util.Properties;
-import org.apache.kafka.clients.producer.KafkaProducer;
-import org.apache.kafka.clients.producer.ProducerRecord;
-/**
- * 
- * @author Lenovo
-  *
- */
-public class SimpleKafkaProducer {
-    public static void main(String[] args) {
-        Properties props = new Properties();
-        // broker地址
-        props.put(&quot;bootstrap.servers&quot;, &quot;192.168.147.131:9092&quot;);
-        // 指定消息key序列化方式
-        props.put(&quot;key.serializer&quot;, &quot;org.apache.kafka.common.serialization.StringSerializer&quot;);
-        // 指定消息本身的序列化方式
-        props.put(&quot;value.serializer&quot;, &quot;org.apache.kafka.common.serialization.StringSerializer&quot;);
-        KafkaProducer&lt;String, String&gt; producer = new KafkaProducer&lt;&gt;(props);
-        ProducerRecord&lt;String, String&gt; record = new ProducerRecord&lt;&gt;(&quot;topic-demo111&quot;, &quot;hello, kafka&quot;);
-        try {
-            producer.send(record);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        System.out.println(&quot;Message sent successfully&quot;);
-        producer.close();
-    }
-}
-</code></pre><p>　　消费者：</p>
-<pre><code>package com.dh.kafka;
-import java.time.Duration;
-import java.util.Collections;
-import java.util.Properties;
-import org.apache.kafka.clients.consumer.ConsumerRecord;
-import org.apache.kafka.clients.consumer.ConsumerRecords;
-import org.apache.kafka.clients.consumer.KafkaConsumer;
-public class SimpleKafkaConsumer {
-    public static void main(String[] args) {
-        Properties props = new Properties();
-        props.put(&quot;bootstrap.servers&quot;, &quot;192.168.147.131:9092&quot;);
-        // 每个消费者分配独立的组号
-        props.put(&quot;group.id&quot;, &quot;group.demo&quot;);
-        // 设置多久一次更新被消费消息的偏移量
-        props.put(&quot;auto.commit.interval.ms&quot;, &quot;1000&quot;);
-        props.put(&quot;key.deserializer&quot;, &quot;org.apache.kafka.common.serialization.StringDeserializer&quot;);
-        props.put(&quot;value.deserializer&quot;, &quot;org.apache.kafka.common.serialization.StringDeserializer&quot;);
-        @SuppressWarnings(&quot;resource&quot;)
-        KafkaConsumer&lt;String, String&gt; consumer = new KafkaConsumer&lt;&gt;(props);
-        consumer.subscribe(Collections.singletonList(&quot;topic-demo111&quot;));
-        System.out.println(&quot;Subscribed to topic &quot; + &quot;topic-demo111&quot;);
-        while (true) {
-            ConsumerRecords&lt;String, String&gt; records = consumer.poll(Duration.ofMillis(1000));
-            for (ConsumerRecord&lt;String, String&gt; record : records)
-                System.out.printf(record.value());
-        }
-    }
-}
-</code></pre>
-          
-        
-      
-    </div>
-    
-    
-    
-
-    
-
-    
-
-    
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </div>
-  
-  
-  
-  </article>
-
-
-    
-      
-
-  
-
-  
-  
-  
-
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-  
-  
-  
-  <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="https://skydh.github.io/2019/05/28/内部临时表/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="董航">
-      <meta itemprop="description" content="">
-      <meta itemprop="image" content="/images/avatar.gif">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="why are you so happy">
-    </span>
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-                
-                <a class="post-title-link" href="/2019/05/28/内部临时表/" itemprop="url">mysql内部临时表</a></h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">发表于</span>
-              
-              <time title="创建于" itemprop="dateCreated datePublished" datetime="2019-05-28T19:03:28+08:00">
-                2019-05-28
-              </time>
-            
-
-            
-
-            
-          </span>
-
-          
-
-          
-            
-          
-
-          
-          
-
-          
-
-          
-
-          
-
-        </div>
-      </header>
-    
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          
-            <h2 id="简介"><a href="#简介" class="headerlink" title="简介"></a>简介</h2><p>　　在mysql里面，join_buffer，sort_buffer,内部临时表这3个都是在执行sql时暂存数据用的。前面2个前面文章都有介绍，本文主要介绍内部临时表。</p>
-<h2 id="union"><a href="#union" class="headerlink" title="union"></a>union</h2><pre><code>(select 1000 as f) union (select id from t1 order by id desc limit 2);
-</code></pre><p>　　比如这个sql，就是用到了内部临时表。这个sql就是查询2个子查询的并集，去重，若是不要去重，则是union all。<br>　　这个语句的操作流程是先创建一个临时表把第一个子查询的数据丢进去，然后再把第二个查询的数据丢进去。如果用union all则不涉及到去重，那么就不会创建临时表，只是直接拼装结果返回。</p>
-<h2 id="group-by"><a href="#group-by" class="headerlink" title="group by"></a>group by</h2><p>　　１．select id%10 as m, count(*) as c from t1 group by m;<br>　　其操作流程为，先创建一个内部临时表，存放2个字段，m,c然后遍历主键，将计算出来的值丢到m，判断是否存在，若存在则+1，然后输出。</p>
-<h2 id="大小参数"><a href="#大小参数" class="headerlink" title="大小参数"></a>大小参数</h2><p>　　默认16m，由这个参数tmp_table_size确认。</p>
-<h2 id="优化"><a href="#优化" class="headerlink" title="优化　"></a>优化　</h2><p>　　select SQL_BIG_RESULT id%100 as m, count(*) as c from t1 group by m;<br>　　如此，可以直接省去其中某些步骤，这是针对数据量大的情况直接执行走磁盘临时表。</p>
-
-          
-        
-      
-    </div>
-    
-    
-    
-
-    
-
-    
-
-    
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </div>
-  
-  
-  
-  </article>
-
-
-    
-      
-
-  
-
-  
-  
-  
-
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-  
-  
-  
-  <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="https://skydh.github.io/2019/05/28/maven一更新jdk版本就变化/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="董航">
-      <meta itemprop="description" content="">
-      <meta itemprop="image" content="/images/avatar.gif">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="why are you so happy">
-    </span>
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-                
-                <a class="post-title-link" href="/2019/05/28/maven一更新jdk版本就变化/" itemprop="url">maven一更新jdk版本就变化</a></h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">发表于</span>
-              
-              <time title="创建于" itemprop="dateCreated datePublished" datetime="2019-05-28T14:25:09+08:00">
-                2019-05-28
-              </time>
-            
-
-            
-
-            
-          </span>
-
-          
-
-          
-            
-          
-
-          
-          
-
-          
-
-          
-
-          
-
-        </div>
-      </header>
-    
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          
-            <h2 id="问题"><a href="#问题" class="headerlink" title="问题"></a>问题</h2><p>　　每次更新maven，项目的jdk版本，编译版本就会变成1.5，很奇怪。</p>
-<h2 id="背景"><a href="#背景" class="headerlink" title="背景"></a>背景</h2><p>　　由于公司私服没有某个jar，只能切换为默认配置，从中央仓库下载后上传到私服，结果更新maven后，编译环境就变化。</p>
-<h2 id="方案"><a href="#方案" class="headerlink" title="方案"></a>方案</h2><p>　　发现是setting文件出现问题，需要添加</p>
-<pre><code>&lt;profile&gt;
-        &lt;id&gt;jdk&lt;/id&gt;
-        &lt;activation&gt;
-            &lt;activeByDefault&gt;true&lt;/activeByDefault&gt;
-            &lt;jdk&gt;1.8&lt;/jdk&gt;
-        &lt;/activation&gt;
-        &lt;properties&gt;
-            &lt;maven.compiler.source&gt;1.8&lt;/maven.compiler.source&gt;
-            &lt;maven.compiler.target&gt;1.8&lt;/maven.compiler.target&gt;
-            &lt;maven.compiler.compilerVersion&gt;1.8&lt;/maven.compiler.compilerVersion&gt;
-        &lt;/properties&gt;
-    &lt;/profile&gt;
-</code></pre><p>　　进入默认的配置文件即可。</p>
-
-          
-        
-      
-    </div>
-    
-    
-    
-
-    
-
-    
-
-    
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </div>
-  
-  
-  
-  </article>
-
-
-    
-      
-
-  
-
-  
-  
-  
-
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-  
-  
-  
-  <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="https://skydh.github.io/2019/05/27/eclipce 奇葩缺包异常/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="董航">
-      <meta itemprop="description" content="">
-      <meta itemprop="image" content="/images/avatar.gif">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="why are you so happy">
-    </span>
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-                
-                <a class="post-title-link" href="/2019/05/27/eclipce 奇葩缺包异常/" itemprop="url">eclipse奇葩缺包异常</a></h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">发表于</span>
-              
-              <time title="创建于" itemprop="dateCreated datePublished" datetime="2019-05-27T11:11:40+08:00">
-                2019-05-27
-              </time>
-            
-
-            
-
-            
-          </span>
-
-          
-
-          
-            
-          
-
-          
-          
-
-          
-
-          
-
-          
-
-        </div>
-      </header>
-    
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          
-            <h2 id="问题"><a href="#问题" class="headerlink" title="问题"></a>问题</h2><p>　　早上一来，打开工程，直接报错Missing artifact jdk.tools:jdk.tools:jar:1.8，但是显然其他同事没有报错，网上搜索，需要添加这个包的依赖，不采取。</p>
-<h2 id="方案"><a href="#方案" class="headerlink" title="方案"></a>方案</h2><p>　　tools.jar包是JDK自带的，pom.xml中以来的包隐式依赖tools.jar包，而tools.jar并未在库中。找到答案。eclipse启动的jre不是开发用的jre，而你编译报错则是，在eclipse的jre里面没有找到这个包，我们切换eclipse依赖的jre即可。方法：找到eclipse.ini，在-vmargs这个参数前面添加：<br>　　-vm<br>　　C:\Program Files\Java\jdk1.8.0_172\jre\bin\server\jvm.dll<br>　　即可。重启eclipse，maven更新即可。</p>
-
-          
-        
-      
-    </div>
-    
-    
-    
-
-    
-
-    
-
-    
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </div>
-  
-  
-  
-  </article>
-
-
-    
-      
-
-  
-
-  
-  
-  
-
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-  
-  
-  
-  <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="https://skydh.github.io/2019/05/20/大表的全表扫描/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="董航">
-      <meta itemprop="description" content="">
-      <meta itemprop="image" content="/images/avatar.gif">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="why are you so happy">
-    </span>
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-                
-                <a class="post-title-link" href="/2019/05/20/大表的全表扫描/" itemprop="url">大表的全表扫描</a></h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">发表于</span>
-              
-              <time title="创建于" itemprop="dateCreated datePublished" datetime="2019-05-20T20:11:31+08:00">
-                2019-05-20
-              </time>
-            
-
-            
-
-            
-          </span>
-
-          
-
-          
-            
-          
-
-          
-          
-
-          
-
-          
-
-          
-
-        </div>
-      </header>
-    
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          
-            <h2 id="问题"><a href="#问题" class="headerlink" title="问题"></a>问题</h2><p>　　你的服务器内存2G,你全表查询一个10g的表，内存会不会炸了。</p>
-<h2 id="答案"><a href="#答案" class="headerlink" title="答案"></a>答案</h2><p>　　不会。逻辑如下，语句，select * from t；服务端不会存放完整的结果集，其流程和流很类似。<br>　　１.获取一行，写到net_buffer中。这个值由参数net_buffer_length决定，默认16k。<br>　　２.重复获取行，直到，写满net_buffer<br>　　３.若发送成功，就清空net_buffer,然后取下一行，写入搭配net_buffer。<br>　　４.如果发送函数返回EAGAIN,或者WSAEWOULDBLOCK。就表示本地网络栈满了，进入等待，直到可以重写，再继续发送。</p>
-<h2 id="参数"><a href="#参数" class="headerlink" title="参数"></a>参数</h2><p>　　-quick：mysql_use_result方法，这个方法是读一行，处理一行。默认的话mysql_store_result这个接口。这个是把结果保存到本地内存。</p>
-
-          
-        
-      
-    </div>
-    
-    
-    
-
-    
-
-    
-
-    
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </div>
-  
-  
-  
-  </article>
-
-
-    
   </section>
 
   
@@ -1932,7 +2447,7 @@ public class SimpleKafkaConsumer {
               
                 <a href="/archives/">
               
-                  <span class="site-state-item-count">121</span>
+                  <span class="site-state-item-count">127</span>
                   <span class="site-state-item-name">日志</span>
                 </a>
               </div>
@@ -1976,7 +2491,7 @@ public class SimpleKafkaConsumer {
     <footer id="footer" class="footer">
       <div class="footer-inner">
         <script async src="https://dn-lbstatics.qbox.me/busuanzi/2.3/busuanzi.pure.mini.js"></script>
-<div class="copyright">&copy; <span itemprop="copyrightYear">2019</span>
+<div class="copyright">&copy; <span itemprop="copyrightYear">2020</span>
   <span class="with-love">
     <i class="fa fa-user"></i>
   </span>

@@ -86,7 +86,7 @@
 <meta property="og:site_name" content="why are you so happy">
 <meta property="og:description" content="基本信息　　HashMap可以接受null键值和值，而Hashtable则不能；HashMap是非synchronized;HashMap很快；以及HashMap储存的是键值对。 注意点　　１．当两个对象的hashcode相同会发生什么？　　因为hashcode相同，所以它们的bucket位置相同，‘碰撞’会发生。因为HashMap使用链表存储对象，这个Entry(包含有键值对的Map.Entry">
 <meta property="og:locale" content="zh-Hans">
-<meta property="og:updated_time" content="2019-04-29T07:26:33.099Z">
+<meta property="og:updated_time" content="2019-12-16T09:51:39.058Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="hashmap">
 <meta name="twitter:description" content="基本信息　　HashMap可以接受null键值和值，而Hashtable则不能；HashMap是非synchronized;HashMap很快；以及HashMap储存的是键值对。 注意点　　１．当两个对象的hashcode相同会发生什么？　　因为hashcode相同，所以它们的bucket位置相同，‘碰撞’会发生。因为HashMap使用链表存储对象，这个Entry(包含有键值对的Map.Entry">
@@ -405,6 +405,131 @@ public V get(K key) {
 </code></pre><h2 id="gt-gt-gt-操作符"><a href="#gt-gt-gt-操作符" class="headerlink" title="&gt;&gt;&gt;操作符"></a>&gt;&gt;&gt;操作符</h2><p>　这个操作符的作用是将当前整数，转换为２进制后，右移。比如<br>２&gt;&gt;&gt;1,就是10右移1位剩下了一个1，就是1。<br>　　案例如下：<br>    public static void main(String [] args)<br>    {<br>        System.out.println(4&gt;&gt;&gt; 1);<br>    }<br>　　结果是２．<br>    public static void main(String [] args)<br>    {<br>        System.out.println(4&gt;&gt;&gt; 2);<br>    }<br>　　结果是１</p>
 <h2 id="1-8增加了对其优化。"><a href="#1-8增加了对其优化。" class="headerlink" title="1.8增加了对其优化。"></a>1.8增加了对其优化。</h2><p>　　其原因是hash的的平均分布可能有问题，有可能导致链表过长，从而使得效率变的很低。因此加了一个新的结构红黑树，如果说1.8之前的hashMap是数组+链表，那么现在版本的就是数组+链表+红黑树。当链表长度<8时，默认以前的方式加元素，也就是数组+链表，当链表>8时则将链表转换为红黑树。（红黑树是一个自平衡的二叉查找树，其插入删除时为了保持红黑树的平衡特征，回自旋来保证，可以将其理解为一个具有自平衡的查找2叉树）</8时，默认以前的方式加元素，也就是数组+链表，当链表></p>
 <h2 id="hashmap线程不安全"><a href="#hashmap线程不安全" class="headerlink" title="hashmap线程不安全"></a>hashmap线程不安全</h2><p>　　hashmap没有做加锁处理，举个简单例子，2个线程插入一个数据，其hashcode都是一样的，在极端情况下，可能导致插入少了一个数据。</p>
+<h2 id="java-1-8源码分析"><a href="#java-1-8源码分析" class="headerlink" title="java 1.8源码分析"></a>java 1.8源码分析</h2><p>　　这里只分析下put方法，get方法很简单，自己去看看。突然觉得put方法也很简单。</p>
+<pre><code>  final V putVal(int hash, K key, V value, boolean onlyIfAbsent,
+               boolean evict) {
+    Node&lt;K,V&gt;[] tab; Node&lt;K,V&gt; p; int n, i;
+    if ((tab = table) == null || (n = tab.length) == 0)
+        n = (tab = resize()).length;
+    if ((p = tab[i = (n - 1) &amp; hash]) == null)
+        tab[i] = newNode(hash, key, value, null);
+    else {
+        Node&lt;K,V&gt; e; K k;
+        if (p.hash == hash &amp;&amp;
+            ((k = p.key) == key || (key != null &amp;&amp; key.equals(k))))
+            e = p;
+        else if (p instanceof TreeNode)
+            e = ((TreeNode&lt;K,V&gt;)p).putTreeVal(this, tab, hash, key, value);
+        else {
+            for (int binCount = 0; ; ++binCount) {
+                if ((e = p.next) == null) {
+                    p.next = newNode(hash, key, value, null);
+                    if (binCount &gt;= TREEIFY_THRESHOLD - 1) // -1 for 1st
+                        treeifyBin(tab, hash);
+                    break;
+                }
+                if (e.hash == hash &amp;&amp;
+                    ((k = e.key) == key || (key != null &amp;&amp; key.equals(k))))
+                    break;
+                p = e;
+            }
+        }
+        if (e != null) { // existing mapping for key
+            V oldValue = e.value;
+            if (!onlyIfAbsent || oldValue == null)
+                e.value = value;
+            afterNodeAccess(e);
+            return oldValue;
+        }
+    }
+    ++modCount;
+    if (++size &gt; threshold)
+        resize();
+    afterNodeInsertion(evict);
+    return null;
+}
+</code></pre><p>　　这里我直接说下流程：</p>
+<ul>
+<li>先判断table是否为空，为空，则创建table。</li>
+<li><p>在判断key所在table的位置是否为null,空的话直接创建链表node。否则进入else。</p>
+</li>
+<li><p>else里面先判断这个链表node的key是否和要put的key一样，一样则覆盖</p>
+</li>
+<li>在判断是否是树节点，是的话，插入树节点的方式插入数据。</li>
+<li>否则，遍历链表，要么找到一样的key覆盖，要么创建新的节点，如果是创建节点，那么再判断这个链表长度是否&gt;=8，是的话则将链表转换为红黑树。</li>
+<li>再然后，覆盖的已经返回了，创建新节点的，走下一步，hashmap的size加一。在判断是否大于限定值，大于的话则是则扩张table。</li>
+<li>好了 over，，，</li>
+</ul>
+<pre><code> /** Implementation for put and putIfAbsent */
+final V putVal(K key, V value, boolean onlyIfAbsent) {
+    if (key == null || value == null) throw new NullPointerException();
+    int hash = spread(key.hashCode());
+    int binCount = 0;
+    for (Node&lt;K,V&gt;[] tab = table;;) {
+        Node&lt;K,V&gt; f; int n, i, fh;
+        if (tab == null || (n = tab.length) == 0)
+            tab = initTable();
+        else if ((f = tabAt(tab, i = (n - 1) &amp; hash)) == null) {
+            if (casTabAt(tab, i, null,
+                         new Node&lt;K,V&gt;(hash, key, value, null)))
+                break;                   // no lock when adding to empty bin
+        }
+        else if ((fh = f.hash) == MOVED)
+            tab = helpTransfer(tab, f);
+        else {
+            V oldVal = null;
+            synchronized (f) {
+                if (tabAt(tab, i) == f) {
+                    if (fh &gt;= 0) {
+                        binCount = 1;
+                        for (Node&lt;K,V&gt; e = f;; ++binCount) {
+                            K ek;
+                            if (e.hash == hash &amp;&amp;
+                                ((ek = e.key) == key ||
+                                 (ek != null &amp;&amp; key.equals(ek)))) {
+                                oldVal = e.val;
+                                if (!onlyIfAbsent)
+                                    e.val = value;
+                                break;
+                            }
+                            Node&lt;K,V&gt; pred = e;
+                            if ((e = e.next) == null) {
+                                pred.next = new Node&lt;K,V&gt;(hash, key,
+                                                          value, null);
+                                break;
+                            }
+                        }
+                    }
+                    else if (f instanceof TreeBin) {
+                        Node&lt;K,V&gt; p;
+                        binCount = 2;
+                        if ((p = ((TreeBin&lt;K,V&gt;)f).putTreeVal(hash, key,
+                                                       value)) != null) {
+                            oldVal = p.val;
+                            if (!onlyIfAbsent)
+                                p.val = value;
+                        }
+                    }
+                }
+            }
+            if (binCount != 0) {
+                if (binCount &gt;= TREEIFY_THRESHOLD)
+                    treeifyBin(tab, i);
+                if (oldVal != null)
+                    return oldVal;
+                break;
+            }
+        }
+    }
+    addCount(1L, binCount);
+    return null;
+}
+</code></pre><p>　　这个是ConcurrentHashMap的put源码。</p>
+<ul>
+<li>先根据key计算出位置，然后这个位置为null则cas看看可否插入值成功。</li>
+<li>判断是否需要扩容</li>
+<li>加锁写数据，和hashmap类似</li>
+</ul>
 
       
     </div>
@@ -518,7 +643,7 @@ public V get(K key) {
               
                 <a href="/archives/">
               
-                  <span class="site-state-item-count">121</span>
+                  <span class="site-state-item-count">127</span>
                   <span class="site-state-item-name">日志</span>
                 </a>
               </div>
@@ -557,7 +682,7 @@ public V get(K key) {
             
 
             
-              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#基本信息"><span class="nav-number">1.</span> <span class="nav-text">基本信息</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#注意点"><span class="nav-number">2.</span> <span class="nav-text">注意点</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#简单实现一个hashmap"><span class="nav-number">3.</span> <span class="nav-text">简单实现一个hashmap</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#gt-gt-gt-操作符"><span class="nav-number">4.</span> <span class="nav-text">>>>操作符</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#1-8增加了对其优化。"><span class="nav-number">5.</span> <span class="nav-text">1.8增加了对其优化。</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#hashmap线程不安全"><span class="nav-number">6.</span> <span class="nav-text">hashmap线程不安全</span></a></li></ol></div>
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#基本信息"><span class="nav-number">1.</span> <span class="nav-text">基本信息</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#注意点"><span class="nav-number">2.</span> <span class="nav-text">注意点</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#简单实现一个hashmap"><span class="nav-number">3.</span> <span class="nav-text">简单实现一个hashmap</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#gt-gt-gt-操作符"><span class="nav-number">4.</span> <span class="nav-text">>>>操作符</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#1-8增加了对其优化。"><span class="nav-number">5.</span> <span class="nav-text">1.8增加了对其优化。</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#hashmap线程不安全"><span class="nav-number">6.</span> <span class="nav-text">hashmap线程不安全</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#java-1-8源码分析"><span class="nav-number">7.</span> <span class="nav-text">java 1.8源码分析</span></a></li></ol></div>
             
 
           </div>
@@ -578,7 +703,7 @@ public V get(K key) {
     <footer id="footer" class="footer">
       <div class="footer-inner">
         <script async src="https://dn-lbstatics.qbox.me/busuanzi/2.3/busuanzi.pure.mini.js"></script>
-<div class="copyright">&copy; <span itemprop="copyrightYear">2019</span>
+<div class="copyright">&copy; <span itemprop="copyrightYear">2020</span>
   <span class="with-love">
     <i class="fa fa-user"></i>
   </span>

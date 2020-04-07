@@ -86,7 +86,7 @@
 <meta property="og:site_name" content="why are you so happy">
 <meta property="og:description" content="进程和线程　　这里必须先提一下操作系统的进程和线程。 什么是进程？　　在操作系统中每一个独立的程序单元就是一个进程。每个进程都有相互隔离的内存空间（显然，不然一些流氓进程就可以访问网上银行账号密码等之类的敏感数据了），因此进程之间通信极其不容易。 什么是线程？　　线程是进程里面的执行流，每个线程都有自己的程序栈，也有自己TLS,独立的线程私有空间，由于线程是进程里面的一部分，那么线程也可以访问公有">
 <meta property="og:locale" content="zh-Hans">
-<meta property="og:updated_time" content="2019-07-18T02:52:56.927Z">
+<meta property="og:updated_time" content="2019-12-12T09:55:45.410Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="java虚拟机运行时数据区域">
 <meta name="twitter:description" content="进程和线程　　这里必须先提一下操作系统的进程和线程。 什么是进程？　　在操作系统中每一个独立的程序单元就是一个进程。每个进程都有相互隔离的内存空间（显然，不然一些流氓进程就可以访问网上银行账号密码等之类的敏感数据了），因此进程之间通信极其不容易。 什么是线程？　　线程是进程里面的执行流，每个线程都有自己的程序栈，也有自己TLS,独立的线程私有空间，由于线程是进程里面的一部分，那么线程也可以访问公有">
@@ -309,7 +309,7 @@
 <h2 id="什么是线程？"><a href="#什么是线程？" class="headerlink" title="什么是线程？"></a>什么是线程？</h2><p>　　线程是进程里面的执行流，每个线程都有自己的程序栈，也有自己TLS,独立的线程私有空间，由于线程是进程里面的一部分，那么线程也可以访问公有内存，线程也有自己私有的空间。因此线程之间的信息交流会非常方便。</p>
 <h2 id="线程与进程的关系。"><a href="#线程与进程的关系。" class="headerlink" title="线程与进程的关系。"></a>线程与进程的关系。</h2><p>　　线程是真正的程序执行流，每个程序由一个主线程和多个子线程一起运行工作完成的，因此线程才是真正的程序运行的东东，而进程相当于一个容器，这个容器给线程提供了相对隔离的内存空间，和一个相对安全的访问条件。</p>
 <h1 id="jvm-的运行数据分布"><a href="#jvm-的运行数据分布" class="headerlink" title="jvm 的运行数据分布"></a>jvm 的运行数据分布</h1><p>　　了解了一下进程和线程后。我们看看虚拟机的内存分布。</p>
-<h2 id="程序计数器"><a href="#程序计数器" class="headerlink" title="程序计数器"></a>程序计数器</h2><p>　　程序计数器：是jvm中一小块内存空间，可以当做当前线程的字节码文件的行号，字节码解释器通过改变这个值来获取下一个指令。Java多线程通过线程轮流切换处理器的执行时间来执行的，大家知道现代处理器的原理，每次一个核上只能一个线程进行运转，由于中断，因此每个程序计数器都是独立的，这些程序计数器的所在的内存称为线程私有的内存。如果线程执行的是java方法，那么程序计数器指代的是当前字节码指令的地址，如果是native方法，程序计数器的值为空，这处区域是jvm没有定义OutOfMemoryError错误。就是放代码的地方，通过操作这个栈，来执行这个代码。</p>
+<h2 id="程序计数器"><a href="#程序计数器" class="headerlink" title="程序计数器"></a>程序计数器</h2><p>　　程序计数器：是jvm中一小块内存空间，可以当做当前线程的字节码文件的行号，字节码解释器通过改变这个值来获取下一个指令。Java多线程通过线程轮流切换处理器的执行时间来执行的，大家知道现代处理器的原理，每次一个核上只能一个线程进行运转，由于中断，当线程切换后能恢复到原先正确的位置。因此每个程序计数器都是独立的，这些程序计数器的所在的内存称为线程私有的内存。如果线程执行的是java方法，那么程序计数器指代的是当前字节码指令的地址，如果是native方法，程序计数器的值为空，这处区域是jvm没有定义OutOfMemoryError错误。就是放代码的地方，通过操作这个栈，来执行这个代码。</p>
 <h2 id="虚拟机栈"><a href="#虚拟机栈" class="headerlink" title="虚拟机栈"></a>虚拟机栈</h2><p>　　打个比方，一般吧java内存粗略分为堆栈，这个虚拟机栈中的局部变量表就是传说中的栈，线程私有的，描述java方法执行的内存模型：每个方法在执行的时候都会建立一个这个;用于存储局部变量表，操作数栈，动态链接，方法出口等，每一个方法从调用到执行完，就代表一个栈帧在虚拟机栈中从入栈到出栈的过程，其中局部变量表存放了编译器可知的基本变量（boolean,int,double,float,char）,还有引用类型（），renturnAddress类型（指向了一个字节码的地址）局部变量表的大小信息在编译期间就确定好了，运行期间不会改变其大小，该虚拟机栈回报2个错误，第一个就是请求的栈帧大于虚拟机栈的深度回报StackOverflowError错误第二个错误就是虚拟机栈动态扩张，扩张到无法申请到内存时报OutOfMemoryError错误。</p>
 <h1 id="本地方法栈"><a href="#本地方法栈" class="headerlink" title="本地方法栈"></a>本地方法栈</h1><p>　　和虚拟机栈差不多，不过不是java方法是native方法，java规范对native方法的语言和数据格式没有强制要求虚拟机可以自由的去实现它，报的错误也是StackOverflowError错误和OutOfMemoryError错误．</p>
 <h2 id="Java堆："><a href="#Java堆：" class="headerlink" title="Java堆："></a>Java堆：</h2><p>　　第一它是所有线程共享的，虚拟机启动创建堆，主要用于存储对象实例和数组，Java垃圾处理器主要处理的就是java堆，因此java堆也被称为gc堆，从内存回收的角度上讲可以划分为新生代和老生代，从内存分配角度讲，可以划分出多个线程私有的内存区域等，java堆有多种划分方式，但是无论怎么划分都是存储对象实例，多重划分是为了更好的划分内存和回收内存，java堆可以位于内存上不连续的空间上，只要逻辑上连续即可，java堆可以实现为固定大小的，也可以实现为可扩展大小的，要是java堆上无法为实例对象分配内存，那么就会报这个OutOfMemoryError．<br>　　堆划分为新生代，老年代，默认比例为１:２，新生代划分为３个区域，eden,From survivor,to survivor,比例为8:1:1。为何呢。参照下面：IBM研究发现，９８％的新生态对象生存周期很短的，于是一个新的算法出来了，就是把内存分为3部分，8：1：1，每次使用其中的0.9部分，当发生垃圾回收的时候那就把剩余的对象就放到剩余的0.1那里，当然剩余的0.1可能不够那就可以把一部分对象转化为老年态暂时存到老年态里面，这样子就只浪费0.1的内存了，性价比可以。<br>　　参数设定：新生代和老年代的比例–XX:NewRatio. 新生代中，eden,from,to的参数为–XX:SurvivorRatio。</p>
@@ -434,7 +434,7 @@
               
                 <a href="/archives/">
               
-                  <span class="site-state-item-count">121</span>
+                  <span class="site-state-item-count">127</span>
                   <span class="site-state-item-name">日志</span>
                 </a>
               </div>
@@ -494,7 +494,7 @@
     <footer id="footer" class="footer">
       <div class="footer-inner">
         <script async src="https://dn-lbstatics.qbox.me/busuanzi/2.3/busuanzi.pure.mini.js"></script>
-<div class="copyright">&copy; <span itemprop="copyrightYear">2019</span>
+<div class="copyright">&copy; <span itemprop="copyrightYear">2020</span>
   <span class="with-love">
     <i class="fa fa-user"></i>
   </span>

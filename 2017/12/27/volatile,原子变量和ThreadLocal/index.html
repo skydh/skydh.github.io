@@ -86,7 +86,7 @@
 <meta property="og:site_name" content="why are you so happy">
 <meta property="og:description" content="概念多线程中的变量　　首先我介绍的是volatile关键字，其次是原子变量，最后则是ThreadLocal线程本地变量 java基本内存模型　　用到volatile这个关键字以及后面的原子变量之前，我们必须先了解一下什么是java基本内存模型。　　先明确几个概念：　　主内存：主内存就是所有线程共享的内存，对于一个共享变量来说，主内存存放其真实数据（本尊数据）　　线程工作内存：线程对数据操作时，都会">
 <meta property="og:locale" content="zh-Hans">
-<meta property="og:updated_time" content="2019-06-12T02:19:11.708Z">
+<meta property="og:updated_time" content="2020-03-25T05:43:03.902Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="volatile,原子变量和ThreadLocal">
 <meta name="twitter:description" content="概念多线程中的变量　　首先我介绍的是volatile关键字，其次是原子变量，最后则是ThreadLocal线程本地变量 java基本内存模型　　用到volatile这个关键字以及后面的原子变量之前，我们必须先了解一下什么是java基本内存模型。　　先明确几个概念：　　主内存：主内存就是所有线程共享的内存，对于一个共享变量来说，主内存存放其真实数据（本尊数据）　　线程工作内存：线程对数据操作时，都会">
@@ -422,6 +422,7 @@
        }
    }
 </code></pre><p>　　首先来说，如果把ThreadLocal置为null，那么意味着Heap中的ThreadLocal实例不在有强引用指向，只有弱引用存在，因此GC是可以回收这部分空间的，也就是key是可以回收的。但是value却存在一条从Current Thread过来的强引用链。因此只有当Current Thread销毁时，value才能得到释放。<br>　　因此，只要这个线程对象被gc回收，就不会出现内存泄露，但在threadLocal设为null和线程结束这段时间内不会被回收的，就发生了我们认为的内存泄露。最要命的是线程对象不被回收的情况，比如使用线程池的时候，线程结束是不会销毁的，再次使用的，就可能出现内存泄露。事实上，在ThreadLocalMap中的set/getEntry方法中，会对key为null（也即是ThreadLocal为null）进行判断，如果为null的话，那么是会对value置为null的。</p>
+<p>   避免方法，先将value remove掉，</p>
 <p>　　</p>
 <p>　　</p>
 
@@ -537,7 +538,7 @@
               
                 <a href="/archives/">
               
-                  <span class="site-state-item-count">121</span>
+                  <span class="site-state-item-count">127</span>
                   <span class="site-state-item-name">日志</span>
                 </a>
               </div>
@@ -597,7 +598,7 @@
     <footer id="footer" class="footer">
       <div class="footer-inner">
         <script async src="https://dn-lbstatics.qbox.me/busuanzi/2.3/busuanzi.pure.mini.js"></script>
-<div class="copyright">&copy; <span itemprop="copyrightYear">2019</span>
+<div class="copyright">&copy; <span itemprop="copyrightYear">2020</span>
   <span class="with-love">
     <i class="fa fa-user"></i>
   </span>

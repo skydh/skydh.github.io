@@ -232,6 +232,768 @@
   
   
   <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="https://skydh.github.io/2019/01/21/工作中发现的代码不良习惯/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="董航">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="why are you so happy">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                <a class="post-title-link" href="/2019/01/21/工作中发现的代码不良习惯/" itemprop="url">工作中发现的代码不良习惯</a></h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2019-01-21T11:36:28+08:00">
+                2019-01-21
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            <h2 id="接口"><a href="#接口" class="headerlink" title="接口"></a>接口</h2><p>　　接口方法定义不用额外写public abstract,默认即可。</p>
+<h2 id="spring注入属性"><a href="#spring注入属性" class="headerlink" title="spring注入属性"></a>spring注入属性</h2><p>　　我们约定了，当需要从配置文件中读取同一批的属性＞３个时，不要使用value来一个个注入，和springboot一样，将其批量放到一个类里面，然后调用。</p>
+<pre><code>@Component
+@ConfigurationProperties(prefix = &quot;rbapi.rabbitmq&quot;)
+@Data
+public class RbapiProperties {
+       private String  queuename;
+       private String  exchangename;
+       private String  routingkey;
+
+}
+</code></pre><p>　　然后在需要用到这些属性的地方，注解注入这个bean即可。
+　　 </p>
+
+          
+        
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="https://skydh.github.io/2019/01/17/吾日三省吾身/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="董航">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="why are you so happy">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                <a class="post-title-link" href="/2019/01/17/吾日三省吾身/" itemprop="url">吾日三省吾身</a></h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2019-01-17T10:15:14+08:00">
+                2019-01-17
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            <h2 id="why"><a href="#why" class="headerlink" title="why?"></a>why?</h2><p>　　很忧伤，同一级别年终考核，我是ｄ，领导开头就是级别不代表绝对公正性，然而我还是ｄ，一共ａｂｃｄｅｆ，６级，我在后面的0.5里面。</p>
+<h2 id="反思"><a href="#反思" class="headerlink" title="反思"></a>反思</h2><p>　　自身能力不够强，需要改进，领导说的理由，你才来没多久，我们部门是非核心部门，能力不够全面，不仅仅是技术能力，还要人际关系处理，揣摩领导意思！学到了。能力要全面，这个确实是的，我觉得还要有，良好的沟通能力，说话节奏控制住。</p>
+
+          
+        
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="https://skydh.github.io/2019/01/17/微服务猜想/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="董航">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="why are you so happy">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                <a class="post-title-link" href="/2019/01/17/微服务猜想/" itemprop="url">微服务猜想</a></h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2019-01-17T09:48:25+08:00">
+                2019-01-17
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            <h2 id="关于代码拆分。"><a href="#关于代码拆分。" class="headerlink" title="关于代码拆分。"></a>关于代码拆分。</h2><h3 id="目的"><a href="#目的" class="headerlink" title="目的"></a>目的</h3><h4 id="优势："><a href="#优势：" class="headerlink" title="优势："></a>优势：</h4><p>　　1.解耦合，使得代码更加容易扩展升级。标准版的升级只要不是接口的变化，对其他服务影响为0.<br>　　2.领导提出的按图搜房，大量数据的汇总展示。我们维护一个数据源，易于分析，展示。<br>　　3.开放出人力成本，一个人可以维护一个或者多个微服务，极大的节约了人力成本。</p>
+<h4 id="劣势："><a href="#劣势：" class="headerlink" title="劣势："></a>劣势：</h4><p>　　1.对开发要求高，以及重构成本。</p>
+<h4 id="思路"><a href="#思路" class="headerlink" title="思路"></a>思路</h4><p>　　1.整体思路。一个基础中心微服务+多个城市特色微服务。</p>
+<p>　　2.基于标准版拆分出多个微服务。每个微服务提供粒子化的对外微服务。<br>　　1.首先，登录模块必须独立出来。作为一个独立的微服务，登录模块拆分出来。<br>　　思路如下：通过不同url访问前端，前端请求该微服务，服务返回token即可。带着该token访问其他微服务即可。<br>　　2.基本工具，基本字典的数据微服务<br>　　3.关于不同端的合同发布，备案，本质上是一个service实现的，可能存在部分字段差，这些可以放在一个微服务里面（同理这些具体业务也可以继续拆分为不同的微服务）更加粒子化。可以让备案，房源，做成对外提供服务的基础组件。<br>　　4.定时器，这个单独的工程可以直接拆到各个微服务里面，比如很多宽表的同步，个人觉得意义不是很大，可以优化。<br>　　3.多个城市特色微服务。一个地方城市就建立一个微服务，其开发工作就是调用基础中心对外的服务的拼装，需要什么就拿什么，就和堆积木一样。如此构成了一个遍布全国的微服务网络。这样服务就可以连起来了。数据也统一起来了。</p>
+<h3 id="问题以及解决方案："><a href="#问题以及解决方案：" class="headerlink" title="问题以及解决方案："></a>问题以及解决方案：</h3><h4 id="1-数据库字段差异："><a href="#1-数据库字段差异：" class="headerlink" title="1.数据库字段差异："></a>1.数据库字段差异：</h4><p>　　方案1:中心数据库冗余存储一个字段json类型，可以冗余存储多个字段。<br>　　方案2：中心保存最重要的数据，特色城市在维护一个冗余表保存特色字段（存在分布式事务问题）</p>
+<h4 id="2-流程差异，比如，特色城市里面是一证多房的问题，就要大改"><a href="#2-流程差异，比如，特色城市里面是一证多房的问题，就要大改" class="headerlink" title="2.流程差异，比如，特色城市里面是一证多房的问题，就要大改"></a>2.流程差异，比如，特色城市里面是一证多房的问题，就要大改</h4><p>　　方案1：基础中心产品评判这个功能是否普遍性较高，若是很高，加入到基础中心微服务里面，反之，特色微服务自己实现一遍，同时把数据也拼装到基础中心（差异太大，没办法，就是相当于重做了，没有的办法）。</p>
+<h3 id="3-大量差异很小的工程。"><a href="#3-大量差异很小的工程。" class="headerlink" title="3.大量差异很小的工程。"></a>3.大量差异很小的工程。</h3><p>　　方案1：基础中心设计一个基于配置化的功能，开发在上面点击选择后，可以迅速生成一个简单的脚手架，加速开发，而不是纯粹的复制，减少了大量开发工作。</p>
+<h3 id="4-新功能"><a href="#4-新功能" class="headerlink" title="4.新功能"></a>4.新功能</h3><p>　　如若有新的功能，可以由保准化产品定论是否标准化，标准化后再提供微服务调用。</p>
+<p>后续新增。每周更新</p>
+<h2 id="前端"><a href="#前端" class="headerlink" title="前端"></a>前端</h2><p>　　1.前端同学开发应该是基于antd组件的，可以建议开发一个界面设计器。界面设计器的目的是减少前端的开发量，将html和js分离，界面设计器的概念是我们在界面上配置界面展示如何。然后我们根据配置界面后得到的唯一标识符，只负责编写业务逻辑js代码，可以有效提高前端在新业务上开发的效率。</p>
+<h2 id="公有云和私有云"><a href="#公有云和私有云" class="headerlink" title="公有云和私有云"></a>公有云和私有云</h2><p>　　我们可以使用混合云的思路和模式，很多对外城市开发的产品，大多数城市对安全要求很严谨。因此我们不可能将其作为一个微服务放到大的微服务集群里面，因为这是在公有云体系里面，这样安全存在问题，我们必须使用私有云服务体系，将当前这个城市需要的微服务，我们将其提取出来，放到一个私有云里面。然后将其组装为该城市需要的系统，如此既保证了安全的特性，又保证了服务的可用性。</p>
+<h2 id="直接复制代码的缺陷"><a href="#直接复制代码的缺陷" class="headerlink" title="直接复制代码的缺陷"></a>直接复制代码的缺陷</h2><p>　　定制化存在这么一个问题，你提供的标准版是稳定的吗？第一可能存在bug,安全漏斗等问题，第二可能存在二次迭代更新，业务定制方也有特色开发，如此造成2个分流的分支，将来如何能合在一起呢？这也是我们公司目前的方案，所以我写了2篇文章来思考新的方案。</p>
+
+          
+        
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="https://skydh.github.io/2019/01/17/定制化猜想/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="董航">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="why are you so happy">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                <a class="post-title-link" href="/2019/01/17/定制化猜想/" itemprop="url">定制化猜想</a></h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2019-01-17T09:47:50+08:00">
+                2019-01-17
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            <h2 id="问题？"><a href="#问题？" class="headerlink" title="问题？"></a>问题？</h2><p>公司预定义一个标准化的saas服务。预先面向A公司（行业龙头，因此具有 一定规范度）提供标准化开发（产品与A公司专门业务人员沟通，提取出公 共化方案）。成功上线后，推广到其他公司b,c,d。发现其他公司的内部流程 算法，界面不适应于标准化版本。</p>
+<h2 id="方案。"><a href="#方案。" class="headerlink" title="方案。"></a>方案。</h2><p>建立组织层级，建立一个微服务档案列表，不同集团对应不同层级同时和登 录信息绑定。对于存在差异的算法（计算公式，是否采用不同方案）等，界 面显示（字段，按钮）等，单线流程（a公司是否需要流程123,但是b公司需 要流程1,3）等，在需要修改的点，以及这个组织id,在档案里面进行配置，不 同组织不同的方案，然后代码读取档案里面的信息，根据档案里面的这些信 息来完成差异统一。这样我们就可以用一个标准化版本了。上述档案归产品 经理管，负责维护（重要） 　　有些公司对于样式，布局等要求频繁变化，我们可以推出一部分档案权 限给客户，让其自行进行配置选择展示效果。</p>
+<h2 id="问题？-1"><a href="#问题？-1" class="headerlink" title="问题？"></a>问题？</h2><p>在开发中，我们发现一个线的流程太长了，比如开发Ａ功能，在Ａ功能界面 上需要但需要获取调用其他功能比如Ｂ的数据信息展示而这些数据信息却放 在其他微服务里面，我们也许会直接发送ajax请求其他微服务的信息，但是 存在几个问题（1.即时我们共用一个登陆系统，可以直接把登陆信息放到请 求头里面，可以直接访问到数据，但是这样不规范，A微服务前端访问到了B 微服务的后端，即使在一个微服务里面，我们直接访问其他功能的数据，这 样也不规范，也不好维护，万一这个接口修改了，修改的人也不知道到底多 少人调用了这个接口，怎么调用的等很多问题）</p>
+<h2 id="方案"><a href="#方案" class="headerlink" title="方案"></a>方案</h2><p>参照这个功能解决上述问题。每个功能可以对外提供一个或者多个的数据接 口。 　　该功能结构主要包含下述几点： 　　１．一个包含增删改查的一个存储数据的界面。主要存放：该功能对外 提供的rest接口，需要展示的数据类型，界面展示风格（树表，列表，树， 主要这几个结构）。 　　２．一个前端组件：通过开发配置的信息，展示数据。并且前端也可以 获取数据等。 　　这样界面调用展示数据，更加利于维护。</p>
+
+          
+        
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="https://skydh.github.io/2019/01/10/mysql 知识杂点/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="董航">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="why are you so happy">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                <a class="post-title-link" href="/2019/01/10/mysql 知识杂点/" itemprop="url">mysql 知识杂点</a></h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2019-01-10T14:45:51+08:00">
+                2019-01-10
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            <h2 id="迅速短暂的提高性能"><a href="#迅速短暂的提高性能" class="headerlink" title="迅速短暂的提高性能"></a>迅速短暂的提高性能</h2><p>　　１．处理掉占着的但是不工作的连接。首先使用show processlist，但是不知道那些sleep的连接是否是事务外的，我们继续查询 information_schema库的innodb_trx表。select * from information_schema.innodb_trx\G,查看那些连接是在事务内的。<br>　　当我们断掉连接后，客户端不会立马知道，而是在第二个请求时才发现，连接断了。<br>　　２．减少连接过程的消耗，比如去掉安全校验。<br>　　３．索引没设计好，当要修改表结构时。可以采用如下方案。１，从库执行　set sql_log_bin=off,也就是不开启binlog,然后执行alter语句，主备切换，主库和上述从库一样的方案。</p>
+<h2 id="为何mysql用了函数就无法使用索引了"><a href="#为何mysql用了函数就无法使用索引了" class="headerlink" title="为何mysql用了函数就无法使用索引了"></a>为何mysql用了函数就无法使用索引了</h2><p>　　B+树的快速定位能力，来源于同一层兄弟节点的有序性。当你使用函数时，在b+树的第一层就不知道如何是好了。对索引字段做函数操作，会破坏其有序性。<br>　　既然这样，对mysql来说，字符串和数字比较是将字符串转换为数字，因此你一个字符串索引，当你的查询条件是数字时，会自动加上函数，导致其，破坏其有序性，导致进行全索引扫描。</p>
+<h2 id="为何临时表可以重名。"><a href="#为何临时表可以重名。" class="headerlink" title="为何临时表可以重名。"></a>为何临时表可以重名。</h2><p>　　１.临时表和内存表不一样的，临时表不全是内存表。但是临时表可以是内存表。<br>　　特点：<br>　　１．临时表可以和普通表同名。<br>　　２．创表语法为create temporaty table.　<br>　　３．临时表只能被创建他的session访问，对其他线程不可见。<br>　　４．在一个session里面遇到同名的临时表和普通表时，优先访问临时表。<br>　　原因：mysql创建一个frm文件保存表结构，这个文件的后缀是.frm，前缀是#sql{进程id}<em>{线程id}</em>序列号。因此对于mysql来说，其真实存储的文件名是不一样的。<br>　　在mysql内存里面，每个表对应一个key,这个key是唯一的，普通表和数据库+表名相关，临时表则多了一个线程id。因此对于mysql来说，每个session创建的临时表的内存key和物理表名都不一样。<br>　　在实现上，每个线程维护了一个临时表链表，每次session内操作表的时候，先遍历链表，检查是否存在这个名字的临时表，有，则优先执行。session结束，则删除这个临时表。<br>　　主从：<br>　　如果binlog的格式是statment/mixed,是会把临binlog里面。时表记录到binlog里面，但是如果是row则不会记录到里面。</p>
+<h2 id="内存表"><a href="#内存表" class="headerlink" title="内存表"></a>内存表</h2><p>　　内存表的索引结构是hash结构，查询很快，但是加锁时表锁。在高可用也就是主从的情况下可能导致数据丢失，报错。</p>
+<h2 id="主键自增系列"><a href="#主键自增系列" class="headerlink" title="主键自增系列"></a>主键自增系列</h2><p>　　在mysql5.7以及之前的版本，主键自增的值，保存在内存里面，没有持久化，每次重启后，第一次打开表的时候，都会查找出来最大的id,加一作为新的当前自增值。<br>　　在mysql8.0之后，这时就会将自增至的记录在了redolog中。重启时依靠redolog来恢复值。<br>　　策略：<br>　　１:插入数据id为0，null,未指定值，那么mysql就会将这个表当前的AUTO_INCREMENT插入到自增字段里面。<br>　　２．如果插入数据时，指定了id的值，那就用语句里面指定的值。同时有以下策略，如果指定的值，小于自增值，那么自增值不变，如果大于等于自增值，那么就需要更新自增值，使其大于某个值。策略如下：从 auto_increment_offset 开始，以 auto_increment_increment 为步长持续叠加，直到找到第一个大于 X 的值，作为新的自增值。其中auto_increment_offset默认是1，表示增长的幅度.<br>　　唯一键冲突，事务回滚可能导致主键自增不连续。（双一）。还有就是批量插入时，也可能导致主键不连续，因为批量插入时，为了效率，分配1,2,4指数式增长。即使分配的没有用完，也不会回滚。<br>　　mysql这么设计为了性能考虑。获取主键时，肯定要加锁2个session,A得到2，B得到3，B成功，A失败。如此的话，表设计会比较麻烦。<br>　　在mysql 5.1.22有了一个参数innodb_autoinc_lock_mode，默认是1，有三个值<br>　　０：一条语句申请自增锁，整个语句执行完才释放锁。<br>　　１：单插入语句，申请完就释放，多插入语句，整个执行完释放锁（因为不然可能导致主从存在问题，binlog是statement时，场景如下，sessionA 批量插入10,数据，sessionB插入1数据，可能sessionA的10数据不连续，但是对于binlog来说是顺序的，可能出现问题）。<br>　　２．所有都是申请完就释放。<br>　　因此建议使用2+binlogrow<br>　　ps:在未指定，null,0时，采用主键自增。<br>　　主键自增，int最大值为2/32 -1,如果到了最大值，继续插入会报错，主键冲突，因为它不会继续增加了。如果有可能，建议创建bigint unsigned。更大一些。<br>　　在mysql innodb里面，如果没有创建主键，那么创建一个不可见，长度为6个字节的row_id,innodb维护了一个全局的dict_sys_row_id,所有无主键的innodb表，每插入一行数据，都要将dict_sys_row_id值作为要插入数据的row_id,然后将这个值+1。<br>　　这个row_id的大小是6字节，最大值为2/48-1，当达到最大值时，会重新从0开始。可能存在rowid重复，那么就会新的值覆盖旧的值。覆盖数据意味着数据丢失，因此最好每个表都创建一个主键。</p>
+<h2 id="Xid"><a href="#Xid" class="headerlink" title="Xid"></a>Xid</h2><p>　　redolog和binlog配合的时候有个字段叫做Xid，这个字段是用来对应一个个事务的，在mysql里面，维护了一个全局变量global_query_id,每次执行语句时，将它赋值给Query_id,然后给这个变量加1，如果当前语句时这个事务执行的第一条语句，那么mysql还会同时把query_id赋值给这个事务的Xid。这个全局变量是内存变量，重启后就清空，因此，同一个数据库里面，可能binlog里面存在相同的xid，但是重启之后，mysql会创建一个新的binlog文件，因此同一个binlog文件不会存在相同的xid</p>
+<p>　　</p>
+<h2 id="trx-id"><a href="#trx-id" class="headerlink" title="trx_id"></a>trx_id</h2><p>　　这个id大家都很熟了，和事务隔离相关，这个是innodb自己维护的，innodb维护了一个叫做max_try_id全局变量，每次申请值的时候，就会获取这个全局变量的当前值，然后将这个值+1；innodb只会在当前事务涉及到修改更新操作时才会分配trx_id。不给只读事务分配trx_id，直接默认为0，可以有效减少活跃事务表的大小，同时减少了trx_id的分配，变相提高了trx_id的吞吐量。max_try_id会持久化存储，重启也不会重置为0，因此存在运行时间足够久的事务中存在，后创建的事务id小于之前创建的事务id，造成脏读。当然这个值的最大值是2/48-1。一个mysqlqps50，持续18年就会出现这样的问题。</p>
+<h2 id="thread-id"><a href="#thread-id" class="headerlink" title="thread_id"></a>thread_id</h2><p>　　thread_id是线程id，系统保存了一个全局变量 thread_id_counter,每新建一个连接，就将thread_id_counter赋值给这个线程变量。最大值是2/32-1，但是达到最大值后，就会从0开始，但是在mysql里面不会存在2个相同的值，因为分配thread_id时，做了去重处理，判断这个id是否存在于当前活跃线程id里面。</p>
+
+          
+        
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="https://skydh.github.io/2019/01/07/cookie/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="董航">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="why are you so happy">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                <a class="post-title-link" href="/2019/01/07/cookie/" itemprop="url">cookie</a></h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2019-01-07T15:36:40+08:00">
+                2019-01-07
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            <h2 id="介绍"><a href="#介绍" class="headerlink" title="介绍"></a>介绍</h2><p>　　　　Cookie不仅仅有名字和值两个属性，还有域（domain）、路径（path）等属性。其中，不同的域、不同的路径下可以存在同样名字的cookie。一般我们设置cookie的方法是用一个同样名字、一个值。这时就一定要搞清楚你要设置的cookie的域和路径，否则就会产生问题中的情况</p>
+<h2 id="属性"><a href="#属性" class="headerlink" title="属性"></a>属性</h2><p>　　１．name    Cookie的名称，Cookie一旦创建，名称便不可更改</p>
+<p>　　２．value    Cookie的值。如果值为Unicode字符，需要为字符编码。如果值为二进制数据，则需要使用BASE64编码</p>
+<p>　　３．maxAge    Cookie失效的时间，单位秒。如果为正数，则该Cookie在maxAge秒之后失效。如果为负数，该Cookie为临时Cookie，关闭浏览器即失效，浏览器也不会以任何形式保存该Cookie。如果为0，表示删除该Cookie。默认为-1。</p>
+<p>　　４．secure    该Cookie是否仅被使用安全协议传输。安全协议。安全协议有HTTPS，SSL等，在网络上传输数据之前先将数据加密。默认为false。</p>
+<p>　　５．path    Cookie的使用路径。如果设置为“/sessionWeb/”，则只有contextPath为“/sessionWeb”的程序可以访问该Cookie。如果设置为“/”，则本域名下contextPath都可以访问该Cookie。注意最后一个字符必须为“/”。</p>
+<p>　　６．domain    可以访问该Cookie的域名。如果设置为“.google.com”，则所有以“google.com”结尾的域名都可以访问该Cookie。注意第一个字符必须为“.”。<br>     domain表示的是cookie所在的域，默认为请求的地址，如网址为www.test.com/test/test.aspx，那么domain默认为www.test.com。而跨域访问，如域A为t1.test.com，域B为t2.test.com，那么在域A生产一个令域A和域B都能访问的cookie就要将该cookie的domain设置为.test.com；如果要在域A生产一个令域A不能访问而域B能访问的cookie就要将该cookie的domain设置为t2.test.com
+　　</p>
+
+          
+        
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
     <link itemprop="mainEntityOfPage" href="https://skydh.github.io/2018/12/28/大数据入坑001/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -748,784 +1510,6 @@
 
 
     
-      
-
-  
-
-  
-  
-  
-
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-  
-  
-  
-  <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="https://skydh.github.io/2018/12/12/mysql 删除数据为何空间还是不大/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="董航">
-      <meta itemprop="description" content="">
-      <meta itemprop="image" content="/images/avatar.gif">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="why are you so happy">
-    </span>
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-                
-                <a class="post-title-link" href="/2018/12/12/mysql 删除数据为何空间还是不大/" itemprop="url">mysql 删除数据，空间为何没有回收</a></h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">发表于</span>
-              
-              <time title="创建于" itemprop="dateCreated datePublished" datetime="2018-12-12T09:30:49+08:00">
-                2018-12-12
-              </time>
-            
-
-            
-
-            
-          </span>
-
-          
-
-          
-            
-          
-
-          
-          
-
-          
-
-          
-
-          
-
-        </div>
-      </header>
-    
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          
-            <h2 id="表结构数据和表数据"><a href="#表结构数据和表数据" class="headerlink" title="表结构数据和表数据"></a>表结构数据和表数据</h2><p>　　mysql1.8之前，表结构数据和表数据分开放，表结构放在.frm文件里面。在1.8后就放到一起了。</p>
-<h2 id="innodb-file-per-table"><a href="#innodb-file-per-table" class="headerlink" title="innodb_file_per_table"></a>innodb_file_per_table</h2><p>　　这个参数off是表数据放在共享表空间里面。和数据字典放在一起，on则是表数据单独存为一个后缀为。ibd的文件，当你drop的时候，系统也会删除这个文件，mysql5.6之后系统是默认开启这个这个参数的，也就是说，一个表文件会放在一个文件里面。通常是默认开启的。开启利于管理维护，当我们进行drop时就会直接删除这个文件。从而释放空间，否则放在共享表空间里面，即使删除了，也不会释放空间。</p>
-<h2 id="问题来了"><a href="#问题来了" class="headerlink" title="问题来了"></a>问题来了</h2><p>　　因此我们直接删除表的时候会直接删除这个文件，但是删除部分数据的时候，我们会发现表空间没有被回收。</p>
-<h2 id="innodb删除流程"><a href="#innodb删除流程" class="headerlink" title="innodb删除流程"></a>innodb删除流程</h2><p>　　我们知道mysql innodb存储引擎里面存数据的方式是基于b+树。当删除一个记录，找到这个数据的时候，我们是将其标记为删除状态，而不是真的删除。等到有相关数据的时候那就可以直接插入进去。但是删除了一个页，那就和数据不太一样了，数据的复用是有局限性的，但是整个页是没有问题的。换句话说，你删除了某个数据，你填充这个数据只能是相关的，比如，这个数据页里面是6,7,8，你删除了7，你可以插入6到8之间的数据.或者可以在这个数据页里面的，如果是数据页，那么哪里都可以。同时如果相邻2个数据页的数据利用率很低，那么就会触发合并操作。是的另外一个页数据可复用。当我们使用delete指令的时候，我们进行的是逻辑删除，具体的数据页没有被回收，只是将其置换为可用状态，同时插入也是同样的道理。当你插入的数据在一个已经满了的数据页中间的时候，就要进行分页操作，那样也会造成大量空间被置为可用状态，但是不回收。</p>
-<h2 id="重建表"><a href="#重建表" class="headerlink" title="重建表"></a>重建表</h2><p>　　使用了很长时间的表存在大量这样的数据空洞，因此我们可以重建表来获取更加紧凑的结构。使用alter table A engine=InnoDB来进行重建操作，在mysql 5.5之前，逻辑是这样的，先构建一个临时表，然后把数据复制进去，在交换表名，删除旧表。显然这样的逻辑是全表锁的。中间是不能插入删除更新数据的，但是在之后就可以了，就是在上面的操作的过程中，增加一个临时文件，用来存储在这中间的ddl操作，最后再将其同步过去。其过程是先加写锁，再加读锁。</p>
-
-          
-        
-      
-    </div>
-    
-    
-    
-
-    
-
-    
-
-    
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </div>
-  
-  
-  
-  </article>
-
-
-    
-      
-
-  
-
-  
-  
-  
-
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-  
-  
-  
-  <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="https://skydh.github.io/2018/11/28/elk 配置指南/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="董航">
-      <meta itemprop="description" content="">
-      <meta itemprop="image" content="/images/avatar.gif">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="why are you so happy">
-    </span>
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-                
-                <a class="post-title-link" href="/2018/11/28/elk 配置指南/" itemprop="url">elk配置指南</a></h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">发表于</span>
-              
-              <time title="创建于" itemprop="dateCreated datePublished" datetime="2018-11-28T17:24:30+08:00">
-                2018-11-28
-              </time>
-            
-
-            
-
-            
-          </span>
-
-          
-
-          
-            
-          
-
-          
-          
-
-          
-
-          
-
-          
-
-        </div>
-      </header>
-    
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          
-            <h2 id="简介"><a href="#简介" class="headerlink" title="简介"></a>简介</h2><p>　　本文的目的是搭建一个具备elk日志监控的springmvc程序，代码里面将日志输出到redis里面，然后logstash配置input和output,将日志信息从redis里面取出来，然后放入Elasticsearch，然后启动kinaba，配置索引对应关系即可。最终可以通过kinaba可以实时看到日志，利于分析查询。</p>
-<h2 id="搭建一个springmvc的程序"><a href="#搭建一个springmvc的程序" class="headerlink" title="搭建一个springmvc的程序"></a>搭建一个springmvc的程序</h2><p>　　这里我直接给出仓库地址：<br><a href="https://github.com/skydh/spring-elk" target="_blank" rel="noopener">点我一下就到了</a><br>　　这里要注意下。我们把日志输出到了对应的redis里面。</p>
-<pre><code>&lt;appender name=&quot;LOGSTASH&quot; class=&quot;com.cwbase.logback.RedisAppender&quot;&gt;
-    &lt;source&gt;SpringELK&lt;/source&gt;
-    &lt;type&gt;dev-type&lt;/type&gt;
-    &lt;tags&gt;dev&lt;/tags&gt;
-    &lt;host&gt;127.0.0.1&lt;/host&gt;
-    &lt;port&gt;6379&lt;/port&gt;
-    &lt;key&gt;logstash&lt;/key&gt;
-&lt;/appender&gt;
-</code></pre><h2 id="软件下载"><a href="#软件下载" class="headerlink" title="软件下载"></a>软件下载</h2><p>　　１，下载6.3.0版本的kinaba，Elasticsearch，logstash。<br>　　２，下载redis。</p>
-<h2 id="主要配置修改"><a href="#主要配置修改" class="headerlink" title="主要配置修改"></a>主要配置修改</h2><p>　　１．Elasticsearch 在其配置文件Elasticsearch.yml</p>
-<pre><code>http.cors.enabled: true
-http.cors.allow-origin: &quot;*&quot;
-</code></pre><p>　　２．logstash 新建配置文件。</p>
-<pre><code>
-
-input {
-    redis {
-        data_type => "list"
-        key => "logstash"
-        host => "127.0.0.1"  #redis-server
-        port => 6379
-        batch_count => "1"
-        threads => 5
-    }
-}
-
-output {
-  elasticsearch {
-    hosts => ["http://localhost:9200"]
-   index => "%{logstash}-%{+YYYY.MM.dd}"
-    #user => "elastic"
-    #password => "changeme"
-  }
-}
-
-</code></pre>
-
-<h2 id="启动顺序"><a href="#启动顺序" class="headerlink" title="启动顺序"></a>启动顺序</h2><p>　　１．启动redis。<br>　　２．在tomcat里面启动spring mvc代码<br>　　３．启动Elasticsearch。浏览器进入 <a href="http://localhost:9200/" target="_blank" rel="noopener">http://localhost:9200/</a><br>　　４．进入到logstash的bin 目录，输入logstash -f ..config/redis.conf来根据配置文件来启动logstash。浏览器进入<a href="http://localhost:9600/" target="_blank" rel="noopener">http://localhost:9600/</a><br>　　５.直接启动kinaba 浏览器进入<a href="http://localhost:5601，然后配置es的索引，最终在discover里面成功看到了我们的日志。" target="_blank" rel="noopener">http://localhost:5601，然后配置es的索引，最终在discover里面成功看到了我们的日志。</a></p>
-
-          
-        
-      
-    </div>
-    
-    
-    
-
-    
-
-    
-
-    
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </div>
-  
-  
-  
-  </article>
-
-
-    
-      
-
-  
-
-  
-  
-  
-
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-  
-  
-  
-  <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="https://skydh.github.io/2018/11/27/mysql 锁/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="董航">
-      <meta itemprop="description" content="">
-      <meta itemprop="image" content="/images/avatar.gif">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="why are you so happy">
-    </span>
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-                
-                <a class="post-title-link" href="/2018/11/27/mysql 锁/" itemprop="url">mysql 锁</a></h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">发表于</span>
-              
-              <time title="创建于" itemprop="dateCreated datePublished" datetime="2018-11-27T09:52:49+08:00">
-                2018-11-27
-              </time>
-            
-
-            
-
-            
-          </span>
-
-          
-
-          
-            
-          
-
-          
-          
-
-          
-
-          
-
-          
-
-        </div>
-      </header>
-    
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          
-            <h2 id="表锁"><a href="#表锁" class="headerlink" title="表锁"></a>表锁</h2><p>　　这里表锁我只说MDl锁。也就是元数据锁，这个锁是表锁，其分为mdl读锁，mdl锁就是对一个表做增删改查的时候，加的就是mdl读锁，修改表结构的时候加的则是mdl写锁。<br>　　读锁－读锁互不影响。读锁－写锁互斥。写锁－写锁互斥。<br>　　当我们修改表结构的时候，对于大表，我们会仔细操作，因为这个操作会导致全表扫描。但是即使对小表修改表结构，也会造成严重影响。<br>　　举个例子：<br>　　查询，查询，改结构，查询。这４个，后面２个都会阻塞，因为读写互斥。如果后续请求很多，可能大量阻塞卡死。<br>　　那么如何安全的修改表结构呢？<br>　　查询当前长事务，看看你要变更的表是否在里面，如果在，等长事务结束，或者杀死这个长事务。</p>
-<h2 id="行锁"><a href="#行锁" class="headerlink" title="行锁"></a>行锁</h2><p>　　mysql的行锁是是存储引擎实现的。这边我专门说下innodb，因为myisam是不支持行锁的，因此对于高并发下，行数据是不安全的。在innodb里面，行锁是在你需要的时候加上去，比如修改某一行的值。修改完之后不是立刻释放，而是等事务结束后才释放锁。<br>　　在并发系统中不同线程出现循环资源依赖将会导致这几个线程进入无限等待的状态，称之为死锁。<br>　　下面情况出现死锁：<br>　　事务1 对表A的数据a修改<br>　　事务2 对表A的数据b修改<br>　　事务1 对表A的数据b修改<br>　　事务2 对表A的数据a修改<br>　　在出现死锁的情况有以下２种情况对其进行处理。<br>　　１．进入等待状态，直到超时。超时参数可以通过参数innodb_lock_wait_timeout来设置。默认是５０ｓ。一般不采用这个方式。<br>　　２．发起死锁检测，发现死锁后，主动回滚死锁链条的某一个事务，让其他事务得以执行。将参数innodb_deadlock_detect设置为０表示开启这个逻辑。我们一般采用这个方法。<br>　　但是这个是有代价的。该逻辑如下：每当一个事务被锁住的时候，就要看看它依赖的线程有没有被别人锁住，不断循环，最后判断是否出现循环等待，也就是死锁。<br>　　如果是所有事务都是更新同一行的操作，那么死锁检查操作就是每个新来的被堵住的线程都要判断是否是因为自己的到来而导致了死锁，如果是1000的并发，那么其操作则是100w量级的。这样会导致cpu 100%异常。<br>　　对于热点行数据更新问题。有以下方案：<br>　　１．确定不是死锁，把死锁检查关掉<br>　　２．做一个数据库中间件来判断来控制请求量<br>　　３．在代码层面吧热门行数据分割。</p>
-<h2 id="如何kill加锁的语句"><a href="#如何kill加锁的语句" class="headerlink" title="如何kill加锁的语句"></a>如何kill加锁的语句</h2><p>　　我们使用show processlist可以查看当前所有的，但是大部分都是sleep的，因此不方便，但是我们可以使用 select blocking_pid from sys.schma_table_waits;查询出阻塞的线程id;<br>　　这个查询是查询表级锁的。</p>
-<h2 id="间隙锁"><a href="#间隙锁" class="headerlink" title="间隙锁"></a>间隙锁</h2><p>　　mysql为了解决可重复读的幻读问题，于是有了间隙锁，就是在加行锁的数据之间加一个新的锁，那就是间隙锁，依赖控制幻读问题产生。这个间隙锁，不仅仅只是在插入的时候有间隙锁的校验，还在你update的时候也有间隙锁的校验。间隙锁的冲突和行锁不一样，不是锁之间的冲突，间隙锁可以重复加，和间隙锁冲突的是往间隙锁里面添加内容。</p>
-<h2 id="加锁原则"><a href="#加锁原则" class="headerlink" title="加锁原则"></a>加锁原则</h2><p>　　１．加锁都是next-key锁，都是前开后闭原则。<br>　　２．只有访问到的对象才加锁。<br>　　３．给唯一索引加锁，next-key lock退化为行锁。<br>　　４．索引上的等值查询，向右遍历时且最后一个值不满足等值条件的时候，next-key lock 退化为间隙锁。<br>　　５．唯一索引的范围查询会访问到不满足条件的第一个值为止。<br>　　目前的mysql加锁都是基于上述规则。</p>
-
-          
-        
-      
-    </div>
-    
-    
-    
-
-    
-
-    
-
-    
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </div>
-  
-  
-  
-  </article>
-
-
-    
-      
-
-  
-
-  
-  
-  
-
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-  
-  
-  
-  <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="https://skydh.github.io/2018/11/26/mysql 索引再议/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="董航">
-      <meta itemprop="description" content="">
-      <meta itemprop="image" content="/images/avatar.gif">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="why are you so happy">
-    </span>
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-                
-                <a class="post-title-link" href="/2018/11/26/mysql 索引再议/" itemprop="url">mysql 索引再议</a></h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">发表于</span>
-              
-              <time title="创建于" itemprop="dateCreated datePublished" datetime="2018-11-26T10:32:44+08:00">
-                2018-11-26
-              </time>
-            
-
-            
-
-            
-          </span>
-
-          
-
-          
-            
-          
-
-          
-          
-
-          
-
-          
-
-          
-
-        </div>
-      </header>
-    
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          
-            <h2 id="二级索引与一级索引"><a href="#二级索引与一级索引" class="headerlink" title="二级索引与一级索引"></a>二级索引与一级索引</h2><p>　　在mysql里面，我们默认用主键作为一级索引，因此只有一个。主键索引对应叶子节点指向的是整行数据。而其他我们自己建立的索引则统统都是2级索引，二级索引的叶子节点指向的则是主键。因此我们根据二级索引查询数据的时候是先根据索引查询到主键值，在回表根据聚簇索引查询整行数据。</p>
-<h2 id="B-树"><a href="#B-树" class="headerlink" title="B+树"></a>B+树</h2><p>　　我们为什么用B+树，是因为其树高度不高。我们根据索引查询的时候，没读到一个数据都是对树高度的遍历。每一次读取都是一次磁盘io,磁盘io效率太低，因此我们大多使用相对更加矮小的b+树。</p>
-<h2 id="重建索引"><a href="#重建索引" class="headerlink" title="重建索引"></a>重建索引</h2><p>　　有时候数据量大了，因为索引的分页操作，导致其占了很多空间，因此要重建索引，来释放空间。</p>
-<h2 id="覆盖索引"><a href="#覆盖索引" class="headerlink" title="覆盖索引"></a>覆盖索引</h2><p>　　覆盖索引，指的是那些不需要回表的索引。也就是只用走一个ｂ+树。<br>因为我们要查询的内容已经在第一条二级索引里面获取到了。因此使用覆盖索引是个优化手段非常好的一个策略。</p>
-<h2 id="最左前缀原则"><a href="#最左前缀原则" class="headerlink" title="最左前缀原则"></a>最左前缀原则</h2><p>　　对于联合索引，（a,b,c），查询条件必须含有a才奏效，这就是最左匹配原则。还有字段模糊查询，必须是 “1%”之类的，前面的必须要有值。对于这种联合索引，a一样的，先按照b排序，再按照c排序。</p>
-<h2 id="mysql5-6之后的索引下推"><a href="#mysql5-6之后的索引下推" class="headerlink" title="mysql5.6之后的索引下推"></a>mysql5.6之后的索引下推</h2><p>　　在mysql 5.6之前，对于联合索引来说，在mysql5.6之前，mysql的联合索引中（a，b）,在查询里面where a=”” and b=””；这类的sql我们的索引只能用到a这个字段来过滤，b是用不到的。<br>　　在mysql5.6以及之后的mysql对其做了优化，不只是用到了a,还用到了b,这个就是索引下推，从而大量减少了回表操作。</p>
-<h2 id="索引不准"><a href="#索引不准" class="headerlink" title="索引不准"></a>索引不准</h2><p>　　在mysql里面，优化器会对sql进行分析，判断来选择使用什么索引，当我们使用 show index 会发现index的基数不对，这个统计是粗糙的，是其随机选出n个数据页，统计其不同值，得到一个平均值，然后乘以页数，得到其值，同时，当数据量更新超过一定值的时候，会再次触发统计。这个基数是来判断同样的扫描行数下，谁的基数大，那么就用谁做索引。有时候优化器会使用性能不好的索引，我们必须手动指定，挥着删除该索引等。索引不准的原因可能是。开启了一个事务，。没有关闭，然后又新开一个事务，删除大量数据，由于undolog可能导致判断基数时失效。</p>
-<h2 id="前缀索引"><a href="#前缀索引" class="headerlink" title="前缀索引"></a>前缀索引</h2><p>　　对于字符串字段来说，我们可以给一些超长的字段加前缀索引，从而减少索引文件的大小，比如邮箱，我们只需要比对前面的。缺点是，无法使用覆盖索引，索引区分度下降，查询次数变多。ps(为什么区分度很重要，前面说过了，你用一个索引查询的时候，如果都是一样的，那么每次都要遍历索引，在遍历表，效率比全表扫描还低)。举个例子，对于身份证号，我们如何建立索引呢，如果直接建立索引，但是身份证号太长了，如果建立索引，索引文件会非常大的。采用方案如下，在新建一个字段，给这个字段加个索引，这个字段的值是根据crc32()计算出来的值，当我们根据身份证号查询的时候，2个条件都加一下，这样就可以，索引文件小了很多，同时索引区分度也很高。很赞。</p>
-<h2 id="索引遇坑事件"><a href="#索引遇坑事件" class="headerlink" title="索引遇坑事件"></a>索引遇坑事件</h2><p>　　１．使用索引字段函数<br>　　当你查询的数据列使用了函数，那么即使这个字段加了索引，那么依旧不适用索引。索引字段不能用函数，但是索引字段参数是可以用函数的，因此不是加了函数就不用索引了。</p>
-<p>　　２．隐式转换<br>　　比如你这个sql的这个字段varchar类型加了索引，但是explain一下后，发现没有使用索引，为何呢。<br>　　这是因为在mysql里面，字符串和数字比较，是字符串转为为数字，因此当你索引字段是varchar,参数是int的时候，mysql优化器会默认给你的索引字段加CAST(tradid AS signed int) 进行转换，当然若是索引字段是int，参数是字符串，那么就不会存在问题。因为是参数在转换。<br>　　<br>　　３．隐式字符转换<br>　　当２个表的字符集不同的时候，做表关联是用不上关联字段的索引的，很好理解，２个字符集不一样自然无法比较，那么就需要默认转换，这个转换和java的向上转型一样，都是向长度大的转型，因此有时候会对索引字段加函数操作，因此无法使用索引了。这个就要区分，谁被谁关联。我以前的文章说过，2个表2个字段都有索引，那么就是选择记录少的作为外表。记录多的走内表索引，因此，对于内表来说如果是被转换的，那么就无法走索引了，因为相当于对索引字段调用了函数。对此的优化方案，一。把字符类型修改。2数据量大，在参数那里就转换。<br>　　总结：索引字段不能使用函数，参数使用函数不影响sql.字符串转数字，utf8=utfmb4,</p>
-
-          
-        
-      
-    </div>
-    
-    
-    
-
-    
-
-    
-
-    
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </div>
-  
-  
-  
-  </article>
-
-
-    
-      
-
-  
-
-  
-  
-  
-
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-  
-  
-  
-  <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="https://skydh.github.io/2018/11/26/2个数据库差异对比/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="董航">
-      <meta itemprop="description" content="">
-      <meta itemprop="image" content="/images/avatar.gif">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="why are you so happy">
-    </span>
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-                
-                <a class="post-title-link" href="/2018/11/26/2个数据库差异对比/" itemprop="url">2个数据库差异对比分析</a></h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">发表于</span>
-              
-              <time title="创建于" itemprop="dateCreated datePublished" datetime="2018-11-26T09:58:02+08:00">
-                2018-11-26
-              </time>
-            
-
-            
-
-            
-          </span>
-
-          
-
-          
-            
-          
-
-          
-          
-
-          
-
-          
-
-          
-
-        </div>
-      </header>
-    
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          
-            <h2 id="方法"><a href="#方法" class="headerlink" title="方法"></a>方法</h2><p>　　１．我们使用Navicat来帮助。点击工具，在点击结构同步。出现一个界面。<br>　　２．点击对比，把要比较的２个库，一个源库，一个对比库填写进去，然后点击对比<br>　　３．点击查询修改，即可获得差异化信息。</p>
-
-          
-        
-      
-    </div>
-    
-    
-    
-
-    
-
-    
-
-    
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </div>
-  
-  
-  
-  </article>
-
-
-    
-      
-
-  
-
-  
-  
-  
-
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-  
-  
-  
-  <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="https://skydh.github.io/2018/11/26/仿写简易rpc/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="董航">
-      <meta itemprop="description" content="">
-      <meta itemprop="image" content="/images/avatar.gif">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="why are you so happy">
-    </span>
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-                
-                <a class="post-title-link" href="/2018/11/26/仿写简易rpc/" itemprop="url">仿写rpc</a></h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">发表于</span>
-              
-              <time title="创建于" itemprop="dateCreated datePublished" datetime="2018-11-26T09:57:32+08:00">
-                2018-11-26
-              </time>
-            
-
-            
-
-            
-          </span>
-
-          
-
-          
-            
-          
-
-          
-          
-
-          
-
-          
-
-          
-
-        </div>
-      </header>
-    
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          
-            <h2 id="原因"><a href="#原因" class="headerlink" title="原因"></a>原因</h2><p>　　为了了解rpc的原理，以及为何使用netty做为通信框架。</p>
-<h2 id="简介"><a href="#简介" class="headerlink" title="简介"></a>简介</h2><p>　　生产者：写好对外api接口以及实现类，然后在启动一个netty对外服务。<br>　　消费者：根据发过来的api接口，创建一个代理类，在代理类里面启动一个netty客户端，远程访问其服务，得到结果再返回。</p>
-<h2 id="项目地址"><a href="#项目地址" class="headerlink" title="项目地址"></a>项目地址</h2><p>　　我也简单实现了一个仿写的rpc,demo如下：<br>　　<a href="https://github.com/skydh/rpc-try.git" target="_blank" rel="noopener">点我一下就到了</a><br>　　极其粗糙的实现了一次，如有时间，继续优化。</p>
-
-          
-        
-      
-    </div>
-    
-    
-    
-
-    
-
-    
-
-    
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </div>
-  
-  
-  
-  </article>
-
-
-    
   </section>
 
   
@@ -1576,7 +1560,7 @@ output {
               
                 <a href="/archives/">
               
-                  <span class="site-state-item-count">121</span>
+                  <span class="site-state-item-count">127</span>
                   <span class="site-state-item-name">日志</span>
                 </a>
               </div>
@@ -1620,7 +1604,7 @@ output {
     <footer id="footer" class="footer">
       <div class="footer-inner">
         <script async src="https://dn-lbstatics.qbox.me/busuanzi/2.3/busuanzi.pure.mini.js"></script>
-<div class="copyright">&copy; <span itemprop="copyrightYear">2019</span>
+<div class="copyright">&copy; <span itemprop="copyrightYear">2020</span>
   <span class="with-love">
     <i class="fa fa-user"></i>
   </span>

@@ -86,7 +86,7 @@
 <meta property="og:site_name" content="why are you so happy">
 <meta property="og:description" content="什么是ioc　　IOC是spring这个轻量级框架的核心内容，中文叫做控制反转。也叫作依赖注入，这里我们将其看作为一个概念。普通获取类对象时是我们主动获取也就是主动去new。但是IOC则是让我们不用去new这个对象直接去获取，因为我们想要得到这个对象也是调用这个对象所对应的服务。无论这个对象时容器给我们的还是我们自己new的都行。容器给我们的话就会方便很多，也利于管理和维护。 3种注入方法　　构造">
 <meta property="og:locale" content="zh-Hans">
-<meta property="og:updated_time" content="2019-07-17T03:09:25.745Z">
+<meta property="og:updated_time" content="2019-12-20T08:39:41.119Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="spring ioc浅析">
 <meta name="twitter:description" content="什么是ioc　　IOC是spring这个轻量级框架的核心内容，中文叫做控制反转。也叫作依赖注入，这里我们将其看作为一个概念。普通获取类对象时是我们主动获取也就是主动去new。但是IOC则是让我们不用去new这个对象直接去获取，因为我们想要得到这个对象也是调用这个对象所对应的服务。无论这个对象时容器给我们的还是我们自己new的都行。容器给我们的话就会方便很多，也利于管理和维护。 3种注入方法　　构造">
@@ -308,6 +308,75 @@
 <h2 id="3种注入方法"><a href="#3种注入方法" class="headerlink" title="3种注入方法"></a>3种注入方法</h2><p>　　构造方法注入：就是被注入对象可以通过在其构造方法中声明依赖对象的参数列表让spring容器知道它需要哪些依赖对象。<br>　　setter方法注入，通过其对应的setter方法来注入，更加灵活点。<br>　　接口注入：被注入对象想要spring为其注入依赖对象必须要实现某个接口，这个接口提供一个方法用来为其注入依赖对象。</p>
 <h2 id="IOC-service-privider"><a href="#IOC-service-privider" class="headerlink" title="IOC service privider"></a>IOC service privider</h2><p>　　作用是对象的构建管理以及其对象之间的相互依赖<br>　　这个是如何管理对象之间的相互依赖呢？<br>　　１.直接编码<br>　　在容器启动前，我们通过代码的形式将被注入对象和依赖对象注册到容器中，并且明确它们之间的依赖注入关系。<br>　　２．配置文件方式<br>　　我们可以通过spring的配置文件来完成对象之间的关联，在容器启动时在加载到容器中。<br>　　３.元数据方式<br>　　这个是java1.5之后的元数据结合的，个人觉得也是直接代码但是多了元数据这个方便的用法。</p>
 <h2 id="Spring-的ICO-Service-Privider"><a href="#Spring-的ICO-Service-Privider" class="headerlink" title="Spring 的ICO Service Privider"></a>Spring 的ICO Service Privider</h2><p>　　Spring ICO容器包含了IOC Service Privider,AOP,线程管理等很多方面。因为他还是个容器。<br>　　Spring ICO容器有2个类型：<br>　　BeanFactory：基础类型的IOC容器，提供基本的IOC支持，默认为延迟加载机制，也就是只有当客户端对象需要访问容器里面的对象时才对受管理的对象进行初始化和注入操作，因此容器启动较快。<br>　　ApplicationContext：这个是在BeanFactory的基础上构建的，是相对其高级的实现，提供了一些额外的高级特性。其这个容器在启动时会初始化加载绑定所有托管的对象。因此启动较慢。继承了BeanFactory这个接口。</p>
+<h2 id="源码的角度开始分析"><a href="#源码的角度开始分析" class="headerlink" title="源码的角度开始分析"></a>源码的角度开始分析</h2><p>　　我们从springboot的run方法开始，一路点点，进入AbstractXmlApplicationContext 的refresh方法，这个方法就是bean加载的方法，至于为啥叫refresh方法呢，因为这个方法，不仅仅是初始化用的，里面有个obtainFreshBeanFactory方法里面的refreshBeanFactory里面有个判断当前是否已经有了BeanFactory，如果有就销毁，重新创建。。。所以叫做refresh方法。<br>　　顺便说下，这个ApplicationContext的实现类是AnnotationConfigServletWebServerApplicationContext这个springboot包下的上下文类，他向上最终也继承了AbstractXmlApplicationContext类。其在run方法的context = createApplicationContext();最终创建</p>
+<pre><code>@Override
+public void refresh() throws BeansException, IllegalStateException {
+
+    //首先执行前加个锁，免得出乱子。
+    synchronized (this.startupShutdownMonitor) {
+        // Prepare this context for refreshing.
+        prepareRefresh();
+
+        // Tell the subclass to refresh the internal bean factory.
+        ConfigurableListableBeanFactory beanFactory = obtainFreshBeanFactory();
+
+        // Prepare the bean factory for use in this context.
+        prepareBeanFactory(beanFactory);
+
+        try {
+            // Allows post-processing of the bean factory in context subclasses.
+            postProcessBeanFactory(beanFactory);
+
+            // Invoke factory processors registered as beans in the context.
+            invokeBeanFactoryPostProcessors(beanFactory);
+
+            // Register bean processors that intercept bean creation.
+            registerBeanPostProcessors(beanFactory);
+
+            // Initialize message source for this context.
+            initMessageSource();
+
+            // Initialize event multicaster for this context.
+            initApplicationEventMulticaster();
+
+            // Initialize other special beans in specific context subclasses.
+            onRefresh();
+
+            // Check for listener beans and register them.
+            registerListeners();
+
+            // Instantiate all remaining (non-lazy-init) singletons.
+            finishBeanFactoryInitialization(beanFactory);
+
+            // Last step: publish corresponding event.
+            finishRefresh();
+        }
+
+        catch (BeansException ex) {
+            if (logger.isWarnEnabled()) {
+                logger.warn(&quot;Exception encountered during context initialization - &quot; +
+                        &quot;cancelling refresh attempt: &quot; + ex);
+            }
+
+            // Destroy already created singletons to avoid dangling resources.
+            destroyBeans();
+
+            // Reset &apos;active&apos; flag.
+            cancelRefresh(ex);
+
+            // Propagate exception to caller.
+            throw ex;
+        }
+
+        finally {
+            // Reset common introspection caches in Spring&apos;s core, since we
+            // might not ever need metadata for singleton beans anymore...
+            resetCommonCaches();
+        }
+    }
+}
+</code></pre><p>　　这个就是refresh方法。</p>
+<p>　　１．首先加个锁，免得出现其他问题<br>　　２．第一个方法是记录容器的启动时间，标记状态，校验参数。<br>　　３．    ConfigurableListableBeanFactory beanFactory = obtainFreshBeanFactory();这个方法是核心之一，他返回了一个单例的BeanFactory，这是基于springboot的。<br>　　４．invokeBeanFactoryPostProcessors这个方法里面扫描所有的bean加载进入到BeanFactory的map里面，没有初始化。<br>　　５．这个方法    finishBeanFactoryInitialization(beanFactory);来实例化bean,并且将bean存到ConfigurableListableBeanFactory的父类：DefaultSingletonBeanRegistry里面有2个map。其中singletonObjects这个map存了beanname和实例的映射关系。其中earlySingletonObjects存放了bean实例的早期版本，用于解决循环依赖问题。<br>　　６．不断点点点，进入最后创建bean，结束。。。其中创建bean的时候，遇到有依赖的，先创建其依赖，</p>
 
       
     </div>
@@ -421,7 +490,7 @@
               
                 <a href="/archives/">
               
-                  <span class="site-state-item-count">121</span>
+                  <span class="site-state-item-count">127</span>
                   <span class="site-state-item-name">日志</span>
                 </a>
               </div>
@@ -460,7 +529,7 @@
             
 
             
-              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#什么是ioc"><span class="nav-number">1.</span> <span class="nav-text">什么是ioc</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#3种注入方法"><span class="nav-number">2.</span> <span class="nav-text">3种注入方法</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#IOC-service-privider"><span class="nav-number">3.</span> <span class="nav-text">IOC service privider</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Spring-的ICO-Service-Privider"><span class="nav-number">4.</span> <span class="nav-text">Spring 的ICO Service Privider</span></a></li></ol></div>
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#什么是ioc"><span class="nav-number">1.</span> <span class="nav-text">什么是ioc</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#3种注入方法"><span class="nav-number">2.</span> <span class="nav-text">3种注入方法</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#IOC-service-privider"><span class="nav-number">3.</span> <span class="nav-text">IOC service privider</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Spring-的ICO-Service-Privider"><span class="nav-number">4.</span> <span class="nav-text">Spring 的ICO Service Privider</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#源码的角度开始分析"><span class="nav-number">5.</span> <span class="nav-text">源码的角度开始分析</span></a></li></ol></div>
             
 
           </div>
@@ -481,7 +550,7 @@
     <footer id="footer" class="footer">
       <div class="footer-inner">
         <script async src="https://dn-lbstatics.qbox.me/busuanzi/2.3/busuanzi.pure.mini.js"></script>
-<div class="copyright">&copy; <span itemprop="copyrightYear">2019</span>
+<div class="copyright">&copy; <span itemprop="copyrightYear">2020</span>
   <span class="with-love">
     <i class="fa fa-user"></i>
   </span>
