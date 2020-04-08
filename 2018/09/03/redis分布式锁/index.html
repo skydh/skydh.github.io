@@ -83,7 +83,7 @@
 <meta property="og:type" content="article">
 <meta property="og:title" content="redis分布式锁">
 <meta property="og:url" content="https://skydh.github.io/2018/09/03/redis分布式锁/index.html">
-<meta property="og:site_name" content="why are you so happy">
+<meta property="og:site_name" content="learning, progress, future.">
 <meta property="og:description" content="什么是分布式锁　　一个重要资源被多个jvm进程竞争，会发生数据安全问题，对于分布式系统来说，多个微服务同时竞争一个资源时，就会产生如上问题。对于该问题，我们的方案是用分布式锁来锁住该数据。 使用redis来分布式锁。　　分布式锁的本质是在redis里面占一个坑，当别的进程也要占时，却占不了了，只能等待，或者放弃。　　命令如下setnx(set if not exists)只允许一个客户端占坑，然后">
 <meta property="og:locale" content="zh-Hans">
 <meta property="og:updated_time" content="2019-05-22T02:36:45.868Z">
@@ -125,7 +125,7 @@
 
 
 
-  <title>redis分布式锁 | why are you so happy</title>
+  <title>redis分布式锁 | learning, progress, future.</title>
   
 
 
@@ -155,12 +155,12 @@
     <div class="custom-logo-site-title">
       <a href="/"  class="brand" rel="start">
         <span class="logo-line-before"><i></i></span>
-        <span class="site-title">why are you so happy</span>
+        <span class="site-title">learning, progress, future.</span>
         <span class="logo-line-after"><i></i></span>
       </a>
     </div>
       
-        <p class="site-subtitle">clear 航</p>
+        <p class="site-subtitle">skydh</p>
       
   </div>
 
@@ -235,13 +235,13 @@
     <link itemprop="mainEntityOfPage" href="https://skydh.github.io/2018/09/03/redis分布式锁/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="董航">
+      <meta itemprop="name" content="skydh">
       <meta itemprop="description" content="">
       <meta itemprop="image" content="/images/avatar.gif">
     </span>
 
     <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="why are you so happy">
+      <meta itemprop="name" content="learning, progress, future.">
     </span>
 
     
@@ -450,8 +450,8 @@ public static boolean releaseDistributedLock(Jedis jedis, String lockKey, String
         <div class="site-overview">
           <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
             
-              <p class="site-author-name" itemprop="name">董航</p>
-              <p class="site-description motion-element" itemprop="description">clear 航</p>
+              <p class="site-author-name" itemprop="name">skydh</p>
+              <p class="site-description motion-element" itemprop="description">skydh</p>
           </div>
 
           <nav class="site-state motion-element">
@@ -525,7 +525,7 @@ public static boolean releaseDistributedLock(Jedis jedis, String lockKey, String
   <span class="with-love">
     <i class="fa fa-user"></i>
   </span>
-  <span class="author" itemprop="copyrightHolder">董航</span>
+  <span class="author" itemprop="copyrightHolder">skydh</span>
 
   
 </div>

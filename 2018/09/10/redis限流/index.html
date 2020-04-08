@@ -83,7 +83,7 @@
 <meta property="og:type" content="article">
 <meta property="og:title" content="redis之简单限流">
 <meta property="og:url" content="https://skydh.github.io/2018/09/10/redis限流/index.html">
-<meta property="og:site_name" content="why are you so happy">
+<meta property="og:site_name" content="learning, progress, future.">
 <meta property="og:description" content="什么是接口限流　　为什么要有接口限流？场景如下：１．接口限流，比如我们对外一个接口，我们要限制一个用户单位时间访问次数？２．系统要限定用户的某个行为在指定的时间A里只能允许发生 N 次。 实现方式　　我们用zset来实现这个方案。我们将用户id和事件id生成这个zset的容器id,当发生一次时，我们将当前时间作为score,同时也作为value,放到集合里面。然后删除这个元素加入前限定时间A之外的">
 <meta property="og:locale" content="zh-Hans">
 <meta property="og:updated_time" content="2018-09-26T02:49:02.143Z">
@@ -125,7 +125,7 @@
 
 
 
-  <title>redis之简单限流 | why are you so happy</title>
+  <title>redis之简单限流 | learning, progress, future.</title>
   
 
 
@@ -155,12 +155,12 @@
     <div class="custom-logo-site-title">
       <a href="/"  class="brand" rel="start">
         <span class="logo-line-before"><i></i></span>
-        <span class="site-title">why are you so happy</span>
+        <span class="site-title">learning, progress, future.</span>
         <span class="logo-line-after"><i></i></span>
       </a>
     </div>
       
-        <p class="site-subtitle">clear 航</p>
+        <p class="site-subtitle">skydh</p>
       
   </div>
 
@@ -235,13 +235,13 @@
     <link itemprop="mainEntityOfPage" href="https://skydh.github.io/2018/09/10/redis限流/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="董航">
+      <meta itemprop="name" content="skydh">
       <meta itemprop="description" content="">
       <meta itemprop="image" content="/images/avatar.gif">
     </span>
 
     <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="why are you so happy">
+      <meta itemprop="name" content="learning, progress, future.">
     </span>
 
     
@@ -475,8 +475,8 @@ return funnel.watering(1); // 需要1个quota
         <div class="site-overview">
           <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
             
-              <p class="site-author-name" itemprop="name">董航</p>
-              <p class="site-description motion-element" itemprop="description">clear 航</p>
+              <p class="site-author-name" itemprop="name">skydh</p>
+              <p class="site-description motion-element" itemprop="description">skydh</p>
           </div>
 
           <nav class="site-state motion-element">
@@ -550,7 +550,7 @@ return funnel.watering(1); // 需要1个quota
   <span class="with-love">
     <i class="fa fa-user"></i>
   </span>
-  <span class="author" itemprop="copyrightHolder">董航</span>
+  <span class="author" itemprop="copyrightHolder">skydh</span>
 
   
 </div>
