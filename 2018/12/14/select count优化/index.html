@@ -86,7 +86,7 @@
 <meta property="og:site_name" content="learning, progress, future.">
 <meta property="og:description" content="不同存储引擎　　在Myisam这个里面，每个表的总数据数额外存了起来，每次读取，直接获取这个值，效率很高。但是在innodb里面，就需要一行行遍历，为什么呢，因为innodb采用mvcc多版本并发控制机制，不同事物下，读取的数目可能不一致。 解决方案　　1.使用redis来缓存总量，在并发不是很高的情况下，没插入一条语句，redis就加一，删除一个数据，redis就减一。但是，插入数据和redis">
 <meta property="og:locale" content="zh-Hans">
-<meta property="og:updated_time" content="2018-12-14T03:45:42.551Z">
+<meta property="og:updated_time" content="2020-04-13T01:07:26.007Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="mysql select count(*)优化">
 <meta name="twitter:description" content="不同存储引擎　　在Myisam这个里面，每个表的总数据数额外存了起来，每次读取，直接获取这个值，效率很高。但是在innodb里面，就需要一行行遍历，为什么呢，因为innodb采用mvcc多版本并发控制机制，不同事物下，读取的数目可能不一致。 解决方案　　1.使用redis来缓存总量，在并发不是很高的情况下，没插入一条语句，redis就加一，删除一个数据，redis就减一。但是，插入数据和redis">

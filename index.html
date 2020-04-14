@@ -449,7 +449,7 @@ S0C    S1C    S0U    S1U      EC       EU        OC         OU       MC     MU  
 </code></pre><p>  S0C,S0U,S1U,S0U,s0,s1区的使用量和总量<br>  EC,EU：Eden区的总量和使用<br>  OC,OU,Old区的总量和使用<br>  MC，MU,Metaspace区总量和使用，其中这个metaspace是存放Class对象的。<br>  CCSC,CCSU,压缩类空间总量和使用。<br>  YGC,YGCT，YoungGC的次数和时间<br>  FGC,FGCT：FullGC的次数和时间<br>  GCT，总GC的时间。</p>
 <p>ps 通过官网 <a href="https://docs.oracle.com/javase/8/docs/technotes/tools/unix/jstat.html#BEHHGFAE来查询" target="_blank" rel="noopener">https://docs.oracle.com/javase/8/docs/technotes/tools/unix/jstat.html#BEHHGFAE来查询</a></p>
 <h1 id="如何导出内存镜像文件"><a href="#如何导出内存镜像文件" class="headerlink" title="如何导出内存镜像文件"></a>如何导出内存镜像文件</h1><p>  1，内存溢出是自动导出，加上2个参数<br>  -XX:+HeapDumpOnOutOfMemoryError<br>  -XX:HeapDumpPath=./<br>  2,Jmap导出<br>  jmap -dump:format=b,file=heap.hprof 11956<br>  导出的文件用mat打开，可以查看到对象的数量和大小。可以分析内存溢出的问题。</p>
-<h1 id="jstack"><a href="#jstack" class="headerlink" title="jstack"></a>jstack</h1><p>   打印jvm里面所有的线程，看看cpu暴增的原因之类的。java线程的状态有new,runnable,blocked,waiting,timed_waiting,terminated,<br>  cpu飙高，可能是死循环。或者死锁。cpu过大可能导致新的请求无法处理。<br>  方案：<br>  1，查看cpu那个进程高。<br>  2，打印jstack 11569 -&gt;11.txt.<br>  3,top -p 7792 -H,打印所有的线程。找出高的线程，然后将其从10进制转换为16进制，得到一个id<br>  4，在打印的文件里面找到这个id对应的线程，然后分析。具体代码。</p>
+<h1 id="jstack"><a href="#jstack" class="headerlink" title="jstack"></a>jstack</h1><p>   打印jvm里面所有的线程，看看cpu暴增的原因之类的。java线程的状态有new,runnable,blocked,waiting,timed_waiting,terminated,<br>  cpu飙高，可能是死循环。或者死锁。cpu过大可能导致新的请求无法处理。<br>  方案：<br>  1，查看cpu那个进程高。<em>ps auxw | head -1;ps auxw |sort -rn -k3 |head -11</em><br>  2，打印jstack 11569 -&gt;11.txt.<br>  3,top -p 7792 -H,打印所有的线程。找出高的线程，然后将其从10进制转换为16进制，得到一个id<br>  4，在打印的文件里面找到这个id对应的线程，然后分析。具体代码。</p>
 <p>  deadlock。</p>
 <h1 id="JVisuaIVM"><a href="#JVisuaIVM" class="headerlink" title="JVisuaIVM"></a>JVisuaIVM</h1><p>  可视化监控工具，可以监控远程和本地。<br>  里面有很多功能，和jstack,jmap类似，几乎包含了上面所有的命令以及mat,里面有个抽样的功能，</p>
 <p>   其中cpu抽样，可以看到哪个方法的执行时间。从而针对性的优化代码</p>
@@ -472,7 +472,7 @@ S0C    S1C    S0U    S1U      EC       EU        OC         OU       MC     MU  
 <p>并发收集器Concurrent:CMS,G1,停顿时间。</p>
 <p>并发：指多条垃圾回收线程和用户线程并行，也许是交替进行，垃圾回收的时候不会停止用户程序的运行，适合web，对相应时间有要求的应用</p>
 <p>停顿时间：垃圾收集器做垃圾回收中断应用执行的时间。XX:MaxGCPauseMillis</p>
-<p>吞吐量：华仔垃圾回收的时间和花在应用时间的占比-XXGCRimeRatio=<n>,垃圾收集时间栈：1/1+n</n></p>
+<p>吞吐量：花在垃圾回收的时间和花在应用时间的占比-XXGCRimeRatio=<n>,垃圾收集时间栈：1/1+n</n></p>
 <p>-XX:+UseSerialGX -XX:+UseSerialOldGC<br>使用串行，一般不使用</p>
 <p>-XX:+UseParallelGC,-XX:+UseParallelGC<br>使用并行，吞吐量优先<br>Server模式下默认收集器。cms是old区的，</p>
 <p>并发<br>CMS:XX:+UseConcMarkSweepGC -XX:+UseParNewGC<br>G1:-XX+UseG1GC</p>
@@ -1113,8 +1113,8 @@ S0C    S1C    S0U    S1U      EC       EU        OC         OU       MC     MU  
       
         
           
-            <h2 id="预备知识"><a href="#预备知识" class="headerlink" title="预备知识"></a>预备知识</h2><p>　　请先看mysql如何做到crash后无损恢复数据。了解下mysql是如何数据落地磁盘的。</p>
-<h2 id="binlog"><a href="#binlog" class="headerlink" title="binlog"></a>binlog</h2><p>　　事务执行时先把日志写到binlog cache,事务提交，binlog cache就将日志写到文件系统的page cache,这个操作叫做write。 然后等fsync来刷盘，持久化磁盘数据，这个操作叫做fsync。这2个操作是由一个叫做sync_binlog来控制的。</p>
+            <h2 id="预备知识"><a href="#预备知识" class="headerlink" title="预备知识"></a>预备知识</h2><p>　　请先看mysql如何做到crash后无损恢复数据，了解下mysql是如何数据落地磁盘的。</p>
+<h2 id="binlog"><a href="#binlog" class="headerlink" title="binlog"></a>binlog</h2><p>​       事务执行时先把日志写到binlog cache,事务提交，binlog cache就将日志写到文件系统的page cache,这个操作叫做write。 然后等fsync来刷盘，持久化磁盘数据，这个操作叫做fsync。这2个操作是由一个叫做sync_binlog来控制的。</p>
 <ul>
 <li>sync_binlog=0 的时候，表示每次提交事务都只 write，不 fsync；</li>
 <li>sync_binlog=1 的时候，表示每次提交事务都会执行 fsync；</li>
@@ -1265,7 +1265,16 @@ S0C    S1C    S0U    S1U      EC       EU        OC         OU       MC     MU  
 <li>redolog是循环日志，binlog是增量日志。</li>
 </ul>
 <p>　　这里不对其过多介绍，下一篇文章关于主从的详细介绍，主从就是通过binlog完成的。</p>
-<h2 id="WAL机制简介"><a href="#WAL机制简介" class="headerlink" title="WAL机制简介"></a>WAL机制简介</h2><p>　　MySQL里经常说到的 WAL 技术，意思就是数据入库前先写进去日志，再写磁盘里面。<br>　　这里采用的是数据安全性最高的双1策略。<br>　　其数据更新顺序也保持着其顺序。<br>　　下面我来简单介绍下。<br>　　1.当要更新id=2这一行数据时，先通过这个表的索引，查询到这行记录所在的数据页。然后判断这个数据页是否在buffer pool(这个是内存)。<br>　　2.如果不在内存则需要读到内存（其实也可以不用读入内存，当要更新的这行数据没有唯一索引时，mysql为了提高效率，采用了change buffer(别看有个buffer，但是人家也是持久化到磁盘的)这个东西，将对这行修改的动作记录到change buffer里面，就不用读到内存了）。<br>　　3.在buffer pool 内存上修改这行数据（仅仅只是在内存上修改了这行数据，并没有持久化到磁盘里面）。<br>　　4.将上面的操作，写入到redolog里面，且将这个操作状态设置为prepare状态，首先写到redologbuffer里面（为了提高效率，mysql做了组提交这个优化，这里不扩展），等到这个事务提交后，redologbuffer然后再写入到文件系统的page cache里面，然后立马调用fsync,将其刷到磁盘。<br>　　5.然后写入到binlog里面，先写到binlog cache里面，然后写入page cache,然后调用fsync，写入磁盘。<br>　　6.redolog继续写一次，将其状态设置为commit状态。<br>　　如此就算完成了一个更新操作。</p>
+<h2 id="WAL机制简介"><a href="#WAL机制简介" class="headerlink" title="WAL机制简介"></a>WAL机制简介</h2><p>　　MySQL里经常说到的 WAL 技术，意思就是数据入库前先写进去日志，再写磁盘里面。</p>
+<p>　   这里采用的是数据安全性最高的双1策略。</p>
+<p>　　其数据更新顺序也保持着其顺序。</p>
+<p>　　下面我来简单介绍下。</p>
+<p>　　1.当要更新id=2这一行数据时，先通过这个表的索引，查询到这行记录所在的数据页。然后判断这个数据页是否在buffer pool(这个是内存)。</p>
+<p>　　2.如果不在内存则需要读到内存（其实也可以不用读入内存，当要更新的这行数据没有唯一索引时，mysql为了提高效率，采用了change buffer(别看有个buffer，但是人家也是持久化到磁盘的)这个东西，将对这行修改的动作记录到change buffer里面，就不用读到内存了）。</p>
+<p>　　3.在buffer pool 内存上修改这行数据（仅仅只是在内存上修改了这行数据，并没有持久化到磁盘里面）。</p>
+<p>　　4.将上面的操作，写入到redolog里面，且将这个操作状态设置为prepare状态，首先写到redologbuffer里面（为了提高效率，mysql做了组提交这个优化，这里不扩展），等到这个事务提交后，redologbuffer然后再写入到文件系统的page cache里面，然后立马调用fsync,将其刷到磁盘。</p>
+<p>　　5.然后写入到binlog里面，先写到binlog cache里面，然后写入page cache,然后调用fsync，写入磁盘。</p>
+<p>　　6.redolog继续写一次，将其状态设置为commit状态。<br>　　如此就算完成了一个更新操作。</p>
 <h2 id="mysql-如何做到crash后，数据不丢失的"><a href="#mysql-如何做到crash后，数据不丢失的" class="headerlink" title="mysql 如何做到crash后，数据不丢失的"></a>mysql 如何做到crash后，数据不丢失的</h2><p>　　前面说了数据更新操作。<br>　　当前buffer pool里面存在大量脏页（就是一些数据页，只在内存里面修改了，没有刷新到磁盘），当系统宕机了，内存里面的数据全部丢失了怎么办？<br>　　方法如下：我们需要redolog来完成灾难备份，check point到writ pos这块空间记录的所有的操作步骤派上用场了，根据这些redolog记录从磁盘里面读取所有相关的数据页。然后按照redolog上的操作恢复数据即可，那么我们发现存再内存的数据全部恢复了。</p>
 
           
