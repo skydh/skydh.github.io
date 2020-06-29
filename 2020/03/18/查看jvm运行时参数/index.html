@@ -86,7 +86,7 @@
 <meta property="og:site_name" content="learning, progress, future.">
 <meta property="og:description" content="PrintFlagsFinal   java -XX:+PrintFlagsFinal  -version  查看虚拟机默认参数 jps  专门查看java进程的  jps  jps -l查看完全参数 jinfo  jinfo是查看运行时进程的详细信息。比如  jinfo -flag MaxHeapSize 11956  查看这个java进程的最大堆大小  jinfo -flag UseG1GC">
 <meta property="og:locale" content="zh-Hans">
-<meta property="og:updated_time" content="2020-04-13T00:41:55.368Z">
+<meta property="og:updated_time" content="2020-05-15T16:44:24.941Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="查看jvm运行时参数">
 <meta name="twitter:description" content="PrintFlagsFinal   java -XX:+PrintFlagsFinal  -version  查看虚拟机默认参数 jps  专门查看java进程的  jps  jps -l查看完全参数 jinfo  jinfo是查看运行时进程的详细信息。比如  jinfo -flag MaxHeapSize 11956  查看这个java进程的最大堆大小  jinfo -flag UseG1GC">
@@ -332,14 +332,22 @@ S0C    S1C    S0U    S1U      EC       EU        OC         OU       MC     MU  
 <p>  3.psi-probe<br>  先下载probe这个项目源码，然后打包，将其war包放入到tomcat的webapp下面，即可，启动tomcat即可。tomcat的配置和上面一样。</p>
 <p>  4,tomcat优化<br>  1，内存优化<br>  2，线程优化<br>  主要需要配置maxConnections最大连接数。acceptCount：连接满了之后的新的连接进入队列，超出队列，则拒绝请求。maxThread:工作线程数，和cpu相关…<br>  3.配置优化<br>  autoDeploy,周期性检查是否有新的应用加了进来，但是会浪费一个线程资源。默认为true，建议为false.<br>  enableLookups:开启后会对请求做一个dns查询，浪费性能。<br>  reloadable:监控web-inf/classes和web-inf/lib目录，浪费性能。默认没有开启。<br>  还有设置协议为nio,<br>  还可以禁用session，存到redis里面。</p>
 <h1 id="nginx"><a href="#nginx" class="headerlink" title="nginx"></a>nginx</h1><p>   可以通过ngxtop,动态查看访问最多的ip,访问最多的返回码等信息。<br>   Mginx-rrd是个图形化工具，这个工具统计的信息可能滞后，因为它是通过定时器来统计的。<br>   优化：<br>   增加工作线程，增加并发连接数，默认是一个工作线程，1024个连接。<br>   一般多少个cpu，就多少个工作线程，启用epoll网络模型。<br>   启用长连接。浏览器和nginx之间是有长连接的，但是Nginx和后端服务之间是没有长连接的，需要配置。<br>   启用缓存，压缩。<br>   操作系统优化。</p>
-<h1 id="jvm调优"><a href="#jvm调优" class="headerlink" title="jvm调优"></a>jvm调优</h1><p>jvm内存结构<br>程序计数器：这个就是线程私有的，存放的是线程正在执行指令的地址。<br>java虚拟机栈：线程私有的，生命周期和线程一样，里面的元素是栈帧，每一个栈帧的入栈到出栈意味着一个方法的执行调用和结束。栈帧存放的是方法的局部变量表，返回值信息，方法出口灯<br>java堆，分为新生代，老年代，线程共享的，每一个实例都是在堆里面分配内存的。<br>java方法区，线程公有的，存放，常量。被虚拟机加载的类信息，编译器编译后的代码。（运行时常量池：各种常量信息，在类加载后放进去存放。）</p>
+<h1 id="jvm调优"><a href="#jvm调优" class="headerlink" title="jvm调优"></a>jvm调优</h1><p>运行时数据区（这是一个规范）</p>
+<p>jvm内存结构<br>程序计数器：这个就是线程私有的，存放的是线程正在执行指令的地址。<br>java虚拟机栈：线程私有的，生命周期和线程一样，里面的元素是栈帧，每一个栈帧的入栈到出栈意味着一个方法的执行调用和结束。栈帧存放的是方法的局部变量表，返回值信息，方法出口灯<br>java堆，分为新生代，老年代，线程共享的，每一个实例都是在堆里面分配内存的。<br>java方法区，线程公有的，存放，常量。被虚拟机加载的类信息，编译器编译后的代码。（运行时常量池：各种常量信息，在类加载后放进去存放。）</p>
+<p>上面的是java虚拟机规范的jvm内存结构</p>
+<p>下面是实际的jvm内存结构（实现）</p>
+<p>堆：和上面的一样</p>
+<p>非堆区（metaspace）</p>
+<p>存放字节码文件，class，package,method,常量池，符号引用。</p>
+<p>ccs：压缩类空间，只有你启用了这个才会存在（java堆中每个对象都有一个指针指向自己的Class,因为在64位虚拟机下面，每个指针64位长度，为了压缩，采用32位，那么数据就会存到ccs里面）</p>
+<p>codeCache：jit即时编译的代码，jvm执行的本地代码。如果没有采用jit，没有使用native方法，那么就是空的。</p>
 <p>ps：java本地代码，就是采用编译方式启动java进程，然后代码会被jit编译为机器码，放入到metaspace里面</p>
 <p>判断对象是否回收的算法<br>可达性分析算法，从根节点到这个对象是否可达。<br>根节点很多：类加载器，Thread，虚拟机栈的本地变量表，常量应用，垃圾回收的时候，通过这些根节点来进行可达性分析。</p>
 <p>垃圾回收算法<br> 标记-清除：做可达性分析之后，标记所有可回收的对象，标记完成后统一回收。缺点效率不高，产生大量内存碎片。<br>复制算法，吧内存划分为大小一样的2块，每次使用其中一块，当其中一块无法分配内存后，进行垃圾回收，吧可达的对象复制到另外一块上，再把这块用的空间一次性清除。<br>优点，简单高效<br>缺点，内存利用不高<br>标记-整理。先判断哪些对象是可达的，然后统一向一端移动，然后清除掉边界外单位内存<br>相对于标记清除，少了内存碎片，但是更加耗时。</p>
 <p>一般来说，yong区使用复制算法，old区采用标记清除或者标记整理算法。</p>
 <p>对象分配：<br>对象优先分配到Eden区，大对象直接到老年代，存活时间长的对象进入老年代。</p>
-<p>垃圾回收器<br>串行收集器Serial:Serial,Serial Old，单线程的垃圾回收器。当内存不够时，虚拟机会启动一个单线程的垃圾回收器。<br>并行收集器Parallel: Prallel Scavenge,Parallel Old,吞吐量<br>并行：指多条垃圾回收线程并行工作，用户线程仍然处于等待状态。适合科学计算，后台处理等弱交互场景，</p>
-<p>并发收集器Concurrent:CMS,G1,停顿时间。</p>
+<p>垃圾回收器<br>串行收集器Serial:Serial,Serial Old，单线程的垃圾回收器。当内存不够时，虚拟机会启动一个单线程的垃圾回收器。<br>并行收集器Parallel: Prallel Scavenge,Parallel Old,吞吐量优先<br>并行：指多条垃圾回收线程并行工作，用户线程仍然处于等待状态。适合科学计算，后台处理等弱交互场景，</p>
+<p>并发收集器Concurrent:CMS,G1,停顿时间短优先。</p>
 <p>并发：指多条垃圾回收线程和用户线程并行，也许是交替进行，垃圾回收的时候不会停止用户程序的运行，适合web，对相应时间有要求的应用</p>
 <p>停顿时间：垃圾收集器做垃圾回收中断应用执行的时间。XX:MaxGCPauseMillis</p>
 <p>吞吐量：花在垃圾回收的时间和花在应用时间的占比-XXGCRimeRatio=<n>,垃圾收集时间栈：1/1+n</n></p>
@@ -355,13 +363,12 @@ S0C    S1C    S0U    S1U      EC       EU        OC         OU       MC     MU  
 <p>CMS并发<br>低停顿，低延迟<br>老年代</p>
 <p>收集过程。<br>1，初始标记，标记GCroot，这个过程需要停止应用程序。<br>2，并发标记。<br>3，并发预处理<br>4，重新标记，也是需要停止应用的，<br>5，并发清除<br>6，并发重置 </p>
 <p>缺点，cpu敏感，浮动垃圾，空间碎片。标记清除算法。</p>
-<p>CMS参数优化<br>-XX:ConcGCThreads,并发的GC线程数<br>-XX:+UseCMSCompactAtFullCollection：fullGC之后会做压缩，减少内存碎片。<br>可视化GC日志分析工具<br>-XX:CMSFullGCsBeforCompaction:多少次FullGC之后压缩一次。<br>-XX:CMSInitiatingOccupancyFraction:触发FullGC,老年代占了多少比例后会触发这个fullGC，92%<br>-XX：+CMSScavengeBeforRemark:fullGC之前先做YGC。</p>
+<p>CMS参数优化<br>-XX:ConcGCThreads,并发的GC线程数<br>-XX:+UseCMSCompactAtFullCollection：fullGC之后会做压缩，减少内存碎片。<br>可视化GC日志分析工具<br>-XX:CMSFullGCsBeforCompaction:多少次FullGC之后压缩一次。<br>-XX:CMSInitiatingOccupancyFraction:触发FullGC,老年代空间使用了多少比例后会触发这个fullGC，92%<br>-XX：+CMSScavengeBeforRemark:fullGC之前先做YGC。</p>
 <p>G1垃圾回收器<br>大内存，小停顿，同时是新生代和老年代。<br>G1里面没有物理意义的新生代和老年代，他是一个个的region，多个region构成了逻辑上的新生代和老年代。<br>StaB,GC开始的时候存活对象的快照。<br>RSet：记录了其他region里面引用了本region对象的关系。<br>G1 YoungGC<br>新生代进入Eden区<br>存活对象进入su区<br>存活时间长的对象进入Old区。<br>和其他一样</p>
-<p>没有fuLLGC 只有MixedGC<br>回收Young区和部分Old区。</p>
+<p>没有fuLLGC 只有MixedGC<br>回收Young区和部分Old区。不是回收全部的old区。</p>
 <p>global concurent marking（全局标记）<br>1,标记GC root,stw<br>2，标记存活Region<br>3.标记存活对象。<br>4.重新标记，stw<br>5.部分stw</p>
-<p>MixGC时机</p>
 <p>根据参数来设定，InitiatingHeapOccupancyPercent,默认45%，就会触发global concurent marking</p>
-<p>G1HeapWastePercent<br>再global concurent marking之后，我们可以判断有多少对象需要回收，在每次YGC之后，和MixEdGC之前，会检查参数是否达到了，如果达到了就会MixedGC</p>
+<p>G1HeapWastePercent默认5%。<br>再global concurent marking之后，我们可以判断有多少对象需要回收，也就是说要判断要回收的对象是否超过了5%，如果超过了就要回收。在每次YGC之后和Mixed GC之前，会检查参数是否达到了这个值，如果达到了就会MixedGC</p>
 <p>是否需要切换到G1<br>1.50%堆被存活对象占用<br>2，对象分配速度快<br>3，垃圾回收时间长</p>
 <p>GC日志简析<br>1吞吐量（应用线程时间和总时间的比例）和停顿时间</p>
 <p>通过工具分析<br>1.在线 gceasy.io<br>2.GCViewer</p>
@@ -485,7 +492,7 @@ S0C    S1C    S0U    S1U      EC       EU        OC         OU       MC     MU  
               
                 <a href="/archives/">
               
-                  <span class="site-state-item-count">127</span>
+                  <span class="site-state-item-count">131</span>
                   <span class="site-state-item-name">日志</span>
                 </a>
               </div>

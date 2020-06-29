@@ -232,6 +232,620 @@
   
   
   <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="https://skydh.github.io/2020/06/29/go学习/安装/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="skydh">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="learning, progress, future.">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                <a class="post-title-link" href="/2020/06/29/go学习/安装/" itemprop="url">未命名</a></h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2020-06-29T09:18:48+08:00">
+                2020-06-29
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            <p>title： go学习1</p>
+<h3 id="安装"><a href="#安装" class="headerlink" title="安装"></a>安装</h3><p><a href="https://golang.google.cn/dl/" target="_blank" rel="noopener">https://golang.google.cn/dl/</a> 官网直接安装go。</p>
+<p>打开cmd 输入 go version</p>
+<p><img src="C:\Users\Lenovo\AppData\Roaming\Typora\typora-user-images\image-20200629091805641.png" alt="image-20200629091805641"></p>
+
+          
+        
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="https://skydh.github.io/2020/06/29/ElasticSearch 增删改查原理解析/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="skydh">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="learning, progress, future.">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                <a class="post-title-link" href="/2020/06/29/ElasticSearch 增删改查原理解析/" itemprop="url">未命名</a></h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2020-06-29T08:56:13+08:00">
+                2020-06-29
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            <h2 id="ElasticSearch-增删改查原理解析"><a href="#ElasticSearch-增删改查原理解析" class="headerlink" title="ElasticSearch 增删改查原理解析"></a>ElasticSearch 增删改查原理解析</h2><p>参考文档：<a href="https://www.elastic.co/guide/cn/elasticsearch/guide/current/distributed-search.html" target="_blank" rel="noopener">https://www.elastic.co/guide/cn/elasticsearch/guide/current/distributed-search.html</a></p>
+<h3 id="es写数据原理"><a href="#es写数据原理" class="headerlink" title="es写数据原理"></a>es写数据原理</h3><ul>
+<li>客户端选择一个 node 发送请求过去，这个 node 就是 <code>coordinating node</code> （协调节点）。</li>
+<li><code>coordinating node</code> 对 document 进行<strong>路由</strong>，将请求转发给对应的 node（有 primary shard）。</li>
+<li>实际的 node 上的 <code>primary shard</code> 处理请求，然后将数据同步到 <code>replica node</code> 。</li>
+<li><code>coordinating node</code> 如果发现 <code>primary node</code> 和所有 <code>replica node</code> 都搞定之后，就返回响应结果给客户端。</li>
+</ul>
+<h3 id="es-读数据过程"><a href="#es-读数据过程" class="headerlink" title="es 读数据过程"></a>es 读数据过程</h3><p>可以通过 <code>doc id</code> 来查询，会根据 <code>doc id</code> 进行 hash，判断出来当时把 <code>doc id</code> 分配到了哪个 shard 上面去，从那个 shard 去查询。</p>
+<ul>
+<li>客户端发送请求到<strong>任意</strong>一个 node，成为 <code>coordinate node</code> 。</li>
+<li><code>coordinate node</code> 对 <code>doc id</code> 进行哈希路由，将请求转发到对应的 node，此时会使用 <code>round-robin</code> <strong>随机轮询算法</strong>，在 <code>primary shard</code> 以及其所有 replica 中随机选择一个，让读请求负载均衡。</li>
+<li>接收请求的 node 返回 document 给 <code>coordinate node</code> 。</li>
+<li><code>coordinate node</code> 返回 document 给客户端。</li>
+</ul>
+<h3 id="es-搜索数据过程"><a href="#es-搜索数据过程" class="headerlink" title="es 搜索数据过程"></a>es 搜索数据过程</h3><p>你根据 <code>java</code> 关键词来搜索，将包含 <code>java</code> 的 <code>document</code> 给搜索出来。</p>
+<ul>
+<li>客户端发送请求到一个 <code>coordinate node</code> 。</li>
+<li>协调节点将搜索请求转发到<strong>所有</strong>的 shard 对应的 <code>primary shard</code> 或 <code>replica shard</code> ，都可以。</li>
+<li>query phase：每个 shard 将自己的搜索结果（其实就是一些 <code>doc id</code> ）返回给协调节点，由协调节点进行数据的合并、排序、分页等操作，产出最终结果。</li>
+<li>fetch phase：接着由协调节点根据 <code>doc id</code> 去各个节点上<strong>拉取实际</strong>的 <code>document</code> 数据，最终返回给客户端。</li>
+</ul>
+
+          
+        
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="https://skydh.github.io/2020/06/29/ElasticSearch 聚合查询原理/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="skydh">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="learning, progress, future.">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                <a class="post-title-link" href="/2020/06/29/ElasticSearch 聚合查询原理/" itemprop="url">未命名</a></h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2020-06-29T08:56:13+08:00">
+                2020-06-29
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            <h1 id="ElasticSearch-聚合查询原理"><a href="#ElasticSearch-聚合查询原理" class="headerlink" title="ElasticSearch 聚合查询原理"></a>ElasticSearch 聚合查询原理</h1><h5 id="原理分析"><a href="#原理分析" class="headerlink" title="原理分析"></a>原理分析</h5><p>参考：<a href="https://www.cnblogs.com/huangying2124/p/12717369.html" target="_blank" rel="noopener">https://www.cnblogs.com/huangying2124/p/12717369.html</a></p>
+<p><a href="https://www.elastic.co/guide/cn/elasticsearch/guide/current/_limiting_memory_usage.html" target="_blank" rel="noopener">https://www.elastic.co/guide/cn/elasticsearch/guide/current/_limiting_memory_usage.html</a></p>
+<p>聚合使用一个叫 <em>doc values</em> 的数据结构（在 <a href="https://www.elastic.co/guide/cn/elasticsearch/guide/current/docvalues-intro.html" target="_blank" rel="noopener">Doc Values 介绍</a> 里简单介绍）。 Doc values 可以使聚合更快、更高效并且内存友好，所以理解它的工作方式十分有益。</p>
+<p>Doc values 的存在是因为倒排索引只对某些操作是高效的。 倒排索引的优势 在于查找包含某个项的文档，而对于从另外一个方向的相反操作并不高效，即：确定哪些项是否存在单个文档里，聚合需要这种次级的访问模式。</p>
+<p>在 <code>Elasticsearch</code> 中，<code>Doc Values</code> 就是一种列式存储结构。</p>
+<p><code>Doc Values</code> 是在索引时与 <code>倒排索引</code> 同时生成。也就是说 <code>Doc Values</code> 和 <code>倒排索引</code> 一样，基于 <code>Segement</code> 生成并且是不可变的。同时 <code>Doc Values</code> 和 <code>倒排索引</code> 一样序列化到磁盘，这样对性能和扩展性有很大帮助。</p>
+<p>因此我们可以通过禁用某些字段的doc_values来节约磁盘空间。</p>
+<p>我们对字符串做聚合时，如何时默认的，那么久会出现很坑的点。demo如下：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br></pre></td><td class="code"><pre><span class="line">POST /agg_analysis/data/_bulk</span><br><span class="line">&#123; &quot;index&quot;: &#123;&#125;&#125;</span><br><span class="line">&#123; &quot;state&quot; : &quot;New York&quot; &#125;</span><br><span class="line">&#123; &quot;index&quot;: &#123;&#125;&#125;</span><br><span class="line">&#123; &quot;state&quot; : &quot;New Jersey&quot; &#125;</span><br><span class="line"></span><br><span class="line">GET /agg_analysis/data/_search</span><br><span class="line">&#123;</span><br><span class="line">    &quot;size&quot; : 0,</span><br><span class="line">    &quot;aggs&quot; : &#123;</span><br><span class="line">        &quot;states&quot; : &#123;</span><br><span class="line">            &quot;terms&quot; : &#123;</span><br><span class="line">                &quot;field&quot; : &quot;state&quot;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">&#123;</span><br><span class="line">...</span><br><span class="line">   &quot;aggregations&quot;: &#123;</span><br><span class="line">      &quot;states&quot;: &#123;</span><br><span class="line">         &quot;buckets&quot;: [</span><br><span class="line">            &#123;</span><br><span class="line">               &quot;key&quot;: &quot;new&quot;,</span><br><span class="line">               &quot;doc_count&quot;: 2</span><br><span class="line">            &#125;,</span><br><span class="line">            &#123;</span><br><span class="line">               &quot;key&quot;: &quot;york&quot;,</span><br><span class="line">               &quot;doc_count&quot;: 1</span><br><span class="line">            &#125;,</span><br><span class="line">            &#123;</span><br><span class="line">               &quot;key&quot;: &quot;jersey&quot;,</span><br><span class="line">               &quot;doc_count&quot;: 1</span><br><span class="line">            &#125;,</span><br><span class="line">           </span><br><span class="line">         ]</span><br><span class="line">      &#125;</span><br><span class="line">   &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>我们对state聚合，结果出现了很多奇怪的桶，这个就是对string这个字段每个词都做了桶，为了禁止这个可以直接加keyword,来处理。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br></pre></td><td class="code"><pre><span class="line">GET /data1/data1/_search</span><br><span class="line">&#123;</span><br><span class="line">  &quot;size&quot; : 0,</span><br><span class="line">  &quot;aggs&quot; : &#123;</span><br><span class="line">    &quot;states&quot; : &#123;</span><br><span class="line">        &quot;terms&quot; : &#123;</span><br><span class="line">            &quot;field&quot; : &quot;state.keyword&quot; </span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">&quot;aggregations&quot; : &#123;</span><br><span class="line">    &quot;states&quot; : &#123;</span><br><span class="line">      &quot;doc_count_error_upper_bound&quot; : 0,</span><br><span class="line">      &quot;sum_other_doc_count&quot; : 0,</span><br><span class="line">      &quot;buckets&quot; : [</span><br><span class="line">        &#123;</span><br><span class="line">          &quot;key&quot; : &quot;New York&quot;,</span><br><span class="line">          &quot;doc_count&quot; : 3</span><br><span class="line">        &#125;,</span><br><span class="line">        &#123;</span><br><span class="line">          &quot;key&quot; : &quot;New Jersey&quot;,</span><br><span class="line">          &quot;doc_count&quot; : 1</span><br><span class="line">        &#125;,</span><br><span class="line">        &#123;</span><br><span class="line">          &quot;key&quot; : &quot;New Mexico&quot;,</span><br><span class="line">          &quot;doc_count&quot; : 1</span><br><span class="line">        &#125;</span><br><span class="line">      ]</span><br><span class="line">    &#125;</span><br></pre></td></tr></table></figure>
+<p>对于常规字段和text字段的keyword,都是直接走doc values的，这个列索引。效率很高，如果需要对这个字段进行桶聚合，那么就要开启fielddata 。</p>
+<p>analyzed字符串的字段，字段分词后占用空间很大，正排索引不能很有效的表示多值字符串，所以正排索引不支持此类字段。</p>
+<p>fielddata结构与正排索引类似，是另外一份数据，构建和管理100%在内存中，并常驻于JVM内存堆，极易引起OOM问题。</p>
+<p>Fielddata 是 <em>延迟</em> 加载。如果你从来没有聚合一个分析字符串，就不会加载 fielddata 到内存中。此外，fielddata 是基于字段加载的， 这意味着只有很活跃地使用字段才会增加 fielddata 的负担。</p>
+<p>实际情况是，fielddata 会加载索引中（针对该特定字段的） <strong>所有的</strong> 文档，而不管查询的特异性。逻辑是这样：如果查询会访问文档 X、Y 和 Z，那很有可能会在下一个查询中访问其他文档。因此会把所有的文档全部加载进来。</p>
+<p>与 doc values 不同，fielddata 结构不会在索引时创建。相反，它是在查询运行时，动态填充。这可能是一个比较复杂的操作，可能需要一些时间。 将所有的信息一次加载，再将其维持在内存中的方式要比反复只加载一个 fielddata 的部分代价要低。</p>
+<p>因此很少使用。</p>
+<p>由于fielddata 使用的是jvm堆内存，因此这里扩展下elasticSearch内存分配以及jvm内存。</p>
+<p>这里参考另外一篇文档<a href="http://wiki.61info.cn/pages/viewpage.action?pageId=17150953" target="_blank" rel="noopener">ElasticSearch 内存配置及其原因</a>里面详细描述了elasticSearch的分配策略以及原理。</p>
+<p><code>indices.fielddata.cache.size</code> 控制为 fielddata 分配的堆空间大小。 当你发起一个查询，如果这些字符串之前没有被加载过，分析字符串的聚合将会被加载到 fielddata，加载过，直接取用，前面说过了，这个是全局加载。</p>
+<p>默认情况下，设置都是 <em>unbounded</em> ，Elasticsearch 永远都不会从 fielddata 中回收数据。</p>
+<p>设想我们正在对日志进行索引，每天使用一个新的索引。通常我们只对过去一两天的数据感兴趣，尽管我们会保留老的索引，但我们很少需要查询它们。不过如果采用默认设置，旧索引的 fielddata 永远不会从缓存中回收！ fieldata 会保持增长直到 fielddata 发生断熔（请参阅 <a href="https://www.elastic.co/guide/cn/elasticsearch/guide/current/_limiting_memory_usage.html#circuit-breaker" target="_blank" rel="noopener">断路器</a>），这样我们就无法载入更多的 fielddata。</p>
+<p>为了防止发生这样的事情，可以通过在 <code>config/elasticsearch.yml</code> 文件中增加配置为 fielddata 设置一个上限：</p>
+<figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="string">indices.fielddata.cache.size:</span>  <span class="number">20</span><span class="string">%</span></span><br></pre></td></tr></table></figure>
+<p>有了这个设置，最久未使用（LRU）的 fielddata 会被回收为新数据腾出空间。</p>
+
+          
+        
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="https://skydh.github.io/2020/06/29/ElasticSearch 分页查询调研/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="skydh">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="learning, progress, future.">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                <a class="post-title-link" href="/2020/06/29/ElasticSearch 分页查询调研/" itemprop="url">未命名</a></h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2020-06-29T08:56:13+08:00">
+                2020-06-29
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            <h1 id="ElasticSearch-聚合查询语法"><a href="#ElasticSearch-聚合查询语法" class="headerlink" title="ElasticSearch 聚合查询语法"></a>ElasticSearch 聚合查询语法</h1><p>参考资料：<a href="https://www.elastic.co/guide/cn/elasticsearch/guide/current/aggregations.html" target="_blank" rel="noopener">https://www.elastic.co/guide/cn/elasticsearch/guide/current/aggregations.html</a></p>
+<p>kinaba地址： <a href="https://kibana-test.61info.com/app/kibana#/dev_tools/console?_g=(" target="_blank" rel="noopener">https://kibana-test.61info.com/app/kibana#/dev_tools/console?_g=(</a>)</p>
+<p>账号密码：elastic/Ela123QAZ</p>
+<p>目标数据：ims_blue_chat_friend/chat_friend</p>
+<h4 id="创建数据"><a href="#创建数据" class="headerlink" title="创建数据"></a>创建数据</h4><p>​    我们先通过模拟的数据来看看有哪些语法。</p>
+<p>​    由于es集群禁止了自动创建索引，我们只能先创建索引。</p>
+<ul>
+<li>创建索引</li>
+</ul>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br></pre></td><td class="code"><pre><span class="line">PUT /test?pretty</span><br><span class="line">&#123;</span><br><span class="line">	&quot;settings&quot;: &#123;</span><br><span class="line">		&quot;number_of_shards&quot;: 3,</span><br><span class="line">		&quot;number_of_replicas&quot;: 2</span><br><span class="line">	&#125;,</span><br><span class="line">&quot;mapping&quot;: &#123;</span><br><span class="line">	&quot;test&quot;: &#123;</span><br><span class="line">		&quot;properties&quot;: &#123;</span><br><span class="line">			&quot;price&quot;: &#123;</span><br><span class="line">				&quot;type&quot;: &quot;text&quot;</span><br><span class="line">			&#125;,</span><br><span class="line">			&quot;color&quot;: &#123;</span><br><span class="line">				&quot;type&quot;: &quot;text&quot;</span><br><span class="line">			&#125;,</span><br><span class="line">			&quot;make&quot;: &#123;</span><br><span class="line">				&quot;type&quot;: &quot;text&quot;</span><br><span class="line">			&#125;,</span><br><span class="line">			&quot;sold&quot;: &#123;</span><br><span class="line">				&quot;type&quot;: &quot;text&quot;</span><br><span class="line">			&#125;</span><br><span class="line">		&#125;</span><br><span class="line">	&#125;</span><br><span class="line">&#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<ul>
+<li><p>新增数据</p>
+<p>批量插入部分数据。</p>
+</li>
+</ul>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line">post /test/test/_bulk</span><br><span class="line">&#123; &quot;index&quot;: &#123;&#125;&#125;</span><br><span class="line">&#123; &quot;price&quot; : 10000, &quot;color&quot; : &quot;red&quot;, &quot;make&quot; : &quot;honda&quot;, &quot;sold&quot; : &quot;2014-10-28&quot; &#125;</span><br><span class="line">&#123; &quot;index&quot;: &#123;&#125;&#125;</span><br><span class="line">&#123; &quot;price&quot; : 20000, &quot;color&quot; : &quot;red&quot;, &quot;make&quot; : &quot;honda&quot;, &quot;sold&quot; : &quot;2014-11-05&quot; &#125;</span><br><span class="line">&#123; &quot;index&quot;: &#123;&#125;&#125;</span><br><span class="line">&#123; &quot;price&quot; : 30000, &quot;color&quot; : &quot;green&quot;, &quot;make&quot; : &quot;ford&quot;, &quot;sold&quot; : &quot;2014-05-18&quot; &#125;</span><br><span class="line">&#123; &quot;index&quot;: &#123;&#125;&#125;</span><br><span class="line">&#123; &quot;price&quot; : 15000, &quot;color&quot; : &quot;blue&quot;, &quot;make&quot; : &quot;toyota&quot;, &quot;sold&quot; : &quot;2014-07-02&quot; &#125;</span><br><span class="line">&#123; &quot;index&quot;: &#123;&#125;&#125;</span><br><span class="line">&#123; &quot;price&quot; : 12000, &quot;color&quot; : &quot;green&quot;, &quot;make&quot; : &quot;toyota&quot;, &quot;sold&quot; : &quot;2014-08-19&quot; &#125;</span><br><span class="line">&#123; &quot;index&quot;: &#123;&#125;&#125;</span><br><span class="line">&#123; &quot;price&quot; : 20000, &quot;color&quot; : &quot;red&quot;, &quot;make&quot; : &quot;honda&quot;, &quot;sold&quot; : &quot;2014-11-05&quot; &#125;</span><br><span class="line">&#123; &quot;index&quot;: &#123;&#125;&#125;</span><br><span class="line">&#123; &quot;price&quot; : 80000, &quot;color&quot; : &quot;red&quot;, &quot;make&quot; : &quot;bmw&quot;, &quot;sold&quot; : &quot;2014-01-01&quot; &#125;</span><br><span class="line">&#123; &quot;index&quot;: &#123;&#125;&#125;</span><br><span class="line">&#123; &quot;price&quot; : 25000, &quot;color&quot; : &quot;blue&quot;, &quot;make&quot; : &quot;ford&quot;, &quot;sold&quot; : &quot;2014-02-12&quot; &#125;</span><br></pre></td></tr></table></figure>
+<h4 id="了解聚合概念"><a href="#了解聚合概念" class="headerlink" title="了解聚合概念"></a>了解聚合概念</h4><ul>
+<li><p>桶（Buckets）</p>
+<p>满足特定条件的文档的集合</p>
+</li>
+<li><p>指标（Metrics）</p>
+<p>对桶内的文档进行统计计算。</p>
+</li>
+</ul>
+<p>​         聚合是由桶和指标组成的。 聚合可能只有一个桶，可能只有一个指标，或者可能两个都有。也有可能有一些桶嵌套在其他桶里面。例如，我们可以通过所属国家来划分文档（桶），然后计算每个国家的平均薪酬（指标）。</p>
+<p>​       另外聚合计算是实时的。一旦文档可以被搜到，它就能被聚合。这也就意味着我们可以直接将聚合的结果源源不断的传入前端，让其动态显示变化。</p>
+<p>​        5.x后对排序，聚合这些操作用单独的数据结构(fielddata)缓存到内存里了，需要单独开启。对哪个字段聚合就要开启哪个字段。比如我就开启了color字段，方便后续的聚合。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">PUT test/_mapping/test/</span><br><span class="line">&#123;</span><br><span class="line">  &quot;properties&quot;: &#123;</span><br><span class="line">    &quot;color&quot;: &#123; </span><br><span class="line">      &quot;type&quot;:     &quot;text&quot;,</span><br><span class="line">      &quot;fielddata&quot;: true</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>根据颜色分组，参考mysql的groupby</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">GET /cars/transactions/_search</span><br><span class="line">&#123;</span><br><span class="line">    &quot;size&quot; : 0,</span><br><span class="line">    &quot;aggs&quot; : &#123; </span><br><span class="line">        &quot;popular_colors&quot; : &#123; </span><br><span class="line">            &quot;terms&quot; : &#123; </span><br><span class="line">              &quot;field&quot; : &quot;color&quot;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>核心结果如下：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line">&quot;aggregations&quot; : &#123;</span><br><span class="line">    &quot;popular_colors&quot; : &#123;</span><br><span class="line">      &quot;doc_count_error_upper_bound&quot; : 0,</span><br><span class="line">      &quot;sum_other_doc_count&quot; : 0,</span><br><span class="line">      &quot;buckets&quot; : [</span><br><span class="line">        &#123;</span><br><span class="line">          &quot;key&quot; : &quot;red&quot;,</span><br><span class="line">          &quot;doc_count&quot; : 4</span><br><span class="line">        &#125;,</span><br><span class="line">        &#123;</span><br><span class="line">          &quot;key&quot; : &quot;blue&quot;,</span><br><span class="line">          &quot;doc_count&quot; : 2</span><br><span class="line">        &#125;,</span><br><span class="line">        &#123;</span><br><span class="line">          &quot;key&quot; : &quot;green&quot;,</span><br><span class="line">          &quot;doc_count&quot; : 2</span><br><span class="line">        &#125;</span><br><span class="line">      ]</span><br><span class="line">    &#125;</span><br></pre></td></tr></table></figure>
+<p>对桶内的数据计算一下。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line">GET /test/test/_search</span><br><span class="line">&#123;</span><br><span class="line">   &quot;size&quot; : 0,</span><br><span class="line">   &quot;aggs&quot;: &#123;</span><br><span class="line">      &quot;colors&quot;: &#123;</span><br><span class="line">         &quot;terms&quot;: &#123;</span><br><span class="line">            &quot;field&quot;: &quot;color&quot;</span><br><span class="line">         &#125;,</span><br><span class="line">         &quot;aggs&quot;: &#123; </span><br><span class="line">            &quot;avg_price&quot;: &#123; </span><br><span class="line">               &quot;avg&quot;: &#123;</span><br><span class="line">                  &quot;field&quot;: &quot;price&quot; </span><br><span class="line">               &#125;</span><br><span class="line">            &#125;</span><br><span class="line">         &#125;</span><br><span class="line">      &#125;</span><br><span class="line">   &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>结果如下：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br></pre></td><td class="code"><pre><span class="line">&quot;aggregations&quot; : &#123;</span><br><span class="line">   &quot;colors&quot; : &#123;</span><br><span class="line">     &quot;doc_count_error_upper_bound&quot; : 0,</span><br><span class="line">     &quot;sum_other_doc_count&quot; : 0,</span><br><span class="line">     &quot;buckets&quot; : [</span><br><span class="line">       &#123;</span><br><span class="line">         &quot;key&quot; : &quot;red&quot;,</span><br><span class="line">         &quot;doc_count&quot; : 4,</span><br><span class="line">         &quot;avg_price&quot; : &#123;</span><br><span class="line">           &quot;value&quot; : 32500.0</span><br><span class="line">         &#125;</span><br><span class="line">       &#125;,</span><br><span class="line">       &#123;</span><br><span class="line">         &quot;key&quot; : &quot;blue&quot;,</span><br><span class="line">         &quot;doc_count&quot; : 2,</span><br><span class="line">         &quot;avg_price&quot; : &#123;</span><br><span class="line">           &quot;value&quot; : 20000.0</span><br><span class="line">         &#125;</span><br><span class="line">       &#125;,</span><br><span class="line">       &#123;</span><br><span class="line">         &quot;key&quot; : &quot;green&quot;,</span><br><span class="line">         &quot;doc_count&quot; : 2,</span><br><span class="line">         &quot;avg_price&quot; : &#123;</span><br><span class="line">           &quot;value&quot; : 21000.0</span><br><span class="line">         &#125;</span><br><span class="line">       &#125;</span><br><span class="line">     ]</span><br><span class="line">   &#125;</span><br></pre></td></tr></table></figure>
+<p>希望求出每个颜色里面制造厂商的分布情况，那就里面在嵌套一个桶。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line">GET /test/test/_search</span><br><span class="line">&#123;</span><br><span class="line">   &quot;size&quot; : 0,</span><br><span class="line">   &quot;aggs&quot;: &#123;</span><br><span class="line">      &quot;colors&quot;: &#123;</span><br><span class="line">         &quot;terms&quot;: &#123;</span><br><span class="line">            &quot;field&quot;: &quot;color&quot;</span><br><span class="line">         &#125;,</span><br><span class="line">         &quot;aggs&quot;: &#123;</span><br><span class="line">            &quot;avg_price&quot;: &#123; </span><br><span class="line">               &quot;avg&quot;: &#123;</span><br><span class="line">                  &quot;field&quot;: &quot;price&quot;</span><br><span class="line">               &#125;</span><br><span class="line">            &#125;,</span><br><span class="line">            &quot;make&quot;: &#123; </span><br><span class="line">                &quot;terms&quot;: &#123;</span><br><span class="line">                    &quot;field&quot;: &quot;make&quot; </span><br><span class="line">                &#125;</span><br><span class="line">            &#125;</span><br><span class="line">         &#125;</span><br><span class="line">      &#125;</span><br><span class="line">   &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>结果如下</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br></pre></td><td class="code"><pre><span class="line">&quot;aggregations&quot; : &#123;</span><br><span class="line">   &quot;colors&quot; : &#123;</span><br><span class="line">     &quot;doc_count_error_upper_bound&quot; : 0,</span><br><span class="line">     &quot;sum_other_doc_count&quot; : 0,</span><br><span class="line">     &quot;buckets&quot; : [</span><br><span class="line">       &#123;</span><br><span class="line">         &quot;key&quot; : &quot;red&quot;,</span><br><span class="line">         &quot;doc_count&quot; : 4,</span><br><span class="line">         &quot;avg_price&quot; : &#123;</span><br><span class="line">           &quot;value&quot; : 32500.0</span><br><span class="line">         &#125;,</span><br><span class="line">         &quot;make&quot; : &#123;</span><br><span class="line">           &quot;doc_count_error_upper_bound&quot; : 0,</span><br><span class="line">           &quot;sum_other_doc_count&quot; : 0,</span><br><span class="line">           &quot;buckets&quot; : [</span><br><span class="line">             &#123;</span><br><span class="line">               &quot;key&quot; : &quot;honda&quot;,</span><br><span class="line">               &quot;doc_count&quot; : 3</span><br><span class="line">             &#125;,</span><br><span class="line">             &#123;</span><br><span class="line">               &quot;key&quot; : &quot;bmw&quot;,</span><br><span class="line">               &quot;doc_count&quot; : 1</span><br><span class="line">             &#125;</span><br><span class="line">           ]</span><br><span class="line">         &#125;</span><br><span class="line">       &#125;,</span><br><span class="line">       ......</span><br></pre></td></tr></table></figure>
+<p>条形图</p>
+<p>这个关键字histogram，这个关键字要求字段必须是数值类型，然后interval定义了区间，然后可以在加几个指标，来获取这个区间的信息，比如最大值，最小值，和，平均值巴拉巴拉的。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line">GET /test/test/_search</span><br><span class="line">&#123;</span><br><span class="line">   &quot;size&quot; : 0,</span><br><span class="line">   &quot;aggs&quot;:&#123;</span><br><span class="line">      &quot;pricesss&quot;:&#123;</span><br><span class="line">         &quot;histogram&quot;:&#123; </span><br><span class="line">            &quot;field&quot;: &quot;price&quot;,</span><br><span class="line">            &quot;interval&quot;: 20000</span><br><span class="line">         &#125;,</span><br><span class="line">         &quot;aggs&quot;:&#123;</span><br><span class="line">            &quot;revenue&quot;: &#123;</span><br><span class="line">               &quot;max&quot;: &#123; </span><br><span class="line">                 &quot;field&quot; : &quot;price&quot;</span><br><span class="line">               &#125;</span><br><span class="line">             &#125;</span><br><span class="line">         &#125;</span><br><span class="line">      &#125;</span><br><span class="line">   &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>结果如下：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br></pre></td><td class="code"><pre><span class="line">&quot;aggregations&quot; : &#123;</span><br><span class="line">    &quot;pricesss&quot; : &#123;</span><br><span class="line">      &quot;buckets&quot; : [</span><br><span class="line">        &#123;</span><br><span class="line">          &quot;key&quot; : 0.0,</span><br><span class="line">          &quot;doc_count&quot; : 3,</span><br><span class="line">          &quot;revenue&quot; : &#123;</span><br><span class="line">            &quot;value&quot; : 15000.0</span><br><span class="line">          &#125;</span><br><span class="line">        &#125;,</span><br><span class="line">        &#123;</span><br><span class="line">          &quot;key&quot; : 20000.0,</span><br><span class="line">          &quot;doc_count&quot; : 4,</span><br><span class="line">          &quot;revenue&quot; : &#123;</span><br><span class="line">            &quot;value&quot; : 30000.0</span><br><span class="line">          &#125;</span><br><span class="line">        &#125;,</span><br><span class="line">        &#123;</span><br><span class="line">          &quot;key&quot; : 40000.0,</span><br><span class="line">          &quot;doc_count&quot; : 0,</span><br><span class="line">          &quot;revenue&quot; : &#123;</span><br><span class="line">            &quot;value&quot; : null</span><br><span class="line">          &#125;</span><br><span class="line">        &#125;,</span><br><span class="line">        &#123;</span><br><span class="line">          &quot;key&quot; : 60000.0,</span><br><span class="line">          &quot;doc_count&quot; : 0,</span><br><span class="line">          &quot;revenue&quot; : &#123;</span><br><span class="line">            &quot;value&quot; : null</span><br><span class="line">          &#125;</span><br><span class="line">        &#125;,</span><br><span class="line">        &#123;</span><br><span class="line">          &quot;key&quot; : 80000.0,</span><br><span class="line">          &quot;doc_count&quot; : 1,</span><br><span class="line">          &quot;revenue&quot; : &#123;</span><br><span class="line">            &quot;value&quot; : 80000.0</span><br><span class="line">          &#125;</span><br><span class="line">        &#125;</span><br><span class="line">      ]</span><br><span class="line">    &#125;</span><br></pre></td></tr></table></figure>
+<p>根据时间来聚合数据，首先命名为sales，然后使用关键字date_histogram，选择字段，和时间粒度即可。中间没有的月份也会显示，只是数目为0。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">GET /test/test/_search</span><br><span class="line">&#123;</span><br><span class="line">   &quot;size&quot; : 0,</span><br><span class="line">   &quot;aggs&quot;: &#123;</span><br><span class="line">      &quot;sales&quot;: &#123;</span><br><span class="line">         &quot;date_histogram&quot;: &#123;</span><br><span class="line">            &quot;field&quot;: &quot;sold&quot;,</span><br><span class="line">            &quot;interval&quot;: &quot;year&quot;, </span><br><span class="line">            &quot;format&quot;: &quot;yyyy-MM-dd&quot; </span><br><span class="line">         &#125;</span><br><span class="line">      &#125;</span><br><span class="line">   &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>结果如下：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line">&quot;aggregations&quot; : &#123;</span><br><span class="line">   &quot;sales&quot; : &#123;</span><br><span class="line">     &quot;buckets&quot; : [</span><br><span class="line">       &#123;</span><br><span class="line">         &quot;key_as_string&quot; : &quot;2014-01-01&quot;,</span><br><span class="line">         &quot;key&quot; : 1388534400000,</span><br><span class="line">         &quot;doc_count&quot; : 1</span><br><span class="line">       &#125;,</span><br><span class="line">       &#123;</span><br><span class="line">         &quot;key_as_string&quot; : &quot;2014-02-01&quot;,</span><br><span class="line">         &quot;key&quot; : 1391212800000,</span><br><span class="line">         &quot;doc_count&quot; : 1</span><br><span class="line">       &#125;,</span><br><span class="line">       &#123;</span><br><span class="line">         &quot;key_as_string&quot; : &quot;2014-03-01&quot;,</span><br><span class="line">         &quot;key&quot; : 1393632000000,</span><br><span class="line">         &quot;doc_count&quot; : 0</span><br><span class="line">       &#125;,</span><br><span class="line">       &#123;</span><br><span class="line">         &quot;key_as_string&quot; : &quot;2014-04-01&quot;,</span><br><span class="line">         &quot;key&quot; : 1396310400000,</span><br><span class="line">         &quot;doc_count&quot; : 0</span><br><span class="line">       &#125;,</span><br><span class="line">       ......</span><br></pre></td></tr></table></figure>
+<p>另外由于elasticSearch版本差异太大，2.x版本<code>date_histogram</code>  ，<code>histogram</code> 时间聚合和数值聚合返回的buckets是没有空值的，也就是某个月份数据为0或者某个区间值为0，那么返回值里面是没有的（当然可以设置参数让其有），但是目前线上版本是6.x的，默认已经有空值了</p>
+<p>下面来一个复杂的聚合，我来解释下其逻辑。</p>
+<ul>
+<li>首先根据每个季度创建一个桶，然后在每个桶里面在进行聚合计算。</li>
+<li>在季度每个桶里面第一个指标算出，这个季度一共卖了多少钱。</li>
+<li>在季度这个桶里面再根据制造厂商创建桶，同时计算出每个厂商卖了多少钱。</li>
+</ul>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br></pre></td><td class="code"><pre><span class="line">GET /test/test/_search</span><br><span class="line">&#123;</span><br><span class="line">   &quot;size&quot; : 0,</span><br><span class="line">   &quot;aggs&quot;: &#123;</span><br><span class="line">      &quot;sales&quot;: &#123;</span><br><span class="line">         &quot;date_histogram&quot;: &#123;</span><br><span class="line">            &quot;field&quot;: &quot;sold&quot;,</span><br><span class="line">            &quot;interval&quot;: &quot;quarter&quot;, </span><br><span class="line">            &quot;format&quot;: &quot;yyyy-MM-dd&quot;</span><br><span class="line">         &#125;,</span><br><span class="line">         &quot;aggs&quot;: &#123;</span><br><span class="line">            &quot;per_make_sum&quot;: &#123;</span><br><span class="line">               &quot;terms&quot;: &#123;</span><br><span class="line">                  &quot;field&quot;: &quot;make&quot;</span><br><span class="line">               &#125;,</span><br><span class="line">               &quot;aggs&quot;: &#123;</span><br><span class="line">                  &quot;sum_price&quot;: &#123;</span><br><span class="line">                     &quot;sum&quot;: &#123; &quot;field&quot;: &quot;price&quot; &#125; </span><br><span class="line">                  &#125;</span><br><span class="line">               &#125;</span><br><span class="line">            &#125;,</span><br><span class="line">            &quot;total_sum&quot;: &#123;</span><br><span class="line">               &quot;sum&quot;: &#123; &quot;field&quot;: &quot;price&quot; &#125; </span><br><span class="line">            &#125;</span><br><span class="line">         &#125;</span><br><span class="line">      &#125;</span><br><span class="line">   &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>这是一个稍微复杂点的聚合逻辑，理解了他基本也就理解了全部的概念</p>
+<p>结果如下：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br></pre></td><td class="code"><pre><span class="line">&quot;aggregations&quot; : &#123;</span><br><span class="line">    &quot;sales&quot; : &#123;</span><br><span class="line">      &quot;buckets&quot; : [</span><br><span class="line">        &#123;</span><br><span class="line">          &quot;key_as_string&quot; : &quot;2014-01-01&quot;,</span><br><span class="line">          &quot;key&quot; : 1388534400000,</span><br><span class="line">          &quot;doc_count&quot; : 2,</span><br><span class="line">          &quot;per_make_sum&quot; : &#123;</span><br><span class="line">            &quot;doc_count_error_upper_bound&quot; : 0,</span><br><span class="line">            &quot;sum_other_doc_count&quot; : 0,</span><br><span class="line">            &quot;buckets&quot; : [</span><br><span class="line">              &#123;</span><br><span class="line">                &quot;key&quot; : &quot;bmw&quot;,</span><br><span class="line">                &quot;doc_count&quot; : 1,</span><br><span class="line">                &quot;sum_price&quot; : &#123;</span><br><span class="line">                  &quot;value&quot; : 80000.0</span><br><span class="line">                &#125;</span><br><span class="line">              &#125;,</span><br><span class="line">              &#123;</span><br><span class="line">                &quot;key&quot; : &quot;ford&quot;,</span><br><span class="line">                &quot;doc_count&quot; : 1,</span><br><span class="line">                &quot;sum_price&quot; : &#123;</span><br><span class="line">                  &quot;value&quot; : 25000.0</span><br><span class="line">                &#125;</span><br><span class="line">              &#125;</span><br><span class="line">            ]</span><br><span class="line">          &#125;,</span><br><span class="line">          &quot;total_sum&quot; : &#123;</span><br><span class="line">            &quot;value&quot; : 105000.0</span><br><span class="line">          &#125;</span><br><span class="line">        &#125;,</span><br><span class="line">        &#123;</span><br><span class="line">          &quot;key_as_string&quot; : &quot;2014-04-01&quot;,</span><br><span class="line">          &quot;key&quot; : 1396310400000,</span><br><span class="line">          &quot;doc_count&quot; : 1,</span><br><span class="line">          &quot;per_make_sum&quot; : &#123;</span><br><span class="line">            &quot;doc_count_error_upper_bound&quot; : 0,</span><br><span class="line">            &quot;sum_other_doc_count&quot; : 0,</span><br><span class="line">            &quot;buckets&quot; : [</span><br><span class="line">              &#123;</span><br><span class="line">                &quot;key&quot; : &quot;ford&quot;,</span><br><span class="line">                &quot;doc_count&quot; : 1,</span><br><span class="line">                &quot;sum_price&quot; : &#123;</span><br><span class="line">                  &quot;value&quot; : 30000.0</span><br><span class="line">                &#125;</span><br><span class="line">              &#125;</span><br><span class="line">            ]</span><br><span class="line">          &#125;,</span><br><span class="line">          &quot;total_sum&quot; : &#123;</span><br><span class="line">            &quot;value&quot; : 30000.0</span><br><span class="line">          &#125;</span><br><span class="line">        &#125;,</span><br><span class="line">        &#123;</span><br><span class="line">          &quot;key_as_string&quot; : &quot;2014-07-01&quot;,</span><br><span class="line">          &quot;key&quot; : 1404172800000,</span><br><span class="line">          &quot;doc_count&quot; : 2,</span><br><span class="line">          &quot;per_make_sum&quot; : &#123;</span><br><span class="line">            &quot;doc_count_error_upper_bound&quot; : 0,</span><br><span class="line">            &quot;sum_other_doc_count&quot; : 0,</span><br><span class="line">            &quot;buckets&quot; : [</span><br><span class="line">              &#123;</span><br><span class="line">                &quot;key&quot; : &quot;toyota&quot;,</span><br><span class="line">                &quot;doc_count&quot; : 2,</span><br><span class="line">                &quot;sum_price&quot; : &#123;</span><br><span class="line">                  &quot;value&quot; : 27000.0</span><br><span class="line">                &#125;</span><br><span class="line">              &#125;</span><br><span class="line">            ]</span><br><span class="line">          &#125;,</span><br><span class="line">          &quot;total_sum&quot; : &#123;</span><br><span class="line">            &quot;value&quot; : 27000.0</span><br><span class="line">          &#125;</span><br><span class="line">        &#125;,</span><br><span class="line">        ......</span><br></pre></td></tr></table></figure>
+<p>我们可以将查询和聚合一起来使用，前面的聚合查询基本都相当于加了</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">&quot;query&quot; : &#123;</span><br><span class="line">       &quot;match&quot; : &#123;</span><br><span class="line">           &quot;make&quot; : &quot;ford&quot;</span><br><span class="line">       &#125;</span><br><span class="line">   &#125;</span><br></pre></td></tr></table></figure>
+<p>下面是个简单例子，是聚合和查询集合的例子。查出ford厂商的卖的车的颜色聚合。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line">GET /test/test/_search</span><br><span class="line">&#123;</span><br><span class="line">    &quot;query&quot; : &#123;</span><br><span class="line">        &quot;match&quot; : &#123;</span><br><span class="line">            &quot;make&quot; : &quot;ford&quot;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;,</span><br><span class="line">    &quot;aggs&quot; : &#123;</span><br><span class="line">        &quot;colors&quot; : &#123;</span><br><span class="line">            &quot;terms&quot; : &#123;</span><br><span class="line">              &quot;field&quot; : &quot;color&quot;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>我们不仅可以在查询条件内做聚合，还可以全局聚合，同时使用，用法是关键字all</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line">GET /test/test/_search</span><br><span class="line">&#123;</span><br><span class="line">    &quot;size&quot; : 0,</span><br><span class="line">    &quot;query&quot; : &#123;</span><br><span class="line">        &quot;match&quot; : &#123;</span><br><span class="line">            &quot;make&quot; : &quot;ford&quot;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;,</span><br><span class="line">    &quot;aggs&quot; : &#123;</span><br><span class="line">        &quot;single_avg_price&quot;: &#123;</span><br><span class="line">            &quot;avg&quot; : &#123; &quot;field&quot; : &quot;price&quot; &#125; </span><br><span class="line">        &#125;,</span><br><span class="line">        &quot;all&quot;: &#123;</span><br><span class="line">            &quot;global&quot; : &#123;&#125;, </span><br><span class="line">            &quot;aggs&quot; : &#123;</span><br><span class="line">                &quot;avg_price&quot;: &#123;</span><br><span class="line">                    &quot;avg&quot; : &#123; &quot;field&quot; : &quot;price&quot; &#125; </span><br><span class="line">                &#125;</span><br><span class="line"></span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>结果如下：算出了查询值得平均值，还算出了全部文档的平均值。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">&quot;aggregations&quot; : &#123;</span><br><span class="line">   &quot;all&quot; : &#123;</span><br><span class="line">     &quot;doc_count&quot; : 8,</span><br><span class="line">     &quot;avg_price&quot; : &#123;</span><br><span class="line">       &quot;value&quot; : 26500.0</span><br><span class="line">     &#125;</span><br><span class="line">   &#125;,</span><br><span class="line">   &quot;single_avg_price&quot; : &#123;</span><br><span class="line">     &quot;value&quot; : 27500.0</span><br><span class="line">   &#125;</span><br><span class="line"> &#125;</span><br></pre></td></tr></table></figure>
+<p>聚合也可以和过滤一起使用。比如这个语句查出大于15000销售额的平均值。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line">GET /test/test/_search</span><br><span class="line">&#123;</span><br><span class="line">    </span><br><span class="line">    &quot;query&quot; : &#123;</span><br><span class="line">        &quot;constant_score&quot;: &#123;</span><br><span class="line">            &quot;filter&quot;: &#123;</span><br><span class="line">                &quot;range&quot;: &#123;</span><br><span class="line">                    &quot;price&quot;: &#123;</span><br><span class="line">                        &quot;gte&quot;: 15000</span><br><span class="line">                    &#125;</span><br><span class="line">                &#125;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;,</span><br><span class="line">    &quot;aggs&quot; : &#123;</span><br><span class="line">        &quot;single_avg_price&quot;: &#123;</span><br><span class="line">            &quot;avg&quot; : &#123; &quot;field&quot; : &quot;price&quot; &#125;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>结果如下：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">&quot;aggregations&quot; : &#123;</span><br><span class="line">    &quot;single_avg_price&quot; : &#123;</span><br><span class="line">      &quot;value&quot; : 31666.666666666668</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br></pre></td></tr></table></figure>
+<p>过滤桶，对聚合结果过滤。</p>
+<p>先选出ford厂商的车，然后在这个结果里面再进行过滤选出上个月的数据。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br></pre></td><td class="code"><pre><span class="line">GET /test/test/_search</span><br><span class="line">&#123;</span><br><span class="line">   &quot;size&quot; : 0,</span><br><span class="line">   &quot;query&quot;:&#123;</span><br><span class="line">      &quot;match&quot;: &#123;</span><br><span class="line">         &quot;make&quot;: &quot;ford&quot;</span><br><span class="line">      &#125;</span><br><span class="line">   &#125;,</span><br><span class="line">   &quot;aggs&quot;:&#123;</span><br><span class="line">      &quot;recent_sales&quot;: &#123;</span><br><span class="line">         &quot;filter&quot;: &#123; </span><br><span class="line">            &quot;range&quot;: &#123;</span><br><span class="line">               &quot;sold&quot;: &#123;</span><br><span class="line">                  &quot;from&quot;: &quot;now-1M&quot;</span><br><span class="line">               &#125;</span><br><span class="line">            &#125;</span><br><span class="line">         &#125;,</span><br><span class="line">         &quot;aggs&quot;: &#123;</span><br><span class="line">            &quot;average_price&quot;:&#123;</span><br><span class="line">               &quot;avg&quot;: &#123;</span><br><span class="line">                  &quot;field&quot;: &quot;price&quot; </span><br><span class="line">               &#125;</span><br><span class="line">            &#125;</span><br><span class="line">         &#125;</span><br><span class="line">      &#125;</span><br><span class="line">   &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>有一种做法，先查询，然后聚合，再过滤一部分数据，这个过滤不能影响聚合。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line">GET /test/test/_search</span><br><span class="line">&#123;</span><br><span class="line"> </span><br><span class="line">    &quot;query&quot;: &#123;</span><br><span class="line">        &quot;match&quot;: &#123;</span><br><span class="line">            &quot;make&quot;: &quot;ford&quot;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;,</span><br><span class="line">    &quot;post_filter&quot;: &#123;    </span><br><span class="line">        &quot;term&quot; : &#123;</span><br><span class="line">            &quot;color&quot; : &quot;green&quot;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;,</span><br><span class="line">    &quot;aggs&quot; : &#123;</span><br><span class="line">        &quot;all_colors&quot;: &#123;</span><br><span class="line">            &quot;terms&quot; : &#123; &quot;field&quot; : &quot;color&quot; &#125;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>上面的聚合可以不断嵌套聚合。从而组合成更加复杂的结果</p>
+<p>排序的话，下面这个技巧很有意思，可以参考了解下，业务中很有可能用的到。</p>
+<ul>
+<li>先根据颜色分组，然后算出每一组的平均值，然后再根据平均值排序。</li>
+</ul>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line">GET /cars/transactions/_search</span><br><span class="line">&#123;</span><br><span class="line">    &quot;size&quot; : 0,</span><br><span class="line">    &quot;aggs&quot; : &#123;</span><br><span class="line">        &quot;colors&quot; : &#123;</span><br><span class="line">            &quot;terms&quot; : &#123;</span><br><span class="line">              &quot;field&quot; : &quot;color&quot;,</span><br><span class="line">              &quot;order&quot;: &#123;</span><br><span class="line">                &quot;avg_price&quot; : &quot;asc&quot; </span><br><span class="line">              &#125;</span><br><span class="line">            &#125;,</span><br><span class="line">            &quot;aggs&quot;: &#123;</span><br><span class="line">                &quot;avg_price&quot;: &#123;</span><br><span class="line">                    &quot;avg&quot;: &#123;&quot;field&quot;: &quot;price&quot;&#125; </span><br><span class="line">                &#125;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>统计唯一值</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">GET /test/test/_search</span><br><span class="line">&#123;</span><br><span class="line">    &quot;size&quot; : 0,</span><br><span class="line">    &quot;aggs&quot; : &#123;</span><br><span class="line">        &quot;distinct_colors&quot; : &#123;</span><br><span class="line">            &quot;cardinality&quot; : &#123;</span><br><span class="line">              &quot;field&quot; : &quot;color&quot;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>这个是统计颜色的种类，es使用了cardinality算法，也就是 <a href="http://static.googleusercontent.com/media/research.google.com/en//pubs/archive/40671.pdf" target="_blank" rel="noopener">HyperLogLog++</a> 算法做的，他不需要统计全部的数据，然后汇总计算，有误差，但是可以接受，性能可以。</p>
+<p>如果统计唯一值得时候对速度要求很高，这块可以优化，参考：<a href="https://www.elastic.co/guide/cn/elasticsearch/guide/current/cardinality.html。就是给这些字段建立索引。" target="_blank" rel="noopener">https://www.elastic.co/guide/cn/elasticsearch/guide/current/cardinality.html。就是给这些字段建立索引。</a></p>
+
+          
+        
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
     <link itemprop="mainEntityOfPage" href="https://skydh.github.io/2020/03/25/java线程，线程池，juc系列/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -462,14 +1076,22 @@ S0C    S1C    S0U    S1U      EC       EU        OC         OU       MC     MU  
 <p>  3.psi-probe<br>  先下载probe这个项目源码，然后打包，将其war包放入到tomcat的webapp下面，即可，启动tomcat即可。tomcat的配置和上面一样。</p>
 <p>  4,tomcat优化<br>  1，内存优化<br>  2，线程优化<br>  主要需要配置maxConnections最大连接数。acceptCount：连接满了之后的新的连接进入队列，超出队列，则拒绝请求。maxThread:工作线程数，和cpu相关…<br>  3.配置优化<br>  autoDeploy,周期性检查是否有新的应用加了进来，但是会浪费一个线程资源。默认为true，建议为false.<br>  enableLookups:开启后会对请求做一个dns查询，浪费性能。<br>  reloadable:监控web-inf/classes和web-inf/lib目录，浪费性能。默认没有开启。<br>  还有设置协议为nio,<br>  还可以禁用session，存到redis里面。</p>
 <h1 id="nginx"><a href="#nginx" class="headerlink" title="nginx"></a>nginx</h1><p>   可以通过ngxtop,动态查看访问最多的ip,访问最多的返回码等信息。<br>   Mginx-rrd是个图形化工具，这个工具统计的信息可能滞后，因为它是通过定时器来统计的。<br>   优化：<br>   增加工作线程，增加并发连接数，默认是一个工作线程，1024个连接。<br>   一般多少个cpu，就多少个工作线程，启用epoll网络模型。<br>   启用长连接。浏览器和nginx之间是有长连接的，但是Nginx和后端服务之间是没有长连接的，需要配置。<br>   启用缓存，压缩。<br>   操作系统优化。</p>
-<h1 id="jvm调优"><a href="#jvm调优" class="headerlink" title="jvm调优"></a>jvm调优</h1><p>jvm内存结构<br>程序计数器：这个就是线程私有的，存放的是线程正在执行指令的地址。<br>java虚拟机栈：线程私有的，生命周期和线程一样，里面的元素是栈帧，每一个栈帧的入栈到出栈意味着一个方法的执行调用和结束。栈帧存放的是方法的局部变量表，返回值信息，方法出口灯<br>java堆，分为新生代，老年代，线程共享的，每一个实例都是在堆里面分配内存的。<br>java方法区，线程公有的，存放，常量。被虚拟机加载的类信息，编译器编译后的代码。（运行时常量池：各种常量信息，在类加载后放进去存放。）</p>
+<h1 id="jvm调优"><a href="#jvm调优" class="headerlink" title="jvm调优"></a>jvm调优</h1><p>运行时数据区（这是一个规范）</p>
+<p>jvm内存结构<br>程序计数器：这个就是线程私有的，存放的是线程正在执行指令的地址。<br>java虚拟机栈：线程私有的，生命周期和线程一样，里面的元素是栈帧，每一个栈帧的入栈到出栈意味着一个方法的执行调用和结束。栈帧存放的是方法的局部变量表，返回值信息，方法出口灯<br>java堆，分为新生代，老年代，线程共享的，每一个实例都是在堆里面分配内存的。<br>java方法区，线程公有的，存放，常量。被虚拟机加载的类信息，编译器编译后的代码。（运行时常量池：各种常量信息，在类加载后放进去存放。）</p>
+<p>上面的是java虚拟机规范的jvm内存结构</p>
+<p>下面是实际的jvm内存结构（实现）</p>
+<p>堆：和上面的一样</p>
+<p>非堆区（metaspace）</p>
+<p>存放字节码文件，class，package,method,常量池，符号引用。</p>
+<p>ccs：压缩类空间，只有你启用了这个才会存在（java堆中每个对象都有一个指针指向自己的Class,因为在64位虚拟机下面，每个指针64位长度，为了压缩，采用32位，那么数据就会存到ccs里面）</p>
+<p>codeCache：jit即时编译的代码，jvm执行的本地代码。如果没有采用jit，没有使用native方法，那么就是空的。</p>
 <p>ps：java本地代码，就是采用编译方式启动java进程，然后代码会被jit编译为机器码，放入到metaspace里面</p>
 <p>判断对象是否回收的算法<br>可达性分析算法，从根节点到这个对象是否可达。<br>根节点很多：类加载器，Thread，虚拟机栈的本地变量表，常量应用，垃圾回收的时候，通过这些根节点来进行可达性分析。</p>
 <p>垃圾回收算法<br> 标记-清除：做可达性分析之后，标记所有可回收的对象，标记完成后统一回收。缺点效率不高，产生大量内存碎片。<br>复制算法，吧内存划分为大小一样的2块，每次使用其中一块，当其中一块无法分配内存后，进行垃圾回收，吧可达的对象复制到另外一块上，再把这块用的空间一次性清除。<br>优点，简单高效<br>缺点，内存利用不高<br>标记-整理。先判断哪些对象是可达的，然后统一向一端移动，然后清除掉边界外单位内存<br>相对于标记清除，少了内存碎片，但是更加耗时。</p>
 <p>一般来说，yong区使用复制算法，old区采用标记清除或者标记整理算法。</p>
 <p>对象分配：<br>对象优先分配到Eden区，大对象直接到老年代，存活时间长的对象进入老年代。</p>
-<p>垃圾回收器<br>串行收集器Serial:Serial,Serial Old，单线程的垃圾回收器。当内存不够时，虚拟机会启动一个单线程的垃圾回收器。<br>并行收集器Parallel: Prallel Scavenge,Parallel Old,吞吐量<br>并行：指多条垃圾回收线程并行工作，用户线程仍然处于等待状态。适合科学计算，后台处理等弱交互场景，</p>
-<p>并发收集器Concurrent:CMS,G1,停顿时间。</p>
+<p>垃圾回收器<br>串行收集器Serial:Serial,Serial Old，单线程的垃圾回收器。当内存不够时，虚拟机会启动一个单线程的垃圾回收器。<br>并行收集器Parallel: Prallel Scavenge,Parallel Old,吞吐量优先<br>并行：指多条垃圾回收线程并行工作，用户线程仍然处于等待状态。适合科学计算，后台处理等弱交互场景，</p>
+<p>并发收集器Concurrent:CMS,G1,停顿时间短优先。</p>
 <p>并发：指多条垃圾回收线程和用户线程并行，也许是交替进行，垃圾回收的时候不会停止用户程序的运行，适合web，对相应时间有要求的应用</p>
 <p>停顿时间：垃圾收集器做垃圾回收中断应用执行的时间。XX:MaxGCPauseMillis</p>
 <p>吞吐量：花在垃圾回收的时间和花在应用时间的占比-XXGCRimeRatio=<n>,垃圾收集时间栈：1/1+n</n></p>
@@ -485,13 +1107,12 @@ S0C    S1C    S0U    S1U      EC       EU        OC         OU       MC     MU  
 <p>CMS并发<br>低停顿，低延迟<br>老年代</p>
 <p>收集过程。<br>1，初始标记，标记GCroot，这个过程需要停止应用程序。<br>2，并发标记。<br>3，并发预处理<br>4，重新标记，也是需要停止应用的，<br>5，并发清除<br>6，并发重置 </p>
 <p>缺点，cpu敏感，浮动垃圾，空间碎片。标记清除算法。</p>
-<p>CMS参数优化<br>-XX:ConcGCThreads,并发的GC线程数<br>-XX:+UseCMSCompactAtFullCollection：fullGC之后会做压缩，减少内存碎片。<br>可视化GC日志分析工具<br>-XX:CMSFullGCsBeforCompaction:多少次FullGC之后压缩一次。<br>-XX:CMSInitiatingOccupancyFraction:触发FullGC,老年代占了多少比例后会触发这个fullGC，92%<br>-XX：+CMSScavengeBeforRemark:fullGC之前先做YGC。</p>
+<p>CMS参数优化<br>-XX:ConcGCThreads,并发的GC线程数<br>-XX:+UseCMSCompactAtFullCollection：fullGC之后会做压缩，减少内存碎片。<br>可视化GC日志分析工具<br>-XX:CMSFullGCsBeforCompaction:多少次FullGC之后压缩一次。<br>-XX:CMSInitiatingOccupancyFraction:触发FullGC,老年代空间使用了多少比例后会触发这个fullGC，92%<br>-XX：+CMSScavengeBeforRemark:fullGC之前先做YGC。</p>
 <p>G1垃圾回收器<br>大内存，小停顿，同时是新生代和老年代。<br>G1里面没有物理意义的新生代和老年代，他是一个个的region，多个region构成了逻辑上的新生代和老年代。<br>StaB,GC开始的时候存活对象的快照。<br>RSet：记录了其他region里面引用了本region对象的关系。<br>G1 YoungGC<br>新生代进入Eden区<br>存活对象进入su区<br>存活时间长的对象进入Old区。<br>和其他一样</p>
-<p>没有fuLLGC 只有MixedGC<br>回收Young区和部分Old区。</p>
+<p>没有fuLLGC 只有MixedGC<br>回收Young区和部分Old区。不是回收全部的old区。</p>
 <p>global concurent marking（全局标记）<br>1,标记GC root,stw<br>2，标记存活Region<br>3.标记存活对象。<br>4.重新标记，stw<br>5.部分stw</p>
-<p>MixGC时机</p>
 <p>根据参数来设定，InitiatingHeapOccupancyPercent,默认45%，就会触发global concurent marking</p>
-<p>G1HeapWastePercent<br>再global concurent marking之后，我们可以判断有多少对象需要回收，在每次YGC之后，和MixEdGC之前，会检查参数是否达到了，如果达到了就会MixedGC</p>
+<p>G1HeapWastePercent默认5%。<br>再global concurent marking之后，我们可以判断有多少对象需要回收，也就是说要判断要回收的对象是否超过了5%，如果超过了就要回收。在每次YGC之后和Mixed GC之前，会检查参数是否达到了这个值，如果达到了就会MixedGC</p>
 <p>是否需要切换到G1<br>1.50%堆被存活对象占用<br>2，对象分配速度快<br>3，垃圾回收时间长</p>
 <p>GC日志简析<br>1吞吐量（应用线程时间和总时间的比例）和停顿时间</p>
 <p>通过工具分析<br>1.在线 gceasy.io<br>2.GCViewer</p>
@@ -1029,570 +1650,11 @@ S0C    S1C    S0U    S1U      EC       EU        OC         OU       MC     MU  
 
 
     
-      
-
-  
-
-  
-  
-  
-
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-  
-  
-  
-  <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="https://skydh.github.io/2019/11/05/mysql 双1配置/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="skydh">
-      <meta itemprop="description" content="">
-      <meta itemprop="image" content="/images/avatar.gif">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="learning, progress, future.">
-    </span>
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-                
-                <a class="post-title-link" href="/2019/11/05/mysql 双1配置/" itemprop="url">Mysql 双一配置保证数据0丢失</a></h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">发表于</span>
-              
-              <time title="创建于" itemprop="dateCreated datePublished" datetime="2019-11-05T15:15:34+08:00">
-                2019-11-05
-              </time>
-            
-
-            
-
-            
-          </span>
-
-          
-
-          
-            
-          
-
-          
-          
-
-          
-
-          
-
-          
-
-        </div>
-      </header>
-    
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          
-            <h2 id="预备知识"><a href="#预备知识" class="headerlink" title="预备知识"></a>预备知识</h2><p>　　请先看mysql如何做到crash后无损恢复数据，了解下mysql是如何数据落地磁盘的。</p>
-<h2 id="binlog"><a href="#binlog" class="headerlink" title="binlog"></a>binlog</h2><p>​       事务执行时先把日志写到binlog cache,事务提交，binlog cache就将日志写到文件系统的page cache,这个操作叫做write。 然后等fsync来刷盘，持久化磁盘数据，这个操作叫做fsync。这2个操作是由一个叫做sync_binlog来控制的。</p>
-<ul>
-<li>sync_binlog=0 的时候，表示每次提交事务都只 write，不 fsync；</li>
-<li>sync_binlog=1 的时候，表示每次提交事务都会执行 fsync；</li>
-<li>sync_binlog=N(N&gt;1) 的时候，表示每次提交事务都 write，但累积 N 个事务后才 fsync。</li>
-</ul>
-<p>　　实际业务场景是100-1000，但是对于强数据安全的，可以设置为1，这个1就是双1中的1。</p>
-<h2 id="redolog"><a href="#redolog" class="headerlink" title="redolog"></a>redolog</h2><p>　　和前面的binlog差不多，事务执行的时候先把数据写入到redo log buffer里面，事务提交就开始写入到page cache里面，也就是write操作，第三步就是fsync操作，将文件系统缓存的page cache持久化到磁盘里面去。</p>
-<p>　　为了控制 redo log 的写入策略，InnoDB 提供了 innodb_flush_log_at_trx_commit 参数，它有三种可能取值：</p>
-<ul>
-<li>设置为 0 的时候，表示每次事务提交时都只是把 redo log 留在 redo log buffer 中 ;</li>
-<li>设置为 1 的时候，表示每次事务提交时都将 redo log 直接持久化到磁盘；</li>
-<li>设置为 2 的时候，表示每次事务提交时都只是把 redo log 写到 page cache。</li>
-</ul>
-<p>　　而这个１就是就是双一的最后一个１了</p>
-<p>　　不仅仅如此，其实也没那么简单，比如redo log buffer快满了，怎么办，别的事务没提交怎么办，这些当然都是直接先写入磁盘处理。</p>
-<h2 id="后记"><a href="#后记" class="headerlink" title="后记"></a>后记</h2><p>　　Mysql默认就是双一配置。</p>
-
-          
-        
-      
-    </div>
-    
-    
-    
-
-    
-
-    
-
-    
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </div>
-  
-  
-  
-  </article>
-
-
-    
-      
-
-  
-
-  
-  
-  
-
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-  
-  
-  
-  <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="https://skydh.github.io/2019/10/31/mysql 如何做到crash后无损恢复数据的/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="skydh">
-      <meta itemprop="description" content="">
-      <meta itemprop="image" content="/images/avatar.gif">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="learning, progress, future.">
-    </span>
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-                
-                <a class="post-title-link" href="/2019/10/31/mysql 如何做到crash后无损恢复数据的/" itemprop="url">mysql 如何做到crash后无损恢复数据的</a></h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">发表于</span>
-              
-              <time title="创建于" itemprop="dateCreated datePublished" datetime="2019-10-31T11:21:21+08:00">
-                2019-10-31
-              </time>
-            
-
-            
-
-            
-          </span>
-
-          
-
-          
-            
-          
-
-          
-          
-
-          
-
-          
-
-          
-
-        </div>
-      </header>
-    
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          
-            <h2 id="ps"><a href="#ps" class="headerlink" title="ps"></a>ps</h2><p>　　真实的流程没有我说的那么简单，下面的是最基本的情况。</p>
-<h2 id="预备知识"><a href="#预备知识" class="headerlink" title="预备知识"></a>预备知识</h2><ul>
-<li>redolog</li>
-<li>binlog</li>
-<li>WAL机制</li>
-</ul>
-<h2 id="redolog简介"><a href="#redolog简介" class="headerlink" title="redolog简介"></a>redolog简介</h2><p>　　redolog是个循环日志，其大小固定为4g，存在2个指针来定位其是否已经满了。一个指针是当前写，一个指针是当前checkpoint,其2个指针的顺时针空间就是可写的空间。</p>
-<p>　　这个redolog就是完成mysql突然宕机后，如何无损恢复数据的。</p>
-<h2 id="binlog简介"><a href="#binlog简介" class="headerlink" title="binlog简介"></a>binlog简介</h2><p>　　这个是mysql自身的日志，叫做归档日志。和redolog大致3个不同点。</p>
-<ul>
-<li>其为mysql自带的，redolog是innodb里面的。</li>
-<li>redolog是物理日志，binlog是逻辑日志。</li>
-<li>redolog是循环日志，binlog是增量日志。</li>
-</ul>
-<p>　　这里不对其过多介绍，下一篇文章关于主从的详细介绍，主从就是通过binlog完成的。</p>
-<h2 id="WAL机制简介"><a href="#WAL机制简介" class="headerlink" title="WAL机制简介"></a>WAL机制简介</h2><p>　　MySQL里经常说到的 WAL 技术，意思就是数据入库前先写进去日志，再写磁盘里面。</p>
-<p>　   这里采用的是数据安全性最高的双1策略。</p>
-<p>　　其数据更新顺序也保持着其顺序。</p>
-<p>　　下面我来简单介绍下。</p>
-<p>　　1.当要更新id=2这一行数据时，先通过这个表的索引，查询到这行记录所在的数据页。然后判断这个数据页是否在buffer pool(这个是内存)。</p>
-<p>　　2.如果不在内存则需要读到内存（其实也可以不用读入内存，当要更新的这行数据没有唯一索引时，mysql为了提高效率，采用了change buffer(别看有个buffer，但是人家也是持久化到磁盘的)这个东西，将对这行修改的动作记录到change buffer里面，就不用读到内存了）。</p>
-<p>　　3.在buffer pool 内存上修改这行数据（仅仅只是在内存上修改了这行数据，并没有持久化到磁盘里面）。</p>
-<p>　　4.将上面的操作，写入到redolog里面，且将这个操作状态设置为prepare状态，首先写到redologbuffer里面（为了提高效率，mysql做了组提交这个优化，这里不扩展），等到这个事务提交后，redologbuffer然后再写入到文件系统的page cache里面，然后立马调用fsync,将其刷到磁盘。</p>
-<p>　　5.然后写入到binlog里面，先写到binlog cache里面，然后写入page cache,然后调用fsync，写入磁盘。</p>
-<p>　　6.redolog继续写一次，将其状态设置为commit状态。<br>　　如此就算完成了一个更新操作。</p>
-<h2 id="mysql-如何做到crash后，数据不丢失的"><a href="#mysql-如何做到crash后，数据不丢失的" class="headerlink" title="mysql 如何做到crash后，数据不丢失的"></a>mysql 如何做到crash后，数据不丢失的</h2><p>　　前面说了数据更新操作。<br>　　当前buffer pool里面存在大量脏页（就是一些数据页，只在内存里面修改了，没有刷新到磁盘），当系统宕机了，内存里面的数据全部丢失了怎么办？<br>　　方法如下：我们需要redolog来完成灾难备份，check point到writ pos这块空间记录的所有的操作步骤派上用场了，根据这些redolog记录从磁盘里面读取所有相关的数据页。然后按照redolog上的操作恢复数据即可，那么我们发现存再内存的数据全部恢复了。</p>
-
-          
-        
-      
-    </div>
-    
-    
-    
-
-    
-
-    
-
-    
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </div>
-  
-  
-  
-  </article>
-
-
-    
-      
-
-  
-
-  
-  
-  
-
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-  
-  
-  
-  <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="https://skydh.github.io/2019/10/22/kafka日志存储 /">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="skydh">
-      <meta itemprop="description" content="">
-      <meta itemprop="image" content="/images/avatar.gif">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="learning, progress, future.">
-    </span>
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-                
-                <a class="post-title-link" href="/2019/10/22/kafka日志存储 /" itemprop="url">kafka入门006 -日志存储</a></h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">发表于</span>
-              
-              <time title="创建于" itemprop="dateCreated datePublished" datetime="2019-10-22T15:39:21+08:00">
-                2019-10-22
-              </time>
-            
-
-            
-
-            
-          </span>
-
-          
-
-          
-            
-          
-
-          
-          
-
-          
-
-          
-
-          
-
-        </div>
-      </header>
-    
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          
-            <p>#　文件结构<br>　　前面说过kafka的有序是分区的有序性，一个分区时一个log文件，一个log文件划分为多个日志分段（logsegment）。其中log在物理存储上只以文件夹的形式存储，每个logsegmen对应磁盘上的一个日志文件和2个索引文件。</p>
-<h1 id="消息压缩"><a href="#消息压缩" class="headerlink" title="消息压缩"></a>消息压缩</h1><p>　　在kafka中，kafka将多条消息一起压缩。发送到broker之后也是保持压缩状态存储，消费者端从broker获取到的也是压缩的消息，消费者在处理这些消息的时候才会解压消息。<br>　　多个消息压缩到一起发送，这个压缩体叫做外层消息，里面有个value保存的则是多个压缩的消息，叫做内层消息。内层消息内部是多个消息的压缩，内部自己维持一个offset,从0开始，同时外层消息也有个offset，这个offset是内层消息最后一个offset的实际位移。</p>
-<p>　　外层消息也有个timestamp。</p>
-<ul>
-<li>当这个timestamp类型是createTime,那么设置的是内层消息的最大时间戳。</li>
-<li>当这个类型是LogAppendTime,那么设置的是kafka服务器当前时间戳。</li>
-</ul>
-<p>　　内层消息里面有个时间戳timestamp。</p>
-<ul>
-<li>当这个外层timestamp类型是createTime,那么内层消息的时间戳设置的是生产者创建消息时的时间戳。</li>
-<li>当这个外层timestamp类型是createTime,那么内层消息的时间戳会被忽略。<br>*<h1 id="变长长度"><a href="#变长长度" class="headerlink" title="变长长度"></a>变长长度</h1>　　kafka引入Varints变长整形，Varints是使用一个或者多个字节来序列化整数的方法，数值越小，占用字节数越小，Varints每个字节除了最后一个字节外最高位都是1。最后一个字节最高位是0，用于区分是否表示一个整数，除了最高位，其余的位表示数据存储。由于是变长字段，因此存储消息时很灵活。<h1 id="日志索引"><a href="#日志索引" class="headerlink" title="日志索引"></a>日志索引</h1>　　前面说了每个日志分段文件对应２个索引文件，但是不保证每个消息都可以在索引文件里面找到索引项的。这个索引文件时每当消息，写入一定量（log.index.interval.bytes默认4kb），偏移量索引文件和时间索引文件会分别增加一个索引项。索引文件都是按顺序递增的，因此我们可以使用二分查找来。</li>
-</ul>
-<p>　　日志文件也会分隔，满足以下条件就会分隔</p>
-<ul>
-<li>日志文件大小超过 log.segment.bytes,分隔，默认1GB。</li>
-<li>当前日志分段中最大时间戳和当前系统时间戳差值大于log.roll.ms或者log.roll.hours,第一个优先级最高，但是默认第二个，也就是一周。</li>
-<li>2个索引文件大小超过log.index.size.max默认10MB时。</li>
-<li>追加消息偏移量和当前日志最大的偏移量的差值大于Integer.MAX_VALUE。</li>
-</ul>
-<p>　　对于非活跃日志分段，对应的索引文件是只读，对于活跃日志分段，对应的日志分段是可读写，在索引文件切分的时候，则变成只读，同时创建可读写的新的索引文件。其文件会预分配log.index.size.max.bytes的大小空间.只有当索引文件裁剪时才会将文件剪裁到实际大小。<br>#</p>
-
-          
-        
-      
-    </div>
-    
-    
-    
-
-    
-
-    
-
-    
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </div>
-  
-  
-  
-  </article>
-
-
-    
-      
-
-  
-
-  
-  
-  
-
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-  
-  
-  
-  <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="https://skydh.github.io/2019/10/21/zookeeper/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="skydh">
-      <meta itemprop="description" content="">
-      <meta itemprop="image" content="/images/avatar.gif">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="learning, progress, future.">
-    </span>
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-                
-                <a class="post-title-link" href="/2019/10/21/zookeeper/" itemprop="url">zookeeper 入门 001</a></h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">发表于</span>
-              
-              <time title="创建于" itemprop="dateCreated datePublished" datetime="2019-10-21T17:22:25+08:00">
-                2019-10-21
-              </time>
-            
-
-            
-
-            
-          </span>
-
-          
-
-          
-            
-          
-
-          
-          
-
-          
-
-          
-
-          
-
-        </div>
-      </header>
-    
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          
-            <h1 id="用处"><a href="#用处" class="headerlink" title="用处"></a>用处</h1><ul>
-<li>配置管理</li>
-<li>分布式锁</li>
-<li>组成员管理（hbase）</li>
-<li>DNS服务<h1 id="不适合"><a href="#不适合" class="headerlink" title="不适合"></a>不适合</h1></li>
-<li>存储大量数据，只适合存储协调服务的关键数据</li>
-</ul>
-<h1 id="目的"><a href="#目的" class="headerlink" title="目的"></a>目的</h1><p>　　主要用于搭配kafka进行学习。因为kafka就是使用zookeeper作为协调服务用的。</p>
-<h1 id="zookeeper存储模型"><a href="#zookeeper存储模型" class="headerlink" title="zookeeper存储模型"></a>zookeeper存储模型</h1><p>　　Zookeeper的存储结构采用的是层次化的文件结构模型，很像数据结构当中的树，也很像文件系统的目录。树是由节点所组成，Zookeeper的数据存储也同样是基于节点，这里称之为znode。<br>　　Znode包含4个信息。<br>　　data:Znode存储的数据信息。<br>　　ACL:记录Znode的访问权限，哪些ip那些人可以访问本节点。<br>　　stat:包含Znode的各种元数据，比如事务id,大小，时间戳等。</p>
-<h1 id="Znode特点"><a href="#Znode特点" class="headerlink" title="Znode特点"></a>Znode特点</h1><ul>
-<li>Znode的引用方式是路径引用，类似于文件路径：/a/b。</li>
-<li>znode数据只支持全量读取和写入。</li>
-<li>Znode的API都是互不影响的。<h1 id="ZNode分类"><a href="#ZNode分类" class="headerlink" title="ZNode分类"></a>ZNode分类</h1></li>
-<li>持久。zookeeper集群，client宕机后，重启依旧还在。</li>
-<li>临时。client宕机，或者一定时间没有发消息，那就消失。</li>
-</ul>
-<h1 id="zk-session"><a href="#zk-session" class="headerlink" title="zk session"></a>zk session</h1><p>   zk session是zk客户端和zk集群中某一个节点建立的，客户端可以主动关闭session,zk节点如果在这个session所关联的timeout时间内收到客户端消息，zk客户端也会关闭节点，如果zk客户端发现所连接的zk节点出错，会自动和其他zk节点建立连接。</p>
-<h1 id="zk-Quorun模式"><a href="#zk-Quorun模式" class="headerlink" title="zk Quorun模式"></a>zk Quorun模式</h1><p>　　这个模式就是集群模式，包含多个zookeeper节点，其中一个是lead节点，其余的是follower节点。lead节点可以处理读写请求，follower节点只能处理读请求，若是follower节点收到写请求，会将其转发给lead处理。</p>
-<p>　</p>
-
-          
-        
-      
-    </div>
-    
-    
-    
-
-    
-
-    
-
-    
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </div>
-  
-  
-  
-  </article>
-
-
-    
   </section>
 
   
   <nav class="pagination">
-    <span class="page-number current">1</span><a class="page-number" href="/page/2/">2</a><span class="space">&hellip;</span><a class="page-number" href="/page/13/">13</a><a class="extend next" rel="next" href="/page/2/"><i class="fa fa-angle-right"></i></a>
+    <span class="page-number current">1</span><a class="page-number" href="/page/2/">2</a><span class="space">&hellip;</span><a class="page-number" href="/page/14/">14</a><a class="extend next" rel="next" href="/page/2/"><i class="fa fa-angle-right"></i></a>
   </nav>
 
 
@@ -1638,7 +1700,7 @@ S0C    S1C    S0U    S1U      EC       EU        OC         OU       MC     MU  
               
                 <a href="/archives/">
               
-                  <span class="site-state-item-count">127</span>
+                  <span class="site-state-item-count">131</span>
                   <span class="site-state-item-name">日志</span>
                 </a>
               </div>

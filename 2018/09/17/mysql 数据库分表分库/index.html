@@ -79,17 +79,17 @@
 
 
 
-<meta name="description" content="垂直切分　　将表按照功能模块、关系密切程度划分出来，部署到不同的库上。也就是分库。适用于表多的情况。 水平切分　　当一个表中的数据量过大时，我们可以把该表的数据按照某种规则，例如userID散列，进行划分，然后存储到多个结构相同的表，这就是分表。 切分的选择　　应该使用哪一种方式来实施数据库分库分表，这要看数据库中数据">
+<meta name="description" content="为何需要分库分表​       根据阿里云上的测试，8/32 支持  1300事务数   25000并发请求数；16/64 2000事务数，40000并发请求数，mysql并发请求数不高。 方案1：数据量不大，读压力大，写压力不大的情况下加缓存。或者读写分离。 方案2：数据量大，并发读写操作超过了单数据处理能力。这个时">
 <meta property="og:type" content="article">
 <meta property="og:title" content="mysql 分库分表">
 <meta property="og:url" content="https://skydh.github.io/2018/09/17/mysql 数据库分表分库/index.html">
 <meta property="og:site_name" content="learning, progress, future.">
-<meta property="og:description" content="垂直切分　　将表按照功能模块、关系密切程度划分出来，部署到不同的库上。也就是分库。适用于表多的情况。 水平切分　　当一个表中的数据量过大时，我们可以把该表的数据按照某种规则，例如userID散列，进行划分，然后存储到多个结构相同的表，这就是分表。 切分的选择　　应该使用哪一种方式来实施数据库分库分表，这要看数据库中数据量的瓶颈所在，并综合项目的业务类型进行考虑。 　　如果数据库是因为表太多而造成海">
+<meta property="og:description" content="为何需要分库分表​       根据阿里云上的测试，8/32 支持  1300事务数   25000并发请求数；16/64 2000事务数，40000并发请求数，mysql并发请求数不高。 方案1：数据量不大，读压力大，写压力不大的情况下加缓存。或者读写分离。 方案2：数据量大，并发读写操作超过了单数据处理能力。这个时候需要分库分表了。 垂直切分　　将表按照功能模块、关系密切程度划分出来，部署到不">
 <meta property="og:locale" content="zh-Hans">
-<meta property="og:updated_time" content="2018-12-03T07:03:56.548Z">
+<meta property="og:updated_time" content="2020-04-18T03:14:11.475Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="mysql 分库分表">
-<meta name="twitter:description" content="垂直切分　　将表按照功能模块、关系密切程度划分出来，部署到不同的库上。也就是分库。适用于表多的情况。 水平切分　　当一个表中的数据量过大时，我们可以把该表的数据按照某种规则，例如userID散列，进行划分，然后存储到多个结构相同的表，这就是分表。 切分的选择　　应该使用哪一种方式来实施数据库分库分表，这要看数据库中数据量的瓶颈所在，并综合项目的业务类型进行考虑。 　　如果数据库是因为表太多而造成海">
+<meta name="twitter:description" content="为何需要分库分表​       根据阿里云上的测试，8/32 支持  1300事务数   25000并发请求数；16/64 2000事务数，40000并发请求数，mysql并发请求数不高。 方案1：数据量不大，读压力大，写压力不大的情况下加缓存。或者读写分离。 方案2：数据量大，并发读写操作超过了单数据处理能力。这个时候需要分库分表了。 垂直切分　　将表按照功能模块、关系密切程度划分出来，部署到不">
 
 
 
@@ -304,7 +304,10 @@
       
 
       
-        <h2 id="垂直切分"><a href="#垂直切分" class="headerlink" title="垂直切分"></a>垂直切分</h2><p>　　将表按照功能模块、关系密切程度划分出来，部署到不同的库上。也就是分库。适用于表多的情况。</p>
+        <h1 id="为何需要分库分表"><a href="#为何需要分库分表" class="headerlink" title="为何需要分库分表"></a>为何需要分库分表</h1><p>​       根据阿里云上的测试，8/32 支持  1300事务数   25000并发请求数；16/64 2000事务数，40000并发请求数，mysql并发请求数不高。</p>
+<p>方案1：数据量不大，读压力大，写压力不大的情况下加缓存。或者读写分离。</p>
+<p>方案2：数据量大，并发读写操作超过了单数据处理能力。这个时候需要分库分表了。</p>
+<h2 id="垂直切分"><a href="#垂直切分" class="headerlink" title="垂直切分"></a>垂直切分</h2><p>　　将表按照功能模块、关系密切程度划分出来，部署到不同的库上。也就是分库。适用于表多的情况。</p>
 <h2 id="水平切分"><a href="#水平切分" class="headerlink" title="水平切分"></a>水平切分</h2><p>　　当一个表中的数据量过大时，我们可以把该表的数据按照某种规则，例如userID散列，进行划分，然后存储到多个结构相同的表，这就是分表。</p>
 <h2 id="切分的选择"><a href="#切分的选择" class="headerlink" title="切分的选择"></a>切分的选择</h2><p>　　应该使用哪一种方式来实施数据库分库分表，这要看数据库中数据量的瓶颈所在，并综合项目的业务类型进行考虑。</p>
 <p>　　如果数据库是因为表太多而造成海量数据，并且项目的各项业务逻辑划分清晰、低耦合，那么规则简单明了、容易实施的垂直切分必是首选。而如果数据库中的表并不多，但单表的数据量很大、或数据热度很高，这种情况之下就应该选择水平切分，水平切分比垂直切分要复杂一些，它将原本逻辑上属于一体的数据进行了物理分割，除了在分割时要对分割的粒度做好评估，考虑数据平均和负载平均，后期也将对项目人员及应用程序产生额外的数据管理负担。</p>
@@ -424,7 +427,7 @@
               
                 <a href="/archives/">
               
-                  <span class="site-state-item-count">127</span>
+                  <span class="site-state-item-count">131</span>
                   <span class="site-state-item-name">日志</span>
                 </a>
               </div>
@@ -463,7 +466,7 @@
             
 
             
-              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#垂直切分"><span class="nav-number">1.</span> <span class="nav-text">垂直切分</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#水平切分"><span class="nav-number">2.</span> <span class="nav-text">水平切分</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#切分的选择"><span class="nav-number">3.</span> <span class="nav-text">切分的选择</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#问题挑战"><span class="nav-number">4.</span> <span class="nav-text">问题挑战</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#分表的2个方式"><span class="nav-number">5.</span> <span class="nav-text">分表的2个方式</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#实践使用sharing-jdbc"><span class="nav-number">6.</span> <span class="nav-text">实践使用sharing-jdbc</span></a></li></ol></div>
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#为何需要分库分表"><span class="nav-number">1.</span> <span class="nav-text">为何需要分库分表</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#垂直切分"><span class="nav-number">1.1.</span> <span class="nav-text">垂直切分</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#水平切分"><span class="nav-number">1.2.</span> <span class="nav-text">水平切分</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#切分的选择"><span class="nav-number">1.3.</span> <span class="nav-text">切分的选择</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#问题挑战"><span class="nav-number">1.4.</span> <span class="nav-text">问题挑战</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#分表的2个方式"><span class="nav-number">1.5.</span> <span class="nav-text">分表的2个方式</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#实践使用sharing-jdbc"><span class="nav-number">1.6.</span> <span class="nav-text">实践使用sharing-jdbc</span></a></li></ol></li></ol></div>
             
 
           </div>
