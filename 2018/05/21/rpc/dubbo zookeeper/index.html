@@ -1,0 +1,713 @@
+<!DOCTYPE html>
+
+
+
+  
+
+
+<html class="theme-next pisces use-motion" lang="zh-Hans">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css" />
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=5.1.3" rel="stylesheet" type="text/css" />
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=5.1.3">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=5.1.3">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=5.1.3">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=5.1.3" color="#222">
+
+
+
+
+
+  <meta name="keywords" content="Hexo, NexT" />
+
+
+
+
+
+
+
+
+
+
+<meta name="description" content="案例　　先搭建一个dubbo+zookeeper的demo，然后根据demo来细说。　　第一步：从dubbo官网下载dubbo-master.zip文件，从zookeeper官网下载zookeeper.tar.gz文件。　　第二步：解压zookeeper.tar.gz文件，在解压\zookeeper-3.4.10\bi">
+<meta property="og:type" content="article">
+<meta property="og:title" content="dubbo+zookeeper">
+<meta property="og:url" content="https://skydh.github.io/2018/05/21/rpc/dubbo zookeeper/index.html">
+<meta property="og:site_name" content="learning, progress, future.">
+<meta property="og:description" content="案例　　先搭建一个dubbo+zookeeper的demo，然后根据demo来细说。　　第一步：从dubbo官网下载dubbo-master.zip文件，从zookeeper官网下载zookeeper.tar.gz文件。　　第二步：解压zookeeper.tar.gz文件，在解压\zookeeper-3.4.10\bin路径下，点击zkServer.cmd(本案例是直接在windows下运行),成">
+<meta property="og:locale" content="zh-Hans">
+<meta property="og:updated_time" content="2018-06-06T06:05:35.548Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="dubbo+zookeeper">
+<meta name="twitter:description" content="案例　　先搭建一个dubbo+zookeeper的demo，然后根据demo来细说。　　第一步：从dubbo官网下载dubbo-master.zip文件，从zookeeper官网下载zookeeper.tar.gz文件。　　第二步：解压zookeeper.tar.gz文件，在解压\zookeeper-3.4.10\bin路径下，点击zkServer.cmd(本案例是直接在windows下运行),成">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Pisces',
+    version: '5.1.3',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: true,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    duoshuo: {
+      userId: '0',
+      author: '博主'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="https://skydh.github.io/2018/05/21/rpc/dubbo zookeeper/"/>
+
+
+
+
+
+  <title>dubbo+zookeeper | learning, progress, future.</title>
+  
+
+
+
+
+
+
+
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/"  class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">learning, progress, future.</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle">skydh</p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br />
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />
+            
+            归档
+          </a>
+        </li>
+      
+
+      
+    </ul>
+  
+
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="https://skydh.github.io/2018/05/21/rpc/dubbo zookeeper/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="skydh">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="learning, progress, future.">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">dubbo+zookeeper</h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2018-05-21T09:29:45+08:00">
+                2018-05-21
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+          
+
+          
+          
+
+          
+            <span class="post-meta-divider">|</span>
+            <span class="page-pv"><i class="fa fa-file-o"></i>
+            <span class="busuanzi-value" id="busuanzi_value_page_pv" ></span>
+            </span>
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <h2 id="案例"><a href="#案例" class="headerlink" title="案例"></a>案例</h2><p>　　先搭建一个dubbo+zookeeper的demo，然后根据demo来细说。<br>　　第一步：从dubbo官网下载dubbo-master.zip文件，从zookeeper官网下载zookeeper.tar.gz文件。<br>　　第二步：解压zookeeper.tar.gz文件，在解压\zookeeper-3.4.10\bin路径下，点击zkServer.cmd(本案例是直接在windows下运行),成功启动，发现其绑定了端口号2181。<br>　　第三步：解压dubbo-master.zip文件，然后在用eclipse导入其项目空间。发现dubbo的注入地址默认配置的是zookeeper://127.0.0.1:2181这个地址，不用修改，然后将其放到tomcat下启动。（且记先启动zookeeper在启动dubbo，不然dubbo启动连接不到zookeeper，启动失败的。）<br>　　第四步：打开<a href="http://localhost:8088/dubbo-admin-2.5.8/，然后输入账号密码，登录到dubbo管理界面。（确切地址是多少，看你的配置）。这样4步，dubbo管理平台就已经搭建好了。" target="_blank" rel="noopener">http://localhost:8088/dubbo-admin-2.5.8/，然后输入账号密码，登录到dubbo管理界面。（确切地址是多少，看你的配置）。这样4步，dubbo管理平台就已经搭建好了。</a><br>　　第五步：在写一个消费者和生产者来同步dubbo来进行通信。先创建一个生产者。这里不详细说了，大部分都是maven工程的创建修改，直接给上代码，供大家测试调试<a href="https://github.com/skydh/provide-test" target="_blank" rel="noopener">生产者</a>。<br>　　第六步：写一个消费者来消费生产者的服务。这里也是直接提供代码让大家来进行调试。<a href="https://github.com/skydh/spring-mvc-test/" target="_blank" rel="noopener">消费者</a>。<br>　　第七步：输入<a href="http://localhost:8089/spring-mvc/hello/dh1，发现调用已经成功，同时发现dubbo管理界面出现了一个生成者，一个消费者。" target="_blank" rel="noopener">http://localhost:8089/spring-mvc/hello/dh1，发现调用已经成功，同时发现dubbo管理界面出现了一个生成者，一个消费者。</a></p>
+<h2 id="什么是zookeeper"><a href="#什么是zookeeper" class="headerlink" title="什么是zookeeper　　"></a>什么是zookeeper　　</h2><p>　　Zookeeper是Hadoop的一个子项目，它是分布式系统中的协调系统，可提供的服务有：配置服务，名字服务，分布式同步，组服务等。</p>
+<h3 id="zookeeper配置文件"><a href="#zookeeper配置文件" class="headerlink" title="zookeeper配置文件"></a>zookeeper配置文件</h3><p>　　我们可以通过修改Zookeeper的配置文件来修改Zookeeper的启动信息。<br>        tickTime=2000<br>        initLimit=10<br>        syncLimit=5<br>        dataDir=/opt/zookeeper-data/<br>        clientPort=2181<br>　　tickTime：指定了ZooKeeper的基本时间单位（以毫秒为单位）；<br>　　initLimit：指定了启动zookeeper时，zookeeper实例中的随从实例同步到领导实例的初始化连接时间限制，超出时间限制则连接失败（以tickTime为时间单位）；<br>　　syncLimit：指定了zookeeper正常运行时，主从节点之间同步数据的时间限制，若超过这个时间限制，那么随从实例将会被丢弃；<br>　　dataDir：zookeeper存放数据的目录；<br>　　clientPort：用于连接客户端的端口。</p>
+<h3 id="zookeeper存储模型"><a href="#zookeeper存储模型" class="headerlink" title="zookeeper存储模型"></a>zookeeper存储模型</h3><p>　　Zookeeper的存储结构采用的是结构化存储，很像数据结构当中的树，也很像文件系统的目录。树是由节点所组成，Zookeeper的数据存储也同样是基于节点，这里称之为znode。但是，不同于树的节点，Znode的引用方式是路径引用，类似于文件路径：/a/b。<br>　　Znode包含4个信息。<br>　　data:Znode存储的数据信息。<br>　　ACL:记录Znode的访问权限，哪些ip那些人可以访问本节点。<br>　　stat:包含Znode的各种元数据，比如事务id,大小，时间戳等。<br>　　child:当前节点的子节点引用。</p>
+<h3 id="zookeeper的基本操作"><a href="#zookeeper的基本操作" class="headerlink" title="zookeeper的基本操作"></a>zookeeper的基本操作</h3><p>　　create：创建节点。<br>　　delete:删除节点。<br>　　exists:判断是否存在节点。<br>　　getData:获取一个节点的数据。<br>　　setData：设置一个节点的数据。<br>　　getChildren：获取节点下所有的子节点。<br>　　其中exist,getData.getChildren 都是读操作。客户端在请求读操作时可以设置是否watch（该效果是当Znode发生改变时，如增删改时，请求watch的客户端将会接收到异步通知，也就是说当一个节点被watch后，就会在对应的哈希表里面插入被watch的Znode路径以及watch列表）。</p>
+<h3 id="zookeeper的一致性"><a href="#zookeeper的一致性" class="headerlink" title="zookeeper的一致性"></a>zookeeper的一致性</h3><p>　　Zookeeper身为分布式系统的协调服务，如果自身挂了怎么办呢？为了防止单机挂掉，ZooKeeper维护了一个集群。这个集群是一主多从结构。更新数据时，首先更新到主节点（这里的节点指的是服务器节点，不是Znode），再同步到从节点。为了保证主从节点数据一致性，zookeeper采用了ZAB协议。<br>　　ZAB协议定义了3种节点状态。<br>　　Looking:选举状态。<br>　　Following:从节点所处的状态。<br>　　Leading：Leader节点（主节点）所处的状态。<br>　　最大ZXID的概念：<br>　　最大ZXID也就是节点本地的最新事务编号，包含epoch和计数两部分。epoch是纪元的意思，相当于Raft算法选主时候的term。<br>　　从节点挂了没有任何影响。如果主节点挂了，那么集群就会进行崩溃恢复。分为３个阶段。<br>　　第一阶段，所有节点变成Looking状态。这些节点会各自向其他节点发起投票，投票信息包含自身服务器ID和最新事务ID.(ZXID)。接下来，节点会用自身的ZXID和从其他节点接受到的ZXID比较，如果别的节点比自己大，那就重新投票，投给接受到节点最大的ZXID的节点的票。<br>　　每次投完票后，服务器都会统计投票数量，判断是否存在半数以上的投票，如果存在这样的节点，那么这个节点将会成为准Leader节点，状态也会变成Leading，其他节点就会从Looking转换为Following。<br>　　第二阶段：发现阶段，用于在从节点中发现最新的ZXID和事务日志，因为可能存在Leader的ZIXD不一定是最新的，有可能意外情况，导致最新的ZXID不是最新的。<br>　　所以这个阶段，Leader集思广益，接收所有Follower发过来的epoch值，Leader从中选出最大的值，基于此值加一，生成最新的epoch分给各个Follower.各个Follower收到全新的epoch后，返回ACK给Leader，带上各自最大的ZXID和历史事务日志，Leader选出最大的ZXID,并更新自身历史日志。<br>　　第三阶段：同步阶段，将Leader刚接收到的最新历史事务日志，同步给集群所有的Follower。只有半数Follower同步成功，这个准Leader才能正式成为leader.</p>
+<h3 id="zookeeper的数据写入"><a href="#zookeeper的数据写入" class="headerlink" title="zookeeper的数据写入"></a>zookeeper的数据写入</h3><p>　　<br>　　１．客户端发出写出请求给任意的Follower。<br>　　２．Follower把写入数据的请求转发给Leader。<br>　　３．Leader采用二段提交的方式，先发送Propose广播给Follower。<br>　　４．Follower接受到Propose消息，写入日志成功后，返回ACk消息给Leader。<br>　　５．Leader接到半数以上ACK消息，返回成功给客户端，并且广播Commit请求给Follower。</p>
+
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2018/05/16/java/线程安全和锁优化/" rel="next" title="线程安全和锁优化">
+                <i class="fa fa-chevron-left"></i> 线程安全和锁优化
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2018/06/19/spring/ControllerAdvice注解/" rel="prev" title="ControllerAdvice用法解析">
+                ControllerAdvice用法解析 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <p class="site-author-name" itemprop="name">skydh</p>
+              <p class="site-description motion-element" itemprop="description">skydh</p>
+          </div>
+
+          <nav class="site-state motion-element">
+
+            
+              <div class="site-state-item site-state-posts">
+              
+                <a href="/archives/">
+              
+                  <span class="site-state-item-count">125</span>
+                  <span class="site-state-item-name">日志</span>
+                </a>
+              </div>
+            
+
+            
+
+            
+
+          </nav>
+
+          
+
+          <div class="links-of-author motion-element">
+            
+          </div>
+
+          
+          
+
+          
+          
+
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#案例"><span class="nav-number">1.</span> <span class="nav-text">案例</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#什么是zookeeper"><span class="nav-number">2.</span> <span class="nav-text">什么是zookeeper　　</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#zookeeper配置文件"><span class="nav-number">2.1.</span> <span class="nav-text">zookeeper配置文件</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#zookeeper存储模型"><span class="nav-number">2.2.</span> <span class="nav-text">zookeeper存储模型</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#zookeeper的基本操作"><span class="nav-number">2.3.</span> <span class="nav-text">zookeeper的基本操作</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#zookeeper的一致性"><span class="nav-number">2.4.</span> <span class="nav-text">zookeeper的一致性</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#zookeeper的数据写入"><span class="nav-number">2.5.</span> <span class="nav-text">zookeeper的数据写入</span></a></li></ol></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <script async src="https://dn-lbstatics.qbox.me/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+<div class="copyright">&copy; <span itemprop="copyrightYear">2020</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">skydh</span>
+
+  
+</div>
+
+
+<div class="powered-by">
+<i class="fa fa-user-md"></i><span id="busuanzi_container_site_uv">
+  本站访客数:<span id="busuanzi_value_site_uv"></span>
+</span>
+</div>
+
+  <div class="powered-by">由 <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a> 强力驱动</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">主题 &mdash; <a class="theme-link" target="_blank" href="https://github.com/iissnan/hexo-theme-next">NexT.Pisces</a> v5.1.3</div>
+
+
+
+
+        
+<div class="busuanzi-count">
+  <script async src="https://dn-lbstatics.qbox.me/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+
+  
+    <span class="site-uv">
+      <i class="fa fa-user"></i>
+      <span class="busuanzi-value" id="busuanzi_value_site_uv"></span>
+      
+    </span>
+  
+
+  
+    <span class="site-pv">
+      <i class="fa fa-eye"></i>
+      <span class="busuanzi-value" id="busuanzi_value_site_pv"></span>
+      
+    </span>
+  
+</div>
+
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/canvas-nest/canvas-nest.min.js"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.3"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.3"></script>
+
+
+
+  
+  
+
+
+  <script type="text/javascript" src="/js/src/affix.js?v=5.1.3"></script>
+
+  <script type="text/javascript" src="/js/src/schemes/pisces.js?v=5.1.3"></script>
+
+
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.3"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.3"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.3"></script>
+
+
+
+  
+
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>

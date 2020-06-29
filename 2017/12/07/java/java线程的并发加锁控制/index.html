@@ -1,0 +1,1107 @@
+<!DOCTYPE html>
+
+
+
+  
+
+
+<html class="theme-next pisces use-motion" lang="zh-Hans">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css" />
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=5.1.3" rel="stylesheet" type="text/css" />
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=5.1.3">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=5.1.3">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=5.1.3">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=5.1.3" color="#222">
+
+
+
+
+
+  <meta name="keywords" content="Hexo, NexT" />
+
+
+
+
+
+
+
+
+
+
+<meta name="description" content="synchronized和Lock的加锁机制　　synchronized关键字加锁。　　第一，我们先明确几个概念。　　我们使用synchronized关键字时，锁不是加在代码上，而是加在对象上。　　我先准备了一个测试类来验证信息，Counter类是一个公共线程信息类   package thread;  import ">
+<meta property="og:type" content="article">
+<meta property="og:title" content="java线程的并发加锁控制">
+<meta property="og:url" content="https://skydh.github.io/2017/12/07/java/java线程的并发加锁控制/index.html">
+<meta property="og:site_name" content="learning, progress, future.">
+<meta property="og:description" content="synchronized和Lock的加锁机制　　synchronized关键字加锁。　　第一，我们先明确几个概念。　　我们使用synchronized关键字时，锁不是加在代码上，而是加在对象上。　　我先准备了一个测试类来验证信息，Counter类是一个公共线程信息类   package thread;  import java.text.SimpleDateFormat; import java.">
+<meta property="og:locale" content="zh-Hans">
+<meta property="og:updated_time" content="2017-12-21T14:51:51.475Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="java线程的并发加锁控制">
+<meta name="twitter:description" content="synchronized和Lock的加锁机制　　synchronized关键字加锁。　　第一，我们先明确几个概念。　　我们使用synchronized关键字时，锁不是加在代码上，而是加在对象上。　　我先准备了一个测试类来验证信息，Counter类是一个公共线程信息类   package thread;  import java.text.SimpleDateFormat; import java.">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Pisces',
+    version: '5.1.3',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: true,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    duoshuo: {
+      userId: '0',
+      author: '博主'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="https://skydh.github.io/2017/12/07/java/java线程的并发加锁控制/"/>
+
+
+
+
+
+  <title>java线程的并发加锁控制 | learning, progress, future.</title>
+  
+
+
+
+
+
+
+
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/"  class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">learning, progress, future.</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle">skydh</p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br />
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />
+            
+            归档
+          </a>
+        </li>
+      
+
+      
+    </ul>
+  
+
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="https://skydh.github.io/2017/12/07/java/java线程的并发加锁控制/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="skydh">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="learning, progress, future.">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">java线程的并发加锁控制</h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2017-12-07T13:03:24+08:00">
+                2017-12-07
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+          
+
+          
+          
+
+          
+            <span class="post-meta-divider">|</span>
+            <span class="page-pv"><i class="fa fa-file-o"></i>
+            <span class="busuanzi-value" id="busuanzi_value_page_pv" ></span>
+            </span>
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <h2 id="synchronized和Lock的加锁机制"><a href="#synchronized和Lock的加锁机制" class="headerlink" title="synchronized和Lock的加锁机制"></a>synchronized和Lock的加锁机制</h2><p>　　synchronized关键字加锁。<br>　　第一，我们先明确几个概念。<br>　　我们使用synchronized关键字时，锁不是加在代码上，而是加在对象上。<br>　　我先准备了一个测试类来验证信息，Counter类是一个公共线程信息类</p>
+<pre>  package thread;
+
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.concurrent.locks.Condition;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
+
+public class Counter {
+
+    public final Lock lock = new ReentrantLock();
+    private Condition condition = lock.newCondition();
+    private volatile int a = 1;
+    private Students stu = new Students();
+
+    public int geta() {
+        return a;
+    }
+
+    public synchronized void add() {
+        a++;
+        try {
+            SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+            System.out.println("add开始执行" + df.format(new Date()));
+            Thread.sleep(10000);
+            System.out.println("add is ing");
+            System.out.println("add执行结束" + df.format(new Date()));
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public synchronized void add1() {
+        a++;
+        try {
+            SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+            System.out.println("add1开始执行" + df.format(new Date()));
+            Thread.sleep(10000);
+            System.out.println("add1 is ing");
+            System.out.println("add1开始执行" + df.format(new Date()));
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void add2() {
+        synchronized (stu) {
+            SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+            System.out.println("add2开始执行" + df.format(new Date()));
+            System.out.println("add2 is ing");
+            System.out.println("add2开始执行" + df.format(new Date()));
+        }
+    }
+
+    public static synchronized void addStatic() {
+
+        try {
+            SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+            System.out.println("addStatic开始执行" + df.format(new Date()));
+            Thread.sleep(10000);
+            System.out.println("addStatic is ing");
+            System.out.println("addStatic开始执行" + df.format(new Date()));
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void add3() {
+
+        lock.lock();
+        try {
+            System.out.println("进入add3");
+            a++;
+
+            Thread.sleep(10000);
+            System.out.println("add3");
+
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+        lock.unlock();
+    }
+
+    public void add4() {
+
+
+
+        lock.lock();
+        System.out.println("进入add4");
+        try {
+            Thread.sleep(10000);
+        } catch (InterruptedException e) {
+
+            e.printStackTrace();
+        }
+        System.out.println("add4");
+
+        condition.signal();
+        lock.unlock();
+
+    }
+
+
+
+}
+ </pre>
+　　创建一个Counter类的对象，这个对象里面一共有4个锁，第一个就是counter对象锁，第二个就是students对象锁，第三个就是Students这个类的锁，因为每个类都是Class类的对象。第四个就是ReentrantLock这个可重入锁。
+　　这几个概念明确后，写几个demo来测试说明下:
+<pre>  
+package thread;
+
+public class Test003 {
+
+    public class Thread1 extends Thread {
+        private Counter counter;
+
+        public Thread1(Counter counter) {
+            this.counter = counter;
+        }
+
+        public void run() {
+            counter.add();
+        }
+    }
+
+    public class Thread2 extends Thread {
+        private Counter counter;
+
+        public Thread2(Counter counter) {
+            this.counter = counter;
+        }
+
+        public void run() {
+            counter.add1();
+        }
+    }
+
+    public class Thread3 extends Thread {
+        private Counter counter;
+
+        public Thread3(Counter counter) {
+            this.counter = counter;
+        }
+
+        public void run() {
+            counter.add2();
+        }
+    }
+
+    public class ThreadStatic extends Thread {
+        public void run() {
+            Counter.addStatic();
+        }
+    }
+
+    public class Thread4 extends Thread {
+        private Counter counter;
+
+        public Thread4(Counter counter) {
+            this.counter = counter;
+        }
+
+        public void run() {
+            counter.add3();
+        }
+    }
+
+    public class Thread5 extends Thread {
+        private Counter counter;
+
+        public Thread5(Counter counter) {
+            this.counter = counter;
+        }
+
+        public void run() {
+            counter.add4();
+        }
+    }
+}
+
+ </pre>
+　　这些是即将要调用的线程类，已来方便我们使用测试。
+第一种情况：
+<pre>
+public static void main(String[] args) throws InterruptedException {
+
+        Counter counter = new Counter();
+        Test003 test003 = new Test003();
+        Thread1 thread1 = test003.new Thread1(counter);
+        Thread2 thread2 = test003.new Thread2(counter);
+
+        thread1.start();
+        thread2.start();
+
+    }
+</pre>
+　　结果如下：
+<pre>
+add1开始执行2017-12-21 14:28:48
+add1 is ing
+add1开始执行2017-12-21 14:28:58
+add开始执行2017-12-21 14:28:58
+add is ing
+add执行结束2017-12-21 14:29:08
+
+</pre>
+　　结果解析：无论执行多少次，要么add1先执行，要么add先执行，但是任意一个没有执行完，另一个是不会执行的，即便调用了sleep方法，为什么呢。因为这2个线程公用一个对象，而调用的方法都加了synchronized的方法，由于第一个执行执行方法的将获得对象锁。其余的线程就无法获取到对象锁，只能进入等待队列。
+　　第二种情况：
+<pre>
+public static void main(String[] args) throws InterruptedException {
+        Counter counter = new Counter();
+        Test003 test003 = new Test003();
+        Thread1 thread1 = test003.new Thread1(counter);
+        Thread3 thread3 = test003.new Thread3(counter);
+        thread1.start();
+        thread3.start();
+    }
+</pre>
+　　结果如下
+<pre>
+add2开始执行2017-12-21 14:41:10
+add2 is ing
+add开始执行2017-12-21 14:41:10
+add2开始执行2017-12-21 14:41:10
+add is ing
+add执行结束2017-12-21 14:41:20</pre>
+　　结果解析：２个线程交叉执行，虽然都加了锁，但是是不同的对象锁，因此交叉执行。
+第三种情况：
+<pre>
+public static void main(String[] args) throws InterruptedException {
+        Counter counter = new Counter();
+        Counter counter1 = new Counter();
+        Test003 test003 = new Test003();
+        Thread1 thread1 = test003.new Thread1(counter);
+        Thread2 thread2 = test003.new Thread2(counter1);
+        thread1.start();
+        thread2.start();
+    }
+</pre>
+　　结果如下：
+<pre>
+add开始执行2017-12-21 14:45:03
+add1开始执行2017-12-21 14:45:03
+add1 is ing
+add is ing
+add1开始执行2017-12-21 14:45:13
+add执行结束2017-12-21 14:45:13</pre>
+　　结果解析：虽然都是一个类，一个代码，但是是２个对象，synchronized这个关键字加锁是加到对象身上去了。而这个2个线程锁持有的Counter对象时不一样的，因此锁也是不一样的，故交叉执行很正常。
+　　第四种情况：
+<pre>
+public static void main(String[] args) throws InterruptedException {
+        Counter counter = new Counter();
+        Test003 test003 = new Test003();
+        Thread1 thread1 = test003.new Thread1(counter);
+        ThreadStatic threadStatic = test003.new ThreadStatic();
+        thread1.start();
+        threadStatic.start();
+    }
+</pre>
+　　结果如下：
+<pre>
+addStatic开始执行2017-12-21 18:35:55
+add开始执行2017-12-21 18:35:55
+addStatic is ing
+add is ing
+addStatic开始执行2017-12-21 18:36:05
+add执行结束2017-12-21 18:36:05</pre>
+　　结果解析：结果交叉执行为何，因为静态方法是属于类本身的，那么在这个静态方法上加的synchronized，那么这个锁则对应的是类本身，那么2个线程执行普通方法和静态方法（都加了synchronized关键字）时是并发执行的了。
+　　第五种情况：
+<pre>
+public static void main(String[] args) throws InterruptedException {
+        Counter counter = new Counter();
+        Test003 test003 = new Test003();
+        Thread4 thread4 = test003.new Thread4(counter);
+        Thread5 thread5 = test003.new Thread5(counter);
+        thread4.start();
+        thread5.start();
+    }
+</pre>
+　　结果如下：
+<pre>
+进入add4
+add4
+进入add3
+add3</pre>
+　　结果解析：同一个Counter对象那么对应同一个ReentrantLock锁。那么这2个线程所执行的方法都加了ReentrantLock,那么执行的时候注定要加锁等待，所以无法并发执行，结果按顺序执行。
+
+
+## 并发条件控制
+　　正如大家所知，synchronized关键字对应了wait()方法和notify（）方法来控制并发控制，那么lock呢，也对应一系列的方法来处理。我们使用Condition这个类的方法来加以控制，下面，我将展示这2个加锁方式的控制的简单实现
+　　第一个：lock的条件控制
+<pre>
+
+
+    public final Lock lock = new ReentrantLock();
+    private Condition condition = lock.newCondition();
+    private volatile int a = 1;
+    public void add3() {
+        System.out.println("进入add3");
+        lock.lock();
+        try {
+            a++;
+            System.out.println("add3");
+            condition.await();
+            System.out.println("add31");
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+        lock.unlock();
+    }
+
+    public void add4() {
+        System.out.println("add4");
+        while (true) {
+            if (a > 1) {
+                System.out.println("进入循环");
+                lock.lock();
+                System.out.println("add4");
+                System.out.println("add41");
+                condition.signal();
+                lock.unlock();
+                break;
+            }
+        }
+    }
+public static void main(String[] args) throws InterruptedException {
+        Counter counter = new Counter();
+        Test003 test003 = new Test003();
+        Thread4 thread4 = test003.new Thread4(counter);
+        Thread5 thread5 = test003.new Thread5(counter);
+        thread4.start();
+        thread5.start();
+    }
+</pre>
+　　结果如下
+<pre>
+add4
+进入add3
+add3
+进入循环
+add4
+add41
+add31</pre>
+　　结果解析：２个线程无论谁先执行，先获取到锁的总是add3()方法。因为a=1,无法获取到锁，因此先执行add3方法，在放弃锁并进入到等待队列，然后a>1了，那么add4有机会执行代码了。在唤醒add3()方法，恩，完美。
+
+　　第二种情况：使用Object类的wait方法。
+<pre>
+    private volatile int a = 1;
+    public void add() {
+
+        synchronized (this) {
+            try {
+                SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+                System.out.println("add开始执行" + df.format(new Date()));
+                // Thread.sleep(10000);
+                a++;
+                wait();
+                System.out.println("add is ing");
+                System.out.println("add执行结束" + df.format(new Date()));
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
+    public void add1() {
+        while (true) {
+            if (a > 1) {
+                synchronized (this) {
+                    SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+                    System.out.println("add1开始执行" + df.format(new Date()));
+                    // Thread.sleep(10000);
+                    System.out.println("add1 is ing");
+                    System.out.println("add1开始执行" + df.format(new Date()));
+                    notify();
+                }
+                break;
+            }
+        }
+    }
+    public static void main(String[] args) throws InterruptedException {
+
+        Counter counter = new Counter();
+
+        Test003 test003 = new Test003();
+        Thread1 thread1 = test003.new Thread1(counter);
+
+        Thread2 thread2 = test003.new Thread2(counter);
+
+        thread1.start();
+        thread2.start();
+        thread1.join();
+}</pre>
+
+<p>　结果如下</p>
+<p><pre><br>add开始执行2017-12-21 19:32:23<br>add1开始执行2017-12-21 19:32:23<br>add1 is ing<br>add1开始执行2017-12-21 19:32:23<br>add is ing<br>add执行结束2017-12-21 19:32:23</pre><br>　　结果解析：逻辑和上面一样，只是不同的实现方式罢了。</p>
+<p>　　wait()方法在这里要再次说下，他是在加了synchronized这个关键字的对象调用的，不然报错。还有Thread类的join()方法源码里面的wait()方法是让主线程进入等待队列，并且等待这个锁，当这个子线程执行完后，则会自动调用notify方法，让等待子线程对象锁的主线程可以继续执行，恩，完美解释join（）方法。</p>
+<p>　　</p>
+<p>　　
+　　</p>
+
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2017/11/29/java/java线程的常用方法和属性介绍/" rel="next" title="java线程的常用方法和属性介绍">
+                <i class="fa fa-chevron-left"></i> java线程的常用方法和属性介绍
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2017/12/27/java/volatile,原子变量和ThreadLocal/" rel="prev" title="volatile,原子变量和ThreadLocal">
+                volatile,原子变量和ThreadLocal <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <p class="site-author-name" itemprop="name">skydh</p>
+              <p class="site-description motion-element" itemprop="description">skydh</p>
+          </div>
+
+          <nav class="site-state motion-element">
+
+            
+              <div class="site-state-item site-state-posts">
+              
+                <a href="/archives/">
+              
+                  <span class="site-state-item-count">125</span>
+                  <span class="site-state-item-name">日志</span>
+                </a>
+              </div>
+            
+
+            
+
+            
+
+          </nav>
+
+          
+
+          <div class="links-of-author motion-element">
+            
+          </div>
+
+          
+          
+
+          
+          
+
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#synchronized和Lock的加锁机制"><span class="nav-number">1.</span> <span class="nav-text">synchronized和Lock的加锁机制</span></a></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <script async src="https://dn-lbstatics.qbox.me/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+<div class="copyright">&copy; <span itemprop="copyrightYear">2020</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">skydh</span>
+
+  
+</div>
+
+
+<div class="powered-by">
+<i class="fa fa-user-md"></i><span id="busuanzi_container_site_uv">
+  本站访客数:<span id="busuanzi_value_site_uv"></span>
+</span>
+</div>
+
+  <div class="powered-by">由 <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a> 强力驱动</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">主题 &mdash; <a class="theme-link" target="_blank" href="https://github.com/iissnan/hexo-theme-next">NexT.Pisces</a> v5.1.3</div>
+
+
+
+
+        
+<div class="busuanzi-count">
+  <script async src="https://dn-lbstatics.qbox.me/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+
+  
+    <span class="site-uv">
+      <i class="fa fa-user"></i>
+      <span class="busuanzi-value" id="busuanzi_value_site_uv"></span>
+      
+    </span>
+  
+
+  
+    <span class="site-pv">
+      <i class="fa fa-eye"></i>
+      <span class="busuanzi-value" id="busuanzi_value_site_pv"></span>
+      
+    </span>
+  
+</div>
+
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/canvas-nest/canvas-nest.min.js"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.3"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.3"></script>
+
+
+
+  
+  
+
+
+  <script type="text/javascript" src="/js/src/affix.js?v=5.1.3"></script>
+
+  <script type="text/javascript" src="/js/src/schemes/pisces.js?v=5.1.3"></script>
+
+
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.3"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.3"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.3"></script>
+
+
+
+  
+
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>

@@ -232,7 +232,7 @@
   
   
   <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="https://skydh.github.io/2018/01/22/mysql Innodb索引/">
+    <link itemprop="mainEntityOfPage" href="https://skydh.github.io/2017/11/29/java/java线程的常用方法和属性介绍/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="name" content="skydh">
@@ -251,1341 +251,7 @@
         
           <h1 class="post-title" itemprop="name headline">
                 
-                <a class="post-title-link" href="/2018/01/22/mysql Innodb索引/" itemprop="url">mysql Innodb索引</a></h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">发表于</span>
-              
-              <time title="创建于" itemprop="dateCreated datePublished" datetime="2018-01-22T15:15:19+08:00">
-                2018-01-22
-              </time>
-            
-
-            
-
-            
-          </span>
-
-          
-
-          
-            
-          
-
-          
-          
-
-          
-
-          
-
-          
-
-        </div>
-      </header>
-    
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          
-            <h2 id="基本概念"><a href="#基本概念" class="headerlink" title="基本概念"></a>基本概念</h2><p>　　对于mysql目前的默认存储引擎Innodb来说，索引分为2个，一个是聚集索引，一个是普通索引（也叫二级索引）。<br>　　聚集索引：聚集索引的顺序和数据在磁盘的顺序一致，因此查询时使用聚集索引，效率更高，但是因此聚集索引也只能一条。一般来说，主键就是聚集索引，当然没有主键的话，就会创建一个隐藏的列来作为聚集索引列。Ｂ＋树的叶子节点就是数据值<br>　　２级索引就是不是聚集索引的索引了。其叶子节点存的是指向数据值的地址。</p>
-<h2 id="为什么需要索引？"><a href="#为什么需要索引？" class="headerlink" title="为什么需要索引？"></a>为什么需要索引？</h2><p>　　数据存储到数据库中是以数据块作为基本单位存放的，每个表有个参数叫块因子，就是一个数据块能存多少行记录，这个和你设置的数据块大小以及表的设计相关。<br>　　如果对一个无序字段进行搜索，那么就只能使用线性搜索。时间复杂度为n/2,如果是一个有序字段那么可以使用2分查找法，时间复杂度为log2 (N)。<br>　　如果对关键字段建立了索引，那么就会对这个关键字生成索引文件，也是以数据块作为单位存储的。第一这个数据是有序的，第二他的块因子很大，为什么呢？因为他只是一列或者几列数据，不是整列数据。<br>　　举个例子：<br>　　前置条件：数据块默认大小：1024字节，表行长度500字节，某索引字节5字节。数据5000000条。<br>　　1：无索引：查找字段无序：1024/500=2,    5000000/2=2500000块数据块，线性搜索：查找1250000次。<br>　　2：无索引：查找字段有序， 1024/500=2,5000000/2=2500000块数据块，有序，使用2分查找。Log2(2500000)=752 575</p>
-<p>　　3：有索引：1024/5=204，   5000000/204=24509块数据块，有序，使用2分查找。Log2(24509)=7378。<br>　　数量级：百万，十万，千。在这里，我只是用2分查找来代替引用，只是为了形成一个对比。索引不是链表是B+树（Innodb）</p>
-<h2 id="为何索引是B-树？"><a href="#为何索引是B-树？" class="headerlink" title="为何索引是B+树？"></a>为何索引是B+树？</h2><p>　　一般来说，索引本身也很大，不可能全部存储在内存中，因此索引往往以索引文件的形式存储的磁盘上。这样的话，索引查找过程中就要产生磁盘I/O消耗，相对于内存存取，I/O存取的消耗要高几个数量级，所以评价一个数据结构作为索引的优劣最重要的指标就是在查找过程中磁盘I/O操作次数的渐进复杂度。换句话说，索引的结构组织要尽量减少查找过程中磁盘I/O的存取次数。<br>　　因此为了提高效率，要尽量减少磁盘I/O。为了达到这个目的，磁盘往往不是严格按需读取，而是每次都会预读，即使只需要一个字节，磁盘也会从这个位置开始，顺序向后读取一定长度的数据放入内存。<br>　　预读的长度一般为页（page）的整倍数。页是计算机管理存储器的逻辑块，硬件及操作系统往往将主存和磁盘存储区分割为连续的大小相等的块，每个存储块称为一页（在许多操作系统中，页得大小通常为4k），主存和磁盘以页为单位交换数据。<br>　　数据库系统的设计者巧妙利用了磁盘预读原理，将一个节点的大小设为等于一个页，这样每个节点只需要一次I/O就可以完全载入。为了达到这个目的，在实际实现B-Tree还需要使用如下技巧：每次新建节点时，直接申请一个页的空间，这样就保证一个节点物理上也存储在一个页里，加之计算机存储分配都是按页对齐的，就实现了一个node只需一次I/O。<br>　　相对高瘦平衡二叉树，b+树就显得很矮胖，故查询次数也就更低一些，上面说的节点，就是索引。B树已经很不错了，为何会是b+树，他们2个怎么说呢，b树的节点利用率更加高，每一个节点都是存放了数据，而B+树则是只有叶子节点存放了数据，并且相邻叶子节点之间有个链接，作为一个小链表结构，那么这同时意味着非叶子几点几乎都没有使用，造成了浪费，但是对于数据库来说，我们很多查询都是范围查询，如果有了链表那么就不用再去父节点重新查询新数据了，更加适合于数据库的使用</p>
-<p>　　</p>
-
-          
-        
-      
-    </div>
-    
-    
-    
-
-    
-
-    
-
-    
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </div>
-  
-  
-  
-  </article>
-
-
-    
-      
-
-  
-
-  
-  
-  
-
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-  
-  
-  
-  <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="https://skydh.github.io/2018/01/18/mysql varchar/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="skydh">
-      <meta itemprop="description" content="">
-      <meta itemprop="image" content="/images/avatar.gif">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="learning, progress, future.">
-    </span>
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-                
-                <a class="post-title-link" href="/2018/01/18/mysql varchar/" itemprop="url">mysql varchar到底能存多少字符。</a></h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">发表于</span>
-              
-              <time title="创建于" itemprop="dateCreated datePublished" datetime="2018-01-18T17:39:41+08:00">
-                2018-01-18
-              </time>
-            
-
-            
-
-            
-          </span>
-
-          
-
-          
-            
-          
-
-          
-          
-
-          
-
-          
-
-          
-
-        </div>
-      </header>
-    
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          
-            <h2 id="utf8编码的varchar"><a href="#utf8编码的varchar" class="headerlink" title="utf8编码的varchar"></a>utf8编码的varchar</h2><p>　　Mysql记录行数据是有限的。大小为64k,即65535个字节，而varchar要用1-2字节来存储字段长度，小于255的1字节，大于255的2字节。<br>　　Mysql 5.0后,英文字符固定都是一个字节，汉字字符根据编码方式占不同字节，Utf-8占3个字节，gbk占了2个字节。<br>　　第一，当编码方式为utf-8时，varchar存到21845就存不下了.也就是最大长度是21844.根据上面信息可以推算出 （ 65535-2 ）/3=21844余1<br>　　例子如下：<br>　　<img src="https://raw.githubusercontent.com/skydh/picture/master/mysql_001.png" alt="aaa"></p>
-<p>　　　<img src="https://raw.githubusercontent.com/skydh/picture/master/mysql_002.png" alt="aaa"></p>
-<h2 id="GBK编码的varchar"><a href="#GBK编码的varchar" class="headerlink" title="GBK编码的varchar"></a>GBK编码的varchar</h2><p>　　当编码格式为GBK时，varchar能存多少字符呢？经过推理可知大约能存32766个字符，（65535-2）/2=32766余1。<br>　　那么看看实验结果如下：<br>　<img src="https://raw.githubusercontent.com/skydh/picture/master/mysql_003.png" alt="aaa"></p>
-<p>　　　<img src="https://raw.githubusercontent.com/skydh/picture/master/mysql_004.png" alt="aaa"></p>
-<h2 id="为何提出这个问题？"><a href="#为何提出这个问题？" class="headerlink" title="为何提出这个问题？"></a>为何提出这个问题？</h2><p>　　前段时间一个哥们提bug，要把备注等字段全部最大大小设置为1000，甚至更多，这个表的字段本身就已经很多了，而我们设计表时一般都默认使用utf8这个编码格式，那么一个汉字就占了3个字节，故一个行记录的长度就会短了些，数据占用存储资源也会多了些，然后修改的时候成功的报了row size too large的这个错误。这里提出来也是为了让大家注意下。</p>
-<h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><p>　　设计表的时候不同的编码格式会导致varchar的最大值发生变化，varchar（数值），这个数值指的是字符数，也可以说是一个字，但是不是字节，当然存储的数据还是一个英文占一个字节，一个汉字根据编码格式占不同字节。</p>
-<p>　　</p>
-
-          
-        
-      
-    </div>
-    
-    
-    
-
-    
-
-    
-
-    
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </div>
-  
-  
-  
-  </article>
-
-
-    
-      
-
-  
-
-  
-  
-  
-
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-  
-  
-  
-  <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="https://skydh.github.io/2017/12/27/mysql 事务，锁，与四大隔离级别/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="skydh">
-      <meta itemprop="description" content="">
-      <meta itemprop="image" content="/images/avatar.gif">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="learning, progress, future.">
-    </span>
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-                
-                <a class="post-title-link" href="/2017/12/27/mysql 事务，锁，与四大隔离级别/" itemprop="url">mysql 锁，事务，隔离级别</a></h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">发表于</span>
-              
-              <time title="创建于" itemprop="dateCreated datePublished" datetime="2017-12-27T15:57:31+08:00">
-                2017-12-27
-              </time>
-            
-
-            
-
-            
-          </span>
-
-          
-
-          
-            
-          
-
-          
-          
-
-          
-
-          
-
-          
-
-        </div>
-      </header>
-    
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          
-            <h1 id="概念"><a href="#概念" class="headerlink" title="概念"></a>概念</h1><h2 id="事务"><a href="#事务" class="headerlink" title="事务"></a>事务</h2><p>　　原子性：事务必须是一个自动工作的单元，要么全部执行，要么全部不执行.<br>　　一致性：事务结束的时候，所有的内部数据都是正确的。<br>　　隔离性：并发多个事务时，各个事务不干涉内部数据，处理的都是另外一个事务处理之前或之后的数据。<br>　　持久性：事务提交之后，数据是永久性的，不可再回滚。<br>　　在mysql 中start transaction with consistent snapshot，这个是立即开启事务，无论是否使用了表。而begin则是在操作第一个表的时候才开始开启事务。 </p>
-<h2 id="锁"><a href="#锁" class="headerlink" title="锁"></a>锁</h2><p>　　锁分为３个级别，分别是全局锁，表锁，行锁。<br>　　全局锁：Flush tables with read lock 这个来来加全局锁，整个库都被锁起来了，只能读，不能写操作。一般用于全局逻辑备份。<br>　　但是针对innodb的可重复读的级别下是可以直接开启一个事务来进行全局数据备份。这个全局锁主要针对mysql里面的非innodb引擎。<br>　　表级锁：表锁，元数据锁。<br>　　表锁：lock tables t1 read/write，给这个表加了锁，那就无法对这个表操纵数据。我们可以用unlock tables主动释放锁。也可以客户端断开连接的时候自动释放。read是只能读，write是无法读写。<br>　　元数据锁：这个锁很有意思，当访问一个表（增删改查），会对这个表增加一个MDL读锁。而当对这个表结构做修改时，就会加一个MDL写锁。读锁之间不互斥，没有任何影响，但是写锁和读锁，写锁和写锁都是互斥的，必须等待前面的完成，才可以继续。<br>　　当我们对表进行字段修改时，那么会扫描整个表的数据。因此我们需要注意，加字段对数据库的影响。<br>　　存在这么一种情况，一个表，被多个连接事务读取数据，没有释放，接着这个表要进行表结构修改，需要获取MDL写锁，但是前面的事务不释放，那就无法获取到锁。只能阻塞，但是后面的请求都要等前面的获取到写锁，且释放锁才可以获取到读锁。那么整个表都不可用。<br>　　对于高频，长事务表，我们可以在alter语句里面加等待时间，然后DBA手动重试。</p>
-<p>　　这里主要说２个行级锁，共享锁（ｓ），排它锁（ｘ）．<br>　　共享锁：事务Ｔ对数据对象ａ加了ｓ锁，那么这个事务Ｔ只能对数据读而不能写，而其他事务也不能对这个数据加其他锁，只能加Ｓ锁，直到这个事务Ｔ执行完毕，这就保证了这个数据在事务Ｔ中不变。<br>　　排它锁：事务Ｔ对数据对象加了Ｘ锁，事务Ｔ可以对数据修改读取，但是其他事务无法对数据加其他任意锁，也不能读取和修改该数据对象。<br>　　这个ｓ锁和ｘ锁都是select语句用出来的。lock in share mode,就是加读锁，for update 就是加写锁。<br>　　next-key lock：mysql加锁的基本单位，它是行锁+间隙锁。前开后闭的区间。</p>
-<h2 id="死锁"><a href="#死锁" class="headerlink" title="死锁"></a>死锁</h2><p>　　２个事务，出现循环等待的情况。事务A锁了资源a1,事务B锁了资源b1,然后事务A想获取b1的资源，锁等待。事务B想获取a1资源，锁等待，死锁产生。<br>　　２个方案：。<br>　　１．进入等待状态，直到超时。超时参数可以通过参数innodb_lock_wait_timeout来设置。默认是５０ｓ。一般不采用这个方式。<br>　　２．发起死锁检测，发现死锁后，主动回滚死锁链条的某一个事务，让其他事务得以执行。将参数innodb_deadlock_detect设置为on表示开启这个逻辑。我们一般采用这个方法。<br>　　但是这个是有代价的。该逻辑如下：每当一个事务被锁住的时候，就要看看它依赖的线程有没有被别人锁住，不断循环，最后判断是否出现循环等待，也就是死锁。<br>　　如果是所有事务都是更新同一行的操作，那么死锁检查操作就是每个新来的被堵住的线程都要判断是否是因为自己的到来而导致了死锁，如果是1000的并发，那么其操作则是100w量级的。这样会导致cpu 100%异常。<br>　　对于热点行数据更新问题。有以下方案：<br>　　１．确定不是死锁，把死锁检查关掉<br>　　２．做一个数据库中间件来判断来控制请求量<br>　　３．在代码层面吧热门行数据分割。</p>
-<h2 id="四大隔离级别"><a href="#四大隔离级别" class="headerlink" title="四大隔离级别"></a>四大隔离级别</h2><p>　　Read uncommitted (读未提交)：这个可能造成脏读。其效果如下，２个事务Ａ，Ｂ。Ａ查询数据，不提交。Ｂ修改数据，不提交。Ａ查询数据，发现Ｂ未提交的数据已经查询出来了。<br>　　Read committed (读已提交)：这个可以避免脏读，只能读取到提交后的数据。但是可能造成不可重复读问题。２个事务Ａ，Ｂ。Ａ查询数据，不提交。Ｂ修改数据，提交。Ａ查询数据，发现Ｂ未提交的数据已经查询出来了，造成了２次查询效果不一致问题。<br>　　Repeatable read (可重复读)：这个可以避免可重复读，但是无法避免幻读。２个事务Ａ，Ｂ。Ａ查询数据，不提交。Ｂ在Ａ的查询范围内insert一条数据，提交。Ａ查询数据，发现多了几条数据。造成了幻读。mysql在rr级别下是没有幻读的<br>　　Serializable (串行化)：可以避免脏读，不可重复读，幻读的问题，但是新能较低。</p>
-<h1 id="mysql的Innodb的上述情况。"><a href="#mysql的Innodb的上述情况。" class="headerlink" title="mysql的Innodb的上述情况。"></a>mysql的Innodb的上述情况。</h1><h2 id="预备知识"><a href="#预备知识" class="headerlink" title="预备知识"></a>预备知识</h2><h3 id="2PL：Two-Phase-Locking"><a href="#2PL：Two-Phase-Locking" class="headerlink" title="2PL：Two-Phase Locking"></a>2PL：Two-Phase Locking</h3><p>　　这个是２阶段锁机制。说的是锁操作分为两个阶段：加锁阶段与解锁阶段，并且保证加锁阶段与解锁阶段不相交。也就是说，一个事务里面，对于要加锁的数据加了锁，直到事务结束（正常commit或者rollback）,才会释放锁。因此，我们建议把需要加锁的sql放在后面执行，如此加锁时间会短很多。</p>
-<h3 id="mvcc和innodb的mvcc"><a href="#mvcc和innodb的mvcc" class="headerlink" title="mvcc和innodb的mvcc"></a>mvcc和innodb的mvcc</h3><p>　　mvcc:多版本并发控制，适用于读多于写的情况，一行数据多个版本，读取数据可能是某个历史版本。可以有效见面加锁。<br>　　Innodb的mvcc实现，网上有多个版本解释了innodb的mvcc实现,但是很多都无法自圆其说，这里找到一个版本是专业的DBA写的（我比较信服的一个版本）这里简述下：<br>　　１．在Mysql中MVCC是在Innodb存储引擎中得到支持的，Innodb为每行记录都实现了三个隐藏字段：<br>　　6字节的事务ID（DB_TRX_ID）<br>　　7字节的回滚指针（DB_ROLL_PTR）<br>　　隐藏的ID。<br>　　MVCC 在mysql 中的实现依赖的是 undo log 与 read view<br>　　undo log是为回滚而用，具体内容就是copy事务前的数据库内容（行）到undo buffer，在适合的时间把undo buffer中的内容刷新到磁盘。<br>　　read view: 主要用来判断当前版本数据的可见性。在innodb中，创建一个新事务的时候，innodb会将当前系统中的活跃事务列表（trx_sys-&gt;trx_list）创建一个副本（read view），副本中保存的是系统当前不应该被本事务看到的其他事务id列表。当用户在这个事务中要读取该行记录的时候，innodb会将该行当前的版本号与该read view进行比较。<br>　　系统维护一个事务id，每次开启新事物都会+1。当修改数据时，才会修改对应数据行的事务id,并且指向以前的版本。<br>　　RR特性：只有在当前事务开启前提交的数据才可见哦。<br>　　RC特性：只要提交的数据都可见。<br>　　１．设该行的当前事务id为trx_id_0，read view中最早的事务id为trx_id_1, 最迟的事务id为trx_id_2。<br>　　２．如果trx_id_0&lt; trx_id_1或者trx_id_0=当前事务id的话，那么表明该行记录所在的事务已经在所有新事务创建之前就提交了，那么无论是RR还是RC都是绝对可见的，所以该行记录的当前值是可见的。跳到步骤6.<br>　　３．如果trx_id_0&gt;trx_id_2的话，那么表明该行记录所在的事务在本次新事务创建之后才开启,那么显然该行记录的当前值不可见.跳到步骤5。<br>　　４．如果trx_id_1&lt;=trx_id_0&lt;=trx_id_2, 那么从trx_id_1到trx_id_2进行遍历，如果trx_id_0等于他们之中的某个事务id的话，说明这个记录行修改时的事务在本事务开启前没有提交，那么这行数据不可见。否则就是在本事务开启前就已经提交了，那么可见了跳到步骤5.<br>　　５．从该行记录的DB_ROLL_PTR指针所指向的回滚段中取出最新的undo-log的版本号，将它赋值该trx_id_0，然后跳到步骤2.<br>　　６．将该可见行的值返回。<br>　　总结：开启一个新事务，获取到一个read view,当前事务是最大的，因为开启一个加1一下，然后查询数据，只要查询的数据的行事务id等于当前事务号，或者&lt;当前事务号，且不在read view中，那么说明这个行事务id是在本事务开启前就提交了，所以这行是可见的，如果在read view里面或者&gt;当前事务号，那么都是在本事务开启前没有提交的，那么对于RR来说都是不可见的。只能回滚到上一条数据中，在进行判断。<br>　　数据可见分３个情况：等于当前事务ｉｄ，下雨活跃最小事务ｉｄ，不在活跃事务ｉｄ表里面。
-　</p>
-<p>　　至于RR和RC的区别在于，RR是事务开启时获得一份ReadView,而RC则是每次语句都获取一次ReadView，这个造成了不同隔离级别的快照读的可见性的区别了。<br>　　RC总结如下：<br>　　开启一个新事务，不获取到一个read view，而是在查询时获取到这个Read View,只要查出的这个数据的事务id不在这个read view里面，那么就是可见的了。因为在这个read view里面，对于当前查询来说都是为提交的啊，因为是活跃的事务，而不在这个里面的都是已经提交的事务，对于RC来说，只要是提交的事务，都是可见的。<br>　　只要你在我之前提交了，那么我的read view里面就没有你，那么我就可见你了。RC的判断很简单，每次查询时都会取一个read view,只要这个行数据不在这个我得read view里面即可。<br>　　这个就完美解释了不同隔离级别数据的可见性问题了</p>
-<h3 id="Innodb的四大隔离级别与标准的区别"><a href="#Innodb的四大隔离级别与标准的区别" class="headerlink" title="Innodb的四大隔离级别与标准的区别"></a>Innodb的四大隔离级别与标准的区别</h3><p>　　RU,RC.Serializable和标准一样，但是RR不一样，RR解决了幻读的问题。 怎么实现的后面说。</p>
-<h3 id="一条简单的语句如何加锁？加什么锁。"><a href="#一条简单的语句如何加锁？加什么锁。" class="headerlink" title="一条简单的语句如何加锁？加什么锁。"></a>一条简单的语句如何加锁？加什么锁。</h3><pre><code> CREATE TABLE `user` (
-
- `id` int(11) NOT NULL,
-
-  `city` varchar(16) NOT NULL,
-
-  `name` varchar(16) NOT NULL,
-
-  PRIMARY KEY (`id`),
-
-  KEY `city` (`city`),
-
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
-
- 数据为（0,0,0）（5,5,5）（10,10,10）（15,15,15）
-</code></pre><p>　　1.delete　from user where id=5;<br>　　按照规则1，这个先加一个（0,5]的next-key锁，再按照规则3，给唯一索引加锁时，退化为行锁。因此只加了5这个行锁。</p>
-<p>　　２.delete　from user where id=7;<br>　　按照规则1，这个先加一个（5,10]的next-key锁，再按照规则4，等值查询，给索引加锁时，向右遍历最后一个不满足条件，退化为间隙锁，因此加锁为（5,10）。　　</p>
-<p>   ３.delete　from user where city=5;　　<br>   按照规则1，先加锁（0,5],由于是非唯一索引，继续向右，加锁（5,10],根据规则4，退化为（5,10），因此加锁范围为（0,10）</p>
-<p>   ４.delete　from user where id&gt;=5 and id&lt;6;　<br>　  按照规则，首先是加锁（0,5],根据规则3，给唯一索引加锁时，退化为行锁，因此变成只对5加了行锁。范围查询，继续向右，再次加锁（5,10],因此加锁范围[5,10].</p>
-<p>　　５.delete　from user where city&gt;=5 and city&lt;6;　<br>　　按照规则，加锁（0,5],范围查询继续向右再加锁（5,10]。因此加锁范围（0,10].</p>
-<p>　　6.delete　from user where id&gt;=5 and id&lt;=10;<br>　　按照规则，首先是加锁（0,5],根据规则3，给唯一索引加锁时，退化为行锁，因此变成只对5加了行锁。范围查询，继续向右，再次加锁（5,10],再次根据规则5，加锁（10,15]因此加锁范围[5,15].</p>
-<p>　　7.delete　from user where id&gt;=5 and id&lt;6 limit 1;　<br>　  这个和4几乎一样，但是多了一个limit,逻辑和前面一样，但是已经找到5这个数据删除了，后面的就不加锁了，因为任务完成了。</p>
-<pre><code>加锁规则如下：
-</code></pre><p>　　１．加锁的基本单位是next-key lock,</p>
-<p>　　２．只有访问到的对象才会加锁</p>
-<p>　　３．索引上的等值查询，给唯一索引加锁时，会退化为行锁。</p>
-<p>　　４．索引上的等值查询，向右遍历时且最后一个值不满足条件，next-lock退化为间隙锁。</p>
-<p>　　５．唯一索引上的范围查询会查询到第一个不满足条件的为止。</p>
-<pre><code>6.间隙锁之间互不冲突，只和在这个区间插入数据冲突。
-</code></pre><p>参考书籍：mysql实战45讲。以上五个规则来自该作者的整理。经测试，实用有效。</p>
-
-          
-        
-      
-    </div>
-    
-    
-    
-
-    
-
-    
-
-    
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </div>
-  
-  
-  
-  </article>
-
-
-    
-      
-
-  
-
-  
-  
-  
-
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-  
-  
-  
-  <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="https://skydh.github.io/2017/12/27/简述线程池/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="skydh">
-      <meta itemprop="description" content="">
-      <meta itemprop="image" content="/images/avatar.gif">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="learning, progress, future.">
-    </span>
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-                
-                <a class="post-title-link" href="/2017/12/27/简述线程池/" itemprop="url">简述线程池</a></h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">发表于</span>
-              
-              <time title="创建于" itemprop="dateCreated datePublished" datetime="2017-12-27T15:56:50+08:00">
-                2017-12-27
-              </time>
-            
-
-            
-
-            
-          </span>
-
-          
-
-          
-            
-          
-
-          
-          
-
-          
-
-          
-
-          
-
-        </div>
-      </header>
-    
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          
-            <h2 id="基本概念"><a href="#基本概念" class="headerlink" title="基本概念"></a>基本概念</h2><p>　　线程池顾名思义线程的池子。<br>　　工作者线程和任务队列２个概念组成。<br>　　工作者线程主要线程就是一个循环，循环从对列中接受任务执行，任务队列则是保存待执行的任务。<br>　　线程池其优点是可以重用线程，避免创建大量的线程，也避免了创建线程的开销。</p>
-<h2 id="线程池的基本属性"><a href="#线程池的基本属性" class="headerlink" title="线程池的基本属性"></a>线程池的基本属性</h2><p>　　java中线程池的实现类是ThreadPoolExecutor.<br>　　线程池的大小和以下四个参数相关。<br>　　１．corePoolSize:核心线程数。<br>　　２．maximumPoolSize:最大线程个数。<br>　　３．keepAliveTime和unit：空闲线程存活时间。<br>　　逻辑是这样的：创建一个线程池后，里面没有一个线程，当新任务到来时，如果当前线程个数小于corePoolSize，无论是否有空闲线程，都创建线程，直到=corePoolSize,而大于corePoolSize后就会进入队列里面排队，如果队列满了，那么就会创建新的线程直到数量达到maximumPoolSize。而keepAliveTime则是当当前线程数目大于corePoolSize时，空闲线程时间达到了这个值，那么这个线程就会被终结掉。<br>　　任务拒绝策略：就是上述中maximumPoolSize的任务队列都满了。新任务来了，如何处理？<br>　　默认会抛出异常，类型是RejectedExecutionException。<br>　　ThreadPoolExecutor.AbortPolicy：这就是默认的方式，抛出异常<br>　　ThreadPoolExecutor.DiscardPolicy：静默处理，忽略新任务，不抛异常，也不执行<br>　　ThreadPoolExecutor.DiscardOldestPolicy：将等待时间最长的任务扔掉，然后自己排队<br>　　ThreadPoolExecutor.CallerRunsPolicy：在任务提交者线程中执行任务，而不是交给线程池中的线程执行<br>　　预配置好线程池。<br>　　工厂类Executor提供了一些预制好的线程池</p>
-<p><pre><br>public static ExecutorService newSingleThreadExecutor(ThreadFactory threadFactory) {<br>        return new FinalizableDelegatedExecutorService<br>            (new ThreadPoolExecutor(1, 1,<br>                                    0L, TimeUnit.MILLISECONDS,<br>                                    new LinkedBlockingQueue<runnable>(),<br>                                    threadFactory));<br>    }<br>public static ExecutorService newCachedThreadPool() {<br>        return new ThreadPoolExecutor(0, Integer.MAX_VALUE,<br>                                      60L, TimeUnit.SECONDS,<br>                                      new SynchronousQueue<runnable>());<br>    }<br>public static ExecutorService newFixedThreadPool(int nThreads, ThreadFactory threadFactory) {<br>        return new ThreadPoolExecutor(nThreads, nThreads,<br>                                      0L, TimeUnit.MILLISECONDS,<br>                                      new LinkedBlockingQueue<runnable>(),<br>                                      threadFactory);<br>    }<br></runnable></runnable></runnable></pre><br>　　等还有些。这里只是说出几个，看看其实现就知道他的意思了，</p>
-<p><pre><br>    package threadPool;</pre></p>
-<pre><code>import java.util.concurrent.ArrayBlockingQueue;
-import java.util.concurrent.ThreadPoolExecutor;
-import java.util.concurrent.TimeUnit;
-
-public class Test {
-    public static void main(String[] args) {
-        ThreadPoolExecutor executor = new ThreadPoolExecutor(5, 10, 200, TimeUnit.MILLISECONDS,
-                new ArrayBlockingQueue&lt;Runnable&gt;(5));
-
-        for (int i = 0; i &lt; 15; i++) {
-            MyTask myTask = new MyTask(i);
-            executor.execute(myTask);
-            System.out.println(&quot;线程池中线程数目：&quot; + executor.getPoolSize() + &quot;，队列中等待执行的任务数目：&quot; + executor.getQueue().size()
-                    + &quot;，已执行玩别的任务数目：&quot; + executor.getCompletedTaskCount());
-        }
-        executor.shutdown();
-    }
-    }
-class MyTask implements Runnable {
-
-    private int taskNum;
-
-    public MyTask(int num) {
-        this.taskNum = num;
-    }
-
-    @Override
-    public void run() {
-        System.out.println(&quot;正在执行task &quot; + taskNum);
-        try {
-            Thread.currentThread().sleep(4000);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
-        System.out.println(&quot;task &quot; + taskNum + &quot;执行完毕&quot;);
-    }
-}
-</code></pre><p><br>　　结果如下：</p>
-<p><pre>正在执行task 0<br>线程池中线程数目：1，队列中等待执行的任务数目：0，已执行玩别的任务数目：0<br>线程池中线程数目：2，队列中等待执行的任务数目：0，已执行玩别的任务数目：0<br>正在执行task 1<br>线程池中线程数目：3，队列中等待执行的任务数目：0，已执行玩别的任务数目：0<br>正在执行task 2<br>线程池中线程数目：4，队列中等待执行的任务数目：0，已执行玩别的任务数目：0<br>正在执行task 3<br>线程池中线程数目：5，队列中等待执行的任务数目：0，已执行玩别的任务数目：0<br>正在执行task 4<br>线程池中线程数目：5，队列中等待执行的任务数目：1，已执行玩别的任务数目：0<br>线程池中线程数目：5，队列中等待执行的任务数目：2，已执行玩别的任务数目：0<br>线程池中线程数目：5，队列中等待执行的任务数目：3，已执行玩别的任务数目：0<br>线程池中线程数目：5，队列中等待执行的任务数目：4，已执行玩别的任务数目：0<br>线程池中线程数目：5，队列中等待执行的任务数目：5，已执行玩别的任务数目：0<br>线程池中线程数目：6，队列中等待执行的任务数目：5，已执行玩别的任务数目：0<br>正在执行task 10<br>线程池中线程数目：7，队列中等待执行的任务数目：5，已执行玩别的任务数目：0<br>线程池中线程数目：8，队列中等待执行的任务数目：5，已执行玩别的任务数目：0<br>正在执行task 12<br>线程池中线程数目：9，队列中等待执行的任务数目：5，已执行玩别的任务数目：0<br>正在执行task 13<br>正在执行task 11<br>线程池中线程数目：10，队列中等待执行的任务数目：5，已执行玩别的任务数目：0<br>正在执行task 14<br>task 0执行完毕<br>正在执行task 5<br>task 4执行完毕<br>task 3执行完毕<br>正在执行task 7<br>task 2执行完毕<br>task 1执行完毕<br>正在执行task 8<br>正在执行task 6<br>task 13执行完毕<br>task 14执行完毕<br>task 12执行完毕<br>task 11执行完毕<br>task 10执行完毕<br>正在执行task 9<br>task 5执行完毕<br>task 7执行完毕<br>task 8执行完毕<br>task 6执行完毕<br>task 9执行完毕<br></pre><br>　　网上直接找了个例子跑了一下，只要理解了上面的原理，这些就很好理解了。</p>
-<p>附上一个简单线程池实现代码：</p>
-<p>实现思路很简单</p>
-<p>创建多个不断循环的线程，不断监听是否有任务，没有则进入wait状态。有任务塞入队列时则唤醒之。</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">package</span> tutorials;</span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> java.util.concurrent.LinkedBlockingQueue;</span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">ThreadPool</span> </span>&#123;</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">final</span> <span class="keyword">int</span> nThreads;</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">final</span> PoolWorker[] threads;</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">final</span> LinkedBlockingQueue queue;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="title">ThreadPool</span><span class="params">(<span class="keyword">int</span> nThreads)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">this</span>.nThreads = nThreads;</span><br><span class="line">        queue = <span class="keyword">new</span> LinkedBlockingQueue();</span><br><span class="line">        threads = <span class="keyword">new</span> PoolWorker[nThreads];</span><br><span class="line"></span><br><span class="line">        <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; nThreads; i++) &#123;</span><br><span class="line">            threads[i] = <span class="keyword">new</span> PoolWorker();</span><br><span class="line">            threads[i].start();</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">execute</span><span class="params">(Runnable task)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">synchronized</span> (queue) &#123;</span><br><span class="line">            queue.add(task); <span class="comment">// 向队列中添加任务</span></span><br><span class="line">            queue.notify();  <span class="comment">// 唤醒一个线程</span></span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">private</span> <span class="class"><span class="keyword">class</span> <span class="title">PoolWorker</span> <span class="keyword">extends</span> <span class="title">Thread</span> </span>&#123;</span><br><span class="line">        <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">run</span><span class="params">()</span> </span>&#123;</span><br><span class="line">            Runnable task;</span><br><span class="line"></span><br><span class="line">            <span class="keyword">while</span> (<span class="keyword">true</span>) &#123;</span><br><span class="line">                <span class="keyword">synchronized</span> (queue) &#123;</span><br><span class="line">                    <span class="keyword">while</span> (queue.isEmpty()) &#123;</span><br><span class="line">                        <span class="keyword">try</span> &#123;</span><br><span class="line">                            queue.wait(); <span class="comment">// 线程没有任务，进入睡眠</span></span><br><span class="line">                        &#125; <span class="keyword">catch</span> (InterruptedException e) &#123;</span><br><span class="line">                            System.out.println(<span class="string">"An error occurred while queue is waiting: "</span> + e.getMessage());</span><br><span class="line">                        &#125;</span><br><span class="line">                    &#125;</span><br><span class="line">                    <span class="comment">// 线程被唤醒之后，会顺利执行到这里</span></span><br><span class="line">                    task = queue.poll(); <span class="comment">// 获取任务</span></span><br><span class="line">                &#125;</span><br><span class="line"></span><br><span class="line">                <span class="comment">// If we don't catch RuntimeException,</span></span><br><span class="line">                <span class="comment">// the pool could leak threads</span></span><br><span class="line">                <span class="keyword">try</span> &#123;</span><br><span class="line">                    task.run(); <span class="comment">// 执行任务</span></span><br><span class="line">                &#125; <span class="keyword">catch</span> (RuntimeException e) &#123;</span><br><span class="line">                    System.out.println(<span class="string">"Thread pool is interrupted due to an issue: "</span> + e.getMessage());</span><br><span class="line">                &#125;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-          
-        
-      
-    </div>
-    
-    
-    
-
-    
-
-    
-
-    
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </div>
-  
-  
-  
-  </article>
-
-
-    
-      
-
-  
-
-  
-  
-  
-
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-  
-  
-  
-  <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="https://skydh.github.io/2017/12/27/volatile,原子变量和ThreadLocal/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="skydh">
-      <meta itemprop="description" content="">
-      <meta itemprop="image" content="/images/avatar.gif">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="learning, progress, future.">
-    </span>
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-                
-                <a class="post-title-link" href="/2017/12/27/volatile,原子变量和ThreadLocal/" itemprop="url">volatile,原子变量和ThreadLocal</a></h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">发表于</span>
-              
-              <time title="创建于" itemprop="dateCreated datePublished" datetime="2017-12-27T15:00:13+08:00">
-                2017-12-27
-              </time>
-            
-
-            
-
-            
-          </span>
-
-          
-
-          
-            
-          
-
-          
-          
-
-          
-
-          
-
-          
-
-        </div>
-      </header>
-    
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          
-            <h1 id="概念"><a href="#概念" class="headerlink" title="概念"></a>概念</h1><h2 id="多线程中的变量"><a href="#多线程中的变量" class="headerlink" title="多线程中的变量"></a>多线程中的变量</h2><p>　　首先我介绍的是volatile关键字，其次是原子变量，最后则是ThreadLocal线程本地变量</p>
-<h2 id="java基本内存模型"><a href="#java基本内存模型" class="headerlink" title="java基本内存模型"></a>java基本内存模型</h2><p>　　用到volatile这个关键字以及后面的原子变量之前，我们必须先了解一下什么是java基本内存模型。<br>　　先明确几个概念：<br>　　主内存：主内存就是所有线程共享的内存，对于一个共享变量来说，主内存存放其真实数据（本尊数据）<br>　　线程工作内存：线程对数据操作时，都会有自己的工作内存，对共享变量操作前，会先从主内存中获取到值，操作完后在回写回去。
-　　</p>
-<h2 id="volatile"><a href="#volatile" class="headerlink" title="volatile"></a>volatile</h2><p>　　现在有２个线程Ａ，Ｂ，他们要主内存中间的一个变量s=0;此时A线程要修改这个共享变量，它是先获取到这个值复制到线程工作内存里面去，然后在线程工作内存里面把这个值修改了，然后把这个值再写到主内存里面去。此时B读取这个s变量，那么值可能是0，也可能是线程A所修改的值。<br>　　使用volatile这个关键字可以避免上述这种情况（使用锁来对变量加锁或者synchronized开销太大）。<br>　　针对上述的例子，volatile的可见性保证了不会出现上述问题。<br>　　什么是可见性呢？<br>　　当一个线程修改了变量的值，新的值会立刻同步到主内存当中。而其他线程读取这个变量的时候，也会从主内存中拉取最新的变量值。<br>　　当然这种可见性不是原子性哦。当遇到以下情况会有问题<br>　　１．多个线程同时修改变量且修改时依赖变量本身。<br>　　２．多个volatile变量维护一个条件，若是别的线程对其多个变量修改，那么可能造成条件的不成立。<br>　　针对上述情况于是有了原子变量（后面介绍），保证了其原子性。<br>　　volatile还有一个特性就是禁止指令重排序。那么什么是指令重排序呢？<br>　　指令重排序：编译器的字节码的重排序。cpu指令的重排序。<br>　　指令重排序的目的是在不改变单线程下程序的逻辑下，优化程序执行效率。对于多线程于是就有了问题。有的程序时单线程下，调换一下顺序也没什么的，但是，对于多线程，调换一下顺序，可能回到其他线程造成大的影响。<br>　　而volatile则是解决了这个问题，他利用了内存屏障来来辅助解决了这个。</p>
-<h2 id="原子变量"><a href="#原子变量" class="headerlink" title="原子变量"></a>原子变量</h2><p>　　说到原子变量就不得不说CAS。<br>　　什么是ＣＡＳ呢？<br>　　就是更新一个值的时候，查询内存中的值，和自己要更新前获取到的值是否一致，若是一致，那么更新。<br>　　与synchronized相比，cas是乐观锁，我认为并发不会修改到我的值，不加锁，只是提前获取到值，要更新的时候在比对一下，若是内存的值和我的值一致，那么更新，否则不更新。而synchronized则是不管什么直接加锁的。因此是悲观锁。<br>　　什么是ABA问题？<br>　　3个线程A,B,C对cas变量a修改。A,B线程获取到了变量a,A修改变量为b,B线程阻塞，C线程获取到变量b,并把b改成了a,B线程不阻塞了，继续执行，执行成功，这就是ABA问题。这个B线程不应该执行的，但是还是执行了。如这个变量是个对象，其引用没有变化，但是具体指变了，那么会出大问题的。解决方案就是在cas变量上加个版本号或者时间戳来限定。<br>　　具体demo就是Atomic开头的类。具体我就不详细说了。<br>　　与加锁相比这个更加轻量级。</p>
-<h2 id="ThreadLocal"><a href="#ThreadLocal" class="headerlink" title="ThreadLocal"></a>ThreadLocal</h2><p>　　线程本地变量是说，每个线程都有同一个变量的独有拷贝ThreadLocal是一个泛型类，接受一个类型参数T，它只有一个空的构造方法。这个直接看个ｄｅｍｏ</p>
-<p><pre><br>package thread;</pre></p>
-<p>public class ThreadLocal001 {<br>    static ThreadLocal<integer> local = new ThreadLocal<integer>();</integer></integer></p>
-<pre><code>public static void main(String[] args) throws InterruptedException {
-    Thread child = new Thread() {
-        @Override
-        public void run() {
-            System.out.println(&quot;child&quot; + local.get());
-            local.set(200);
-            System.out.println(&quot;child&quot; + local.get());
-        }
-    };
-    local.set(100);
-    child.start();
-    child.join();
-    System.out.println(&quot;main&quot; + local.get());
-}
-</code></pre><p>}<br><br>　　结果如下：</p>
-<p><pre><br>childnull<br>child200<br>main100<br></pre><br>　　这说明，main线程对local变量的设置对child线程不起作用，child线程对local变量的改变也不会影响main线程，它们访问的虽然是同一个变量local，但每个线程都有自己的独立的值，这就是线程本地变量的含义。</p>
-<h2 id="ThreadLocal原理解析。"><a href="#ThreadLocal原理解析。" class="headerlink" title="ThreadLocal原理解析。"></a>ThreadLocal原理解析。</h2><p>　　Thread类里面有一个属性：</p>
-<pre><code>ThreadLocal.ThreadLocalMap threadLocals = null;
-</code></pre><p>　　ThreadLocal 里面的set 方法：</p>
-<pre><code>   public void set(T value) {
-    //获取当前线程
-    Thread t = Thread.currentThread();
-    //获取当前线程的ThreadLocalMap对象。
-    ThreadLocalMap map = getMap(t);
-    //有则把值放进去，没有则创建ThreadLocalMap对象。
-    if (map != null)
-        map.set(this, value);
-    else
-
-        createMap(t, value);
-}
-</code></pre><p>　　ThreadLocal的getMap方法：</p>
-<pre><code>ThreadLocalMap getMap(Thread t) {
-    return t.threadLocals;
-}
-</code></pre><p>　　ThreadLocal的createMap方法：</p>
-<pre><code>void createMap(Thread t, T firstValue) {
-    t.threadLocals = new ThreadLocalMap(this, firstValue);
-}
-</code></pre><p>　　我们发现值是存在当前线程的的一个内部类里面，存的就是当前threadlocal和值的键值对。</p>
-<p>　　ThreadLocalMap的构造方法：</p>
-<pre><code>ThreadLocalMap(ThreadLocal&lt;?&gt; firstKey, Object firstValue) {
-        //创建一个数组，数组对象为entity,初始化大小为16
-        table = new Entry[INITIAL_CAPACITY];
-        int i = firstKey.threadLocalHashCode &amp; (INITIAL_CAPACITY - 1);
-        //根据ThreadLocal的hash值确定其数组位置，在将值放进去
-        table[i] = new Entry(firstKey, firstValue);
-        size = 1;
-        setThreshold(INITIAL_CAPACITY);
-    }
-</code></pre><p>　　ThreadLocalMap的set方法：</p>
-<pre><code>private void set(ThreadLocal&lt;?&gt; key, Object value) {
-
-       // We don&apos;t use a fast path as with get() because it is at
-       // least as common to use set() to create new entries as
-       // it is to replace existing ones, in which case, a fast
-       // path would fail more often than not.
-
-       Entry[] tab = table;
-       int len = tab.length;
-       int i = key.threadLocalHashCode &amp; (len-1);
-
-       for (Entry e = tab[i];
-            e != null;
-            e = tab[i = nextIndex(i, len)]) {
-           ThreadLocal&lt;?&gt; k = e.get();
-
-           if (k == key) {
-               e.value = value;
-               return;
-           }
-
-           if (k == null) {
-               replaceStaleEntry(key, value, i);
-               return;
-           }
-       }
-
-       tab[i] = new Entry(key, value);
-       int sz = ++size;
-       if (!cleanSomeSlots(i, sz) &amp;&amp; sz &gt;= threshold)
-           rehash();
-   }
-</code></pre><p>　　从什么这些我们可以看出来，具体的值是存在Thread对象里面的，因此不同线程之间相互没有影响。具体一点。每个Thread类里面有个属性： ThreadLocal.ThreadLocalMap threadLocals = null。显然这个属性类是ThreadLocal的内部类。我们看看ThreadLocal的get方法：</p>
-<pre><code>public T get() {
-    Thread t = Thread.currentThread();
-    ThreadLocalMap map = getMap(t);
-    if (map != null) {
-        ThreadLocalMap.Entry e = map.getEntry(this);
-        if (e != null) {
-            @SuppressWarnings(&quot;unchecked&quot;)
-            T result = (T)e.value;
-            return result;
-        }
-    }
-    return setInitialValue();
-}
-</code></pre><p>　　我们先获取到当前Thread类，然后的到其ThreadLocalMap类属性，我们的值就存在里面。这个类的属性如下：Entry[]数组，这个key和value分别是ThreadLocal，value。完美解释。</p>
-<p>　　内存泄漏的问题,我们看2段代码即可明白。</p>
-<pre><code>static class Entry extends WeakReference&lt;ThreadLocal&lt;?&gt;&gt; {
-       /** The value associated with this ThreadLocal. */
-       Object value;
-
-       Entry(ThreadLocal&lt;?&gt; k, Object v) {
-           //这里让key放到上层父类处理，使其变成弱引用
-           super(k);
-           value = v;
-       }
-   }
-</code></pre><p>　　首先来说，如果把ThreadLocal置为null，那么意味着Heap中的ThreadLocal实例不在有强引用指向，只有弱引用存在，因此GC是可以回收这部分空间的，也就是key是可以回收的。但是value却存在一条从Current Thread过来的强引用链。因此只有当Current Thread销毁时，value才能得到释放。<br>　　因此，只要这个线程对象被gc回收，就不会出现内存泄露，但在threadLocal设为null和线程结束这段时间内不会被回收的，就发生了我们认为的内存泄露。最要命的是线程对象不被回收的情况，比如使用线程池的时候，线程结束是不会销毁的，再次使用的，就可能出现内存泄露。事实上，在ThreadLocalMap中的set/getEntry方法中，会对key为null（也即是ThreadLocal为null）进行判断，如果为null的话，那么是会对value置为null的。</p>
-<p>   避免方法，先将value remove掉，</p>
-<p>　　</p>
-<p>　　</p>
-
-          
-        
-      
-    </div>
-    
-    
-    
-
-    
-
-    
-
-    
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </div>
-  
-  
-  
-  </article>
-
-
-    
-      
-
-  
-
-  
-  
-  
-
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-  
-  
-  
-  <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="https://skydh.github.io/2017/12/07/java线程的并发加锁控制/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="skydh">
-      <meta itemprop="description" content="">
-      <meta itemprop="image" content="/images/avatar.gif">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="learning, progress, future.">
-    </span>
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-                
-                <a class="post-title-link" href="/2017/12/07/java线程的并发加锁控制/" itemprop="url">java线程的并发加锁控制</a></h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">发表于</span>
-              
-              <time title="创建于" itemprop="dateCreated datePublished" datetime="2017-12-07T13:03:24+08:00">
-                2017-12-07
-              </time>
-            
-
-            
-
-            
-          </span>
-
-          
-
-          
-            
-          
-
-          
-          
-
-          
-
-          
-
-          
-
-        </div>
-      </header>
-    
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          
-            <h2 id="synchronized和Lock的加锁机制"><a href="#synchronized和Lock的加锁机制" class="headerlink" title="synchronized和Lock的加锁机制"></a>synchronized和Lock的加锁机制</h2><p>　　synchronized关键字加锁。<br>　　第一，我们先明确几个概念。<br>　　我们使用synchronized关键字时，锁不是加在代码上，而是加在对象上。<br>　　我先准备了一个测试类来验证信息，Counter类是一个公共线程信息类</p>
-<pre>  package thread;
-
-import java.text.SimpleDateFormat;
-import java.util.Date;
-import java.util.concurrent.locks.Condition;
-import java.util.concurrent.locks.Lock;
-import java.util.concurrent.locks.ReentrantLock;
-
-public class Counter {
-
-    public final Lock lock = new ReentrantLock();
-    private Condition condition = lock.newCondition();
-    private volatile int a = 1;
-    private Students stu = new Students();
-
-    public int geta() {
-        return a;
-    }
-
-    public synchronized void add() {
-        a++;
-        try {
-            SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-            System.out.println("add开始执行" + df.format(new Date()));
-            Thread.sleep(10000);
-            System.out.println("add is ing");
-            System.out.println("add执行结束" + df.format(new Date()));
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
-    }
-
-    public synchronized void add1() {
-        a++;
-        try {
-            SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-            System.out.println("add1开始执行" + df.format(new Date()));
-            Thread.sleep(10000);
-            System.out.println("add1 is ing");
-            System.out.println("add1开始执行" + df.format(new Date()));
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
-    }
-
-    public void add2() {
-        synchronized (stu) {
-            SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-            System.out.println("add2开始执行" + df.format(new Date()));
-            System.out.println("add2 is ing");
-            System.out.println("add2开始执行" + df.format(new Date()));
-        }
-    }
-
-    public static synchronized void addStatic() {
-
-        try {
-            SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-            System.out.println("addStatic开始执行" + df.format(new Date()));
-            Thread.sleep(10000);
-            System.out.println("addStatic is ing");
-            System.out.println("addStatic开始执行" + df.format(new Date()));
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
-    }
-
-    public void add3() {
-
-        lock.lock();
-        try {
-            System.out.println("进入add3");
-            a++;
-
-            Thread.sleep(10000);
-            System.out.println("add3");
-
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
-        lock.unlock();
-    }
-
-    public void add4() {
-
-
-
-        lock.lock();
-        System.out.println("进入add4");
-        try {
-            Thread.sleep(10000);
-        } catch (InterruptedException e) {
-
-            e.printStackTrace();
-        }
-        System.out.println("add4");
-
-        condition.signal();
-        lock.unlock();
-
-    }
-
-
-
-}
- </pre>
-　　创建一个Counter类的对象，这个对象里面一共有4个锁，第一个就是counter对象锁，第二个就是students对象锁，第三个就是Students这个类的锁，因为每个类都是Class类的对象。第四个就是ReentrantLock这个可重入锁。
-　　这几个概念明确后，写几个demo来测试说明下:
-<pre>  
-package thread;
-
-public class Test003 {
-
-    public class Thread1 extends Thread {
-        private Counter counter;
-
-        public Thread1(Counter counter) {
-            this.counter = counter;
-        }
-
-        public void run() {
-            counter.add();
-        }
-    }
-
-    public class Thread2 extends Thread {
-        private Counter counter;
-
-        public Thread2(Counter counter) {
-            this.counter = counter;
-        }
-
-        public void run() {
-            counter.add1();
-        }
-    }
-
-    public class Thread3 extends Thread {
-        private Counter counter;
-
-        public Thread3(Counter counter) {
-            this.counter = counter;
-        }
-
-        public void run() {
-            counter.add2();
-        }
-    }
-
-    public class ThreadStatic extends Thread {
-        public void run() {
-            Counter.addStatic();
-        }
-    }
-
-    public class Thread4 extends Thread {
-        private Counter counter;
-
-        public Thread4(Counter counter) {
-            this.counter = counter;
-        }
-
-        public void run() {
-            counter.add3();
-        }
-    }
-
-    public class Thread5 extends Thread {
-        private Counter counter;
-
-        public Thread5(Counter counter) {
-            this.counter = counter;
-        }
-
-        public void run() {
-            counter.add4();
-        }
-    }
-}
-
- </pre>
-　　这些是即将要调用的线程类，已来方便我们使用测试。
-第一种情况：
-<pre>
-public static void main(String[] args) throws InterruptedException {
-
-        Counter counter = new Counter();
-        Test003 test003 = new Test003();
-        Thread1 thread1 = test003.new Thread1(counter);
-        Thread2 thread2 = test003.new Thread2(counter);
-
-        thread1.start();
-        thread2.start();
-
-    }
-</pre>
-　　结果如下：
-<pre>
-add1开始执行2017-12-21 14:28:48
-add1 is ing
-add1开始执行2017-12-21 14:28:58
-add开始执行2017-12-21 14:28:58
-add is ing
-add执行结束2017-12-21 14:29:08
-
-</pre>
-　　结果解析：无论执行多少次，要么add1先执行，要么add先执行，但是任意一个没有执行完，另一个是不会执行的，即便调用了sleep方法，为什么呢。因为这2个线程公用一个对象，而调用的方法都加了synchronized的方法，由于第一个执行执行方法的将获得对象锁。其余的线程就无法获取到对象锁，只能进入等待队列。
-　　第二种情况：
-<pre>
-public static void main(String[] args) throws InterruptedException {
-        Counter counter = new Counter();
-        Test003 test003 = new Test003();
-        Thread1 thread1 = test003.new Thread1(counter);
-        Thread3 thread3 = test003.new Thread3(counter);
-        thread1.start();
-        thread3.start();
-    }
-</pre>
-　　结果如下
-<pre>
-add2开始执行2017-12-21 14:41:10
-add2 is ing
-add开始执行2017-12-21 14:41:10
-add2开始执行2017-12-21 14:41:10
-add is ing
-add执行结束2017-12-21 14:41:20</pre>
-　　结果解析：２个线程交叉执行，虽然都加了锁，但是是不同的对象锁，因此交叉执行。
-第三种情况：
-<pre>
-public static void main(String[] args) throws InterruptedException {
-        Counter counter = new Counter();
-        Counter counter1 = new Counter();
-        Test003 test003 = new Test003();
-        Thread1 thread1 = test003.new Thread1(counter);
-        Thread2 thread2 = test003.new Thread2(counter1);
-        thread1.start();
-        thread2.start();
-    }
-</pre>
-　　结果如下：
-<pre>
-add开始执行2017-12-21 14:45:03
-add1开始执行2017-12-21 14:45:03
-add1 is ing
-add is ing
-add1开始执行2017-12-21 14:45:13
-add执行结束2017-12-21 14:45:13</pre>
-　　结果解析：虽然都是一个类，一个代码，但是是２个对象，synchronized这个关键字加锁是加到对象身上去了。而这个2个线程锁持有的Counter对象时不一样的，因此锁也是不一样的，故交叉执行很正常。
-　　第四种情况：
-<pre>
-public static void main(String[] args) throws InterruptedException {
-        Counter counter = new Counter();
-        Test003 test003 = new Test003();
-        Thread1 thread1 = test003.new Thread1(counter);
-        ThreadStatic threadStatic = test003.new ThreadStatic();
-        thread1.start();
-        threadStatic.start();
-    }
-</pre>
-　　结果如下：
-<pre>
-addStatic开始执行2017-12-21 18:35:55
-add开始执行2017-12-21 18:35:55
-addStatic is ing
-add is ing
-addStatic开始执行2017-12-21 18:36:05
-add执行结束2017-12-21 18:36:05</pre>
-　　结果解析：结果交叉执行为何，因为静态方法是属于类本身的，那么在这个静态方法上加的synchronized，那么这个锁则对应的是类本身，那么2个线程执行普通方法和静态方法（都加了synchronized关键字）时是并发执行的了。
-　　第五种情况：
-<pre>
-public static void main(String[] args) throws InterruptedException {
-        Counter counter = new Counter();
-        Test003 test003 = new Test003();
-        Thread4 thread4 = test003.new Thread4(counter);
-        Thread5 thread5 = test003.new Thread5(counter);
-        thread4.start();
-        thread5.start();
-    }
-</pre>
-　　结果如下：
-<pre>
-进入add4
-add4
-进入add3
-add3</pre>
-　　结果解析：同一个Counter对象那么对应同一个ReentrantLock锁。那么这2个线程所执行的方法都加了ReentrantLock,那么执行的时候注定要加锁等待，所以无法并发执行，结果按顺序执行。
-
-
-## 并发条件控制
-　　正如大家所知，synchronized关键字对应了wait()方法和notify（）方法来控制并发控制，那么lock呢，也对应一系列的方法来处理。我们使用Condition这个类的方法来加以控制，下面，我将展示这2个加锁方式的控制的简单实现
-　　第一个：lock的条件控制
-<pre>
-
-
-    public final Lock lock = new ReentrantLock();
-    private Condition condition = lock.newCondition();
-    private volatile int a = 1;
-    public void add3() {
-        System.out.println("进入add3");
-        lock.lock();
-        try {
-            a++;
-            System.out.println("add3");
-            condition.await();
-            System.out.println("add31");
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
-        lock.unlock();
-    }
-
-    public void add4() {
-        System.out.println("add4");
-        while (true) {
-            if (a > 1) {
-                System.out.println("进入循环");
-                lock.lock();
-                System.out.println("add4");
-                System.out.println("add41");
-                condition.signal();
-                lock.unlock();
-                break;
-            }
-        }
-    }
-public static void main(String[] args) throws InterruptedException {
-        Counter counter = new Counter();
-        Test003 test003 = new Test003();
-        Thread4 thread4 = test003.new Thread4(counter);
-        Thread5 thread5 = test003.new Thread5(counter);
-        thread4.start();
-        thread5.start();
-    }
-</pre>
-　　结果如下
-<pre>
-add4
-进入add3
-add3
-进入循环
-add4
-add41
-add31</pre>
-　　结果解析：２个线程无论谁先执行，先获取到锁的总是add3()方法。因为a=1,无法获取到锁，因此先执行add3方法，在放弃锁并进入到等待队列，然后a>1了，那么add4有机会执行代码了。在唤醒add3()方法，恩，完美。
-
-　　第二种情况：使用Object类的wait方法。
-<pre>
-    private volatile int a = 1;
-    public void add() {
-
-        synchronized (this) {
-            try {
-                SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-                System.out.println("add开始执行" + df.format(new Date()));
-                // Thread.sleep(10000);
-                a++;
-                wait();
-                System.out.println("add is ing");
-                System.out.println("add执行结束" + df.format(new Date()));
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
-        }
-    }
-
-    public void add1() {
-        while (true) {
-            if (a > 1) {
-                synchronized (this) {
-                    SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-                    System.out.println("add1开始执行" + df.format(new Date()));
-                    // Thread.sleep(10000);
-                    System.out.println("add1 is ing");
-                    System.out.println("add1开始执行" + df.format(new Date()));
-                    notify();
-                }
-                break;
-            }
-        }
-    }
-    public static void main(String[] args) throws InterruptedException {
-
-        Counter counter = new Counter();
-
-        Test003 test003 = new Test003();
-        Thread1 thread1 = test003.new Thread1(counter);
-
-        Thread2 thread2 = test003.new Thread2(counter);
-
-        thread1.start();
-        thread2.start();
-        thread1.join();
-}</pre>
-
-<p>　结果如下</p>
-<p><pre><br>add开始执行2017-12-21 19:32:23<br>add1开始执行2017-12-21 19:32:23<br>add1 is ing<br>add1开始执行2017-12-21 19:32:23<br>add is ing<br>add执行结束2017-12-21 19:32:23</pre><br>　　结果解析：逻辑和上面一样，只是不同的实现方式罢了。</p>
-<p>　　wait()方法在这里要再次说下，他是在加了synchronized这个关键字的对象调用的，不然报错。还有Thread类的join()方法源码里面的wait()方法是让主线程进入等待队列，并且等待这个锁，当这个子线程执行完后，则会自动调用notify方法，让等待子线程对象锁的主线程可以继续执行，恩，完美解释join（）方法。</p>
-<p>　　</p>
-<p>　　
-　　</p>
-
-          
-        
-      
-    </div>
-    
-    
-    
-
-    
-
-    
-
-    
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </div>
-  
-  
-  
-  </article>
-
-
-    
-      
-
-  
-
-  
-  
-  
-
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-  
-  
-  
-  <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="https://skydh.github.io/2017/11/29/java线程的常用方法和属性介绍/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="skydh">
-      <meta itemprop="description" content="">
-      <meta itemprop="image" content="/images/avatar.gif">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="learning, progress, future.">
-    </span>
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-                
-                <a class="post-title-link" href="/2017/11/29/java线程的常用方法和属性介绍/" itemprop="url">java线程的常用方法和属性介绍</a></h1>
+                <a class="post-title-link" href="/2017/11/29/java/java线程的常用方法和属性介绍/" itemprop="url">java线程的常用方法和属性介绍</a></h1>
         
 
         <div class="post-meta">
@@ -1734,7 +400,7 @@ add31</pre>
   
   
   <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="https://skydh.github.io/2017/11/23/java线程的3种创建方式及优缺点/">
+    <link itemprop="mainEntityOfPage" href="https://skydh.github.io/2017/11/23/java/java线程的3种创建方式及优缺点/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="name" content="skydh">
@@ -1753,7 +419,7 @@ add31</pre>
         
           <h1 class="post-title" itemprop="name headline">
                 
-                <a class="post-title-link" href="/2017/11/23/java线程的3种创建方式及优缺点/" itemprop="url">java线程的3种创建方式及优缺点</a></h1>
+                <a class="post-title-link" href="/2017/11/23/java/java线程的3种创建方式及优缺点/" itemprop="url">java线程的3种创建方式及优缺点</a></h1>
         
 
         <div class="post-meta">
@@ -2020,7 +686,7 @@ Thread-3   _19
   
   
   <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="https://skydh.github.io/2017/11/23/java线程的基本概念/">
+    <link itemprop="mainEntityOfPage" href="https://skydh.github.io/2017/11/23/java/java线程的基本概念/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="name" content="skydh">
@@ -2039,7 +705,7 @@ Thread-3   _19
         
           <h1 class="post-title" itemprop="name headline">
                 
-                <a class="post-title-link" href="/2017/11/23/java线程的基本概念/" itemprop="url">java线程的基本概念</a></h1>
+                <a class="post-title-link" href="/2017/11/23/java/java线程的基本概念/" itemprop="url">java线程的基本概念</a></h1>
         
 
         <div class="post-meta">
@@ -2143,7 +809,7 @@ Thread-3   _19
   
   
   <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="https://skydh.github.io/2017/11/21/浅析https/">
+    <link itemprop="mainEntityOfPage" href="https://skydh.github.io/2017/11/21/网络/浅析https/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="name" content="skydh">
@@ -2162,7 +828,7 @@ Thread-3   _19
         
           <h1 class="post-title" itemprop="name headline">
                 
-                <a class="post-title-link" href="/2017/11/21/浅析https/" itemprop="url">浅析https</a></h1>
+                <a class="post-title-link" href="/2017/11/21/网络/浅析https/" itemprop="url">浅析https</a></h1>
         
 
         <div class="post-meta">
@@ -2256,11 +922,136 @@ Thread-3   _19
 
 
     
+      
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="https://skydh.github.io/2017/11/20/工具/创表语句转实体类/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="skydh">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="learning, progress, future.">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                <a class="post-title-link" href="/2017/11/20/工具/创表语句转实体类/" itemprop="url">创表语句转实体类</a></h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2017-11-20T21:00:46+08:00">
+                2017-11-20
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            <p><br> </p>
+<h2 id="为何规范化开发"><a href="#为何规范化开发" class="headerlink" title="为何规范化开发"></a>为何规范化开发</h2><blockquote>
+<p>对于一些企业级别的开发来说，开发必须规范，因为表太多了，相关的关联关系错综复杂。不规范将难以维护。<br><br> </p>
+<h2 id="如何规范化开发"><a href="#如何规范化开发" class="headerlink" title="如何规范化开发"></a>如何规范化开发</h2><p>1.规范的接口设计。第一要符合rest,第二要命名规范优雅，第三要单一职责，第四要可扩展性，第五要文档描述清晰<br><br><br>2.规范的代码风格，比如命名的各种规范，属性，方法的命名规范，总之要符合开发要求<br><br><br>3.规范的表设计，由于表比较多，字段复杂，表之间的关联也很多，那么就要使用powerdesigner等uml来设计表，这样的话可以完整的保留表之间的关系。</p>
+</blockquote>
+<h2 id="一些小工具"><a href="#一些小工具" class="headerlink" title="一些小工具"></a>一些小工具</h2><p>　　我是做erp开发的，所以遇见了一些比较大的表，一个表光字段就有60多个，而且一个功能有很多表相互关联，我只能使用powerdesigner这样的UML来设计表，设计完表之后，powerdesigner之类的会提供sql语句来创建表，但是最后的实体类就要我们来自己写，一想要写这么多字段，就很绝望，于是我在周末设计了一个小工具来帮助我开发。<br><br><br>　　这个工具类可以帮助我们利用创表语句创建出基本的实体类，包含了注解，以及注释，至于get,set方法就交给IDE来创建了。<br><br><br>　　下面是我的gitbub链接。<br><br><br> 　　<a href="https://github.com/skydh/createSqlToEntity" target="_blank" rel="noopener">点我一下就到了</a><br><br>　<br>　　如果对这个小工具这个有好的建议，可以发我邮箱一起研究改进下。donghang49@outlook.com</p>
+
+          
+        
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
   </section>
 
   
   <nav class="pagination">
-    <a class="extend prev" rel="prev" href="/page/12/"><i class="fa fa-angle-left"></i></a><a class="page-number" href="/">1</a><span class="space">&hellip;</span><a class="page-number" href="/page/12/">12</a><span class="page-number current">13</span><a class="page-number" href="/page/14/">14</a><a class="extend next" rel="next" href="/page/14/"><i class="fa fa-angle-right"></i></a>
+    <a class="extend prev" rel="prev" href="/page/12/"><i class="fa fa-angle-left"></i></a><a class="page-number" href="/">1</a><span class="space">&hellip;</span><a class="page-number" href="/page/12/">12</a><span class="page-number current">13</span>
   </nav>
 
 
@@ -2306,7 +1097,7 @@ Thread-3   _19
               
                 <a href="/archives/">
               
-                  <span class="site-state-item-count">131</span>
+                  <span class="site-state-item-count">125</span>
                   <span class="site-state-item-name">日志</span>
                 </a>
               </div>

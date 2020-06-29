@@ -303,10 +303,9 @@
       
         
           
-            <p>title： go学习1</p>
-<h3 id="安装"><a href="#安装" class="headerlink" title="安装"></a>安装</h3><p><a href="https://golang.google.cn/dl/" target="_blank" rel="noopener">https://golang.google.cn/dl/</a> 官网直接安装go。</p>
+            <hr>
+<h2 id="title：-go学习1"><a href="#title：-go学习1" class="headerlink" title="title： go学习1"></a>title： go学习1</h2><h3 id="安装"><a href="#安装" class="headerlink" title="安装"></a>安装</h3><p><a href="https://golang.google.cn/dl/" target="_blank" rel="noopener">https://golang.google.cn/dl/</a> 官网直接安装go。</p>
 <p>打开cmd 输入 go version</p>
-<p><img src="C:\Users\Lenovo\AppData\Roaming\Typora\typora-user-images\image-20200629091805641.png" alt="image-20200629091805641"></p>
 
           
         
@@ -355,7 +354,7 @@
   
   
   <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="https://skydh.github.io/2020/06/29/ElasticSearch 增删改查原理解析/">
+    <link itemprop="mainEntityOfPage" href="https://skydh.github.io/2020/06/29/es/ElasticSearch 增删改查原理解析/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="name" content="skydh">
@@ -374,7 +373,7 @@
         
           <h1 class="post-title" itemprop="name headline">
                 
-                <a class="post-title-link" href="/2020/06/29/ElasticSearch 增删改查原理解析/" itemprop="url">未命名</a></h1>
+                <a class="post-title-link" href="/2020/06/29/es/ElasticSearch 增删改查原理解析/" itemprop="url">未命名</a></h1>
         
 
         <div class="post-meta">
@@ -426,7 +425,8 @@
       
         
           
-            <h2 id="ElasticSearch-增删改查原理解析"><a href="#ElasticSearch-增删改查原理解析" class="headerlink" title="ElasticSearch 增删改查原理解析"></a>ElasticSearch 增删改查原理解析</h2><p>参考文档：<a href="https://www.elastic.co/guide/cn/elasticsearch/guide/current/distributed-search.html" target="_blank" rel="noopener">https://www.elastic.co/guide/cn/elasticsearch/guide/current/distributed-search.html</a></p>
+            <hr>
+<h2 id="title-ElasticSearch-增删改查原理解析"><a href="#title-ElasticSearch-增删改查原理解析" class="headerlink" title="title:ElasticSearch 增删改查原理解析"></a>title:ElasticSearch 增删改查原理解析</h2><p>参考文档：<a href="https://www.elastic.co/guide/cn/elasticsearch/guide/current/distributed-search.html" target="_blank" rel="noopener">https://www.elastic.co/guide/cn/elasticsearch/guide/current/distributed-search.html</a></p>
 <h3 id="es写数据原理"><a href="#es写数据原理" class="headerlink" title="es写数据原理"></a>es写数据原理</h3><ul>
 <li>客户端选择一个 node 发送请求过去，这个 node 就是 <code>coordinating node</code> （协调节点）。</li>
 <li><code>coordinating node</code> 对 document 进行<strong>路由</strong>，将请求转发给对应的 node（有 primary shard）。</li>
@@ -495,7 +495,7 @@
   
   
   <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="https://skydh.github.io/2020/06/29/ElasticSearch 聚合查询原理/">
+    <link itemprop="mainEntityOfPage" href="https://skydh.github.io/2020/06/29/es/ElasticSearch 聚合查询原理/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="name" content="skydh">
@@ -514,7 +514,7 @@
         
           <h1 class="post-title" itemprop="name headline">
                 
-                <a class="post-title-link" href="/2020/06/29/ElasticSearch 聚合查询原理/" itemprop="url">未命名</a></h1>
+                <a class="post-title-link" href="/2020/06/29/es/ElasticSearch 聚合查询原理/" itemprop="url">未命名</a></h1>
         
 
         <div class="post-meta">
@@ -566,7 +566,8 @@
       
         
           
-            <h1 id="ElasticSearch-聚合查询原理"><a href="#ElasticSearch-聚合查询原理" class="headerlink" title="ElasticSearch 聚合查询原理"></a>ElasticSearch 聚合查询原理</h1><h5 id="原理分析"><a href="#原理分析" class="headerlink" title="原理分析"></a>原理分析</h5><p>参考：<a href="https://www.cnblogs.com/huangying2124/p/12717369.html" target="_blank" rel="noopener">https://www.cnblogs.com/huangying2124/p/12717369.html</a></p>
+            <hr>
+<h2 id="title-ElasticSearch-聚合查询原理"><a href="#title-ElasticSearch-聚合查询原理" class="headerlink" title="title:ElasticSearch 聚合查询原理"></a>title:ElasticSearch 聚合查询原理</h2><h5 id="原理分析"><a href="#原理分析" class="headerlink" title="原理分析"></a>原理分析</h5><p>参考：<a href="https://www.cnblogs.com/huangying2124/p/12717369.html" target="_blank" rel="noopener">https://www.cnblogs.com/huangying2124/p/12717369.html</a></p>
 <p><a href="https://www.elastic.co/guide/cn/elasticsearch/guide/current/_limiting_memory_usage.html" target="_blank" rel="noopener">https://www.elastic.co/guide/cn/elasticsearch/guide/current/_limiting_memory_usage.html</a></p>
 <p>聚合使用一个叫 <em>doc values</em> 的数据结构（在 <a href="https://www.elastic.co/guide/cn/elasticsearch/guide/current/docvalues-intro.html" target="_blank" rel="noopener">Doc Values 介绍</a> 里简单介绍）。 Doc values 可以使聚合更快、更高效并且内存友好，所以理解它的工作方式十分有益。</p>
 <p>Doc values 的存在是因为倒排索引只对某些操作是高效的。 倒排索引的优势 在于查找包含某个项的文档，而对于从另外一个方向的相反操作并不高效，即：确定哪些项是否存在单个文档里，聚合需要这种次级的访问模式。</p>
@@ -640,7 +641,7 @@
   
   
   <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="https://skydh.github.io/2020/06/29/ElasticSearch 分页查询调研/">
+    <link itemprop="mainEntityOfPage" href="https://skydh.github.io/2020/06/29/es/ElasticSearch 分页查询调研/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="name" content="skydh">
@@ -659,7 +660,7 @@
         
           <h1 class="post-title" itemprop="name headline">
                 
-                <a class="post-title-link" href="/2020/06/29/ElasticSearch 分页查询调研/" itemprop="url">未命名</a></h1>
+                <a class="post-title-link" href="/2020/06/29/es/ElasticSearch 分页查询调研/" itemprop="url">未命名</a></h1>
         
 
         <div class="post-meta">
@@ -711,13 +712,12 @@
       
         
           
-            <h1 id="ElasticSearch-聚合查询语法"><a href="#ElasticSearch-聚合查询语法" class="headerlink" title="ElasticSearch 聚合查询语法"></a>ElasticSearch 聚合查询语法</h1><p>参考资料：<a href="https://www.elastic.co/guide/cn/elasticsearch/guide/current/aggregations.html" target="_blank" rel="noopener">https://www.elastic.co/guide/cn/elasticsearch/guide/current/aggregations.html</a></p>
-<p>kinaba地址： <a href="https://kibana-test.61info.com/app/kibana#/dev_tools/console?_g=(" target="_blank" rel="noopener">https://kibana-test.61info.com/app/kibana#/dev_tools/console?_g=(</a>)</p>
-<p>账号密码：elastic/Ela123QAZ</p>
-<p>目标数据：ims_blue_chat_friend/chat_friend</p>
-<h4 id="创建数据"><a href="#创建数据" class="headerlink" title="创建数据"></a>创建数据</h4><p>​    我们先通过模拟的数据来看看有哪些语法。</p>
-<p>​    由于es集群禁止了自动创建索引，我们只能先创建索引。</p>
-<ul>
+            <hr>
+<h2 id="title-ElasticSearch-聚合查询语法"><a href="#title-ElasticSearch-聚合查询语法" class="headerlink" title="title:ElasticSearch 聚合查询语法"></a>title:ElasticSearch 聚合查询语法</h2><p>参考资料：<a href="https://www.elastic.co/guide/cn/elasticsearch/guide/current/aggregations.html" target="_blank" rel="noopener">https://www.elastic.co/guide/cn/elasticsearch/guide/current/aggregations.html</a></p>
+<h4 id="创建数据"><a href="#创建数据" class="headerlink" title="创建数据"></a>创建数据</h4><pre><code>我们先通过模拟的数据来看看有哪些语法。
+
+由于es集群禁止了自动创建索引，我们只能先创建索引。
+</code></pre><ul>
 <li>创建索引</li>
 </ul>
 <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br></pre></td><td class="code"><pre><span class="line">PUT /test?pretty</span><br><span class="line">&#123;</span><br><span class="line">	&quot;settings&quot;: &#123;</span><br><span class="line">		&quot;number_of_shards&quot;: 3,</span><br><span class="line">		&quot;number_of_replicas&quot;: 2</span><br><span class="line">	&#125;,</span><br><span class="line">&quot;mapping&quot;: &#123;</span><br><span class="line">	&quot;test&quot;: &#123;</span><br><span class="line">		&quot;properties&quot;: &#123;</span><br><span class="line">			&quot;price&quot;: &#123;</span><br><span class="line">				&quot;type&quot;: &quot;text&quot;</span><br><span class="line">			&#125;,</span><br><span class="line">			&quot;color&quot;: &#123;</span><br><span class="line">				&quot;type&quot;: &quot;text&quot;</span><br><span class="line">			&#125;,</span><br><span class="line">			&quot;make&quot;: &#123;</span><br><span class="line">				&quot;type&quot;: &quot;text&quot;</span><br><span class="line">			&#125;,</span><br><span class="line">			&quot;sold&quot;: &#123;</span><br><span class="line">				&quot;type&quot;: &quot;text&quot;</span><br><span class="line">			&#125;</span><br><span class="line">		&#125;</span><br><span class="line">	&#125;</span><br><span class="line">&#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
@@ -733,11 +733,13 @@
 </li>
 <li><p>指标（Metrics）</p>
 <p>对桶内的文档进行统计计算。</p>
-</li>
+<pre><code>  聚合是由桶和指标组成的。 聚合可能只有一个桶，可能只有一个指标，或者可能两个都有。也有可能有一些桶嵌套在其他桶里面。例如，我们可以通过所属国家来划分文档（桶），然后计算每个国家的平均薪酬（指标）。
+
+另外聚合计算是实时的。一旦文档可以被搜到，它就能被聚合。这也就意味着我们可以直接将聚合的结果源源不断的传入前端，让其动态显示变化。
+
+ 5.x后对排序，聚合这些操作用单独的数据结构(fielddata)缓存到内存里了，需要单独开启。对哪个字段聚合就要开启哪个字段。比如我就开启了color字段，方便后续的聚合。
+</code></pre></li>
 </ul>
-<p>​         聚合是由桶和指标组成的。 聚合可能只有一个桶，可能只有一个指标，或者可能两个都有。也有可能有一些桶嵌套在其他桶里面。例如，我们可以通过所属国家来划分文档（桶），然后计算每个国家的平均薪酬（指标）。</p>
-<p>​       另外聚合计算是实时的。一旦文档可以被搜到，它就能被聚合。这也就意味着我们可以直接将聚合的结果源源不断的传入前端，让其动态显示变化。</p>
-<p>​        5.x后对排序，聚合这些操作用单独的数据结构(fielddata)缓存到内存里了，需要单独开启。对哪个字段聚合就要开启哪个字段。比如我就开启了color字段，方便后续的聚合。</p>
 <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">PUT test/_mapping/test/</span><br><span class="line">&#123;</span><br><span class="line">  &quot;properties&quot;: &#123;</span><br><span class="line">    &quot;color&quot;: &#123; </span><br><span class="line">      &quot;type&quot;:     &quot;text&quot;,</span><br><span class="line">      &quot;fielddata&quot;: true</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 <p>根据颜色分组，参考mysql的groupby</p>
 <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">GET /cars/transactions/_search</span><br><span class="line">&#123;</span><br><span class="line">    &quot;size&quot; : 0,</span><br><span class="line">    &quot;aggs&quot; : &#123; </span><br><span class="line">        &quot;popular_colors&quot; : &#123; </span><br><span class="line">            &quot;terms&quot; : &#123; </span><br><span class="line">              &quot;field&quot; : &quot;color&quot;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
@@ -846,7 +848,7 @@
   
   
   <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="https://skydh.github.io/2020/03/25/java线程，线程池，juc系列/">
+    <link itemprop="mainEntityOfPage" href="https://skydh.github.io/2020/03/25/java/java线程，线程池，juc系列/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="name" content="skydh">
@@ -865,7 +867,7 @@
         
           <h1 class="post-title" itemprop="name headline">
                 
-                <a class="post-title-link" href="/2020/03/25/java线程，线程池，juc系列/" itemprop="url">java线程，线程池系列</a></h1>
+                <a class="post-title-link" href="/2020/03/25/java/java线程，线程池，juc系列/" itemprop="url">java线程，线程池系列</a></h1>
         
 
         <div class="post-meta">
@@ -977,7 +979,7 @@
   
   
   <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="https://skydh.github.io/2020/03/18/查看jvm运行时参数/">
+    <link itemprop="mainEntityOfPage" href="https://skydh.github.io/2020/03/18/java/查看jvm运行时参数/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="name" content="skydh">
@@ -996,7 +998,7 @@
         
           <h1 class="post-title" itemprop="name headline">
                 
-                <a class="post-title-link" href="/2020/03/18/查看jvm运行时参数/" itemprop="url">查看jvm运行时参数</a></h1>
+                <a class="post-title-link" href="/2020/03/18/java/查看jvm运行时参数/" itemprop="url">查看jvm运行时参数</a></h1>
         
 
         <div class="post-meta">
@@ -1171,7 +1173,7 @@ S0C    S1C    S0U    S1U      EC       EU        OC         OU       MC     MU  
   
   
   <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="https://skydh.github.io/2019/12/26/spring常用注解/">
+    <link itemprop="mainEntityOfPage" href="https://skydh.github.io/2019/12/26/spring/spring常用注解/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="name" content="skydh">
@@ -1190,7 +1192,7 @@ S0C    S1C    S0U    S1U      EC       EU        OC         OU       MC     MU  
         
           <h1 class="post-title" itemprop="name headline">
                 
-                <a class="post-title-link" href="/2019/12/26/spring常用注解/" itemprop="url">spring常用注解</a></h1>
+                <a class="post-title-link" href="/2019/12/26/spring/spring常用注解/" itemprop="url">spring常用注解</a></h1>
         
 
         <div class="post-meta">
@@ -1296,7 +1298,7 @@ S0C    S1C    S0U    S1U      EC       EU        OC         OU       MC     MU  
   
   
   <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="https://skydh.github.io/2019/12/03/java 并发001/">
+    <link itemprop="mainEntityOfPage" href="https://skydh.github.io/2019/12/03/java/java 并发001/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="name" content="skydh">
@@ -1315,7 +1317,7 @@ S0C    S1C    S0U    S1U      EC       EU        OC         OU       MC     MU  
         
           <h1 class="post-title" itemprop="name headline">
                 
-                <a class="post-title-link" href="/2019/12/03/java 并发001/" itemprop="url">java 并发001</a></h1>
+                <a class="post-title-link" href="/2019/12/03/java/java 并发001/" itemprop="url">java 并发001</a></h1>
         
 
         <div class="post-meta">
@@ -1420,7 +1422,7 @@ S0C    S1C    S0U    S1U      EC       EU        OC         OU       MC     MU  
   
   
   <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="https://skydh.github.io/2019/11/14/深入理解kafka客户端/">
+    <link itemprop="mainEntityOfPage" href="https://skydh.github.io/2019/11/14/kafka/深入理解kafka客户端/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="name" content="skydh">
@@ -1439,7 +1441,7 @@ S0C    S1C    S0U    S1U      EC       EU        OC         OU       MC     MU  
         
           <h1 class="post-title" itemprop="name headline">
                 
-                <a class="post-title-link" href="/2019/11/14/深入理解kafka客户端/" itemprop="url">深入理解kafka客户端</a></h1>
+                <a class="post-title-link" href="/2019/11/14/kafka/深入理解kafka客户端/" itemprop="url">深入理解kafka客户端</a></h1>
         
 
         <div class="post-meta">
@@ -1543,7 +1545,7 @@ S0C    S1C    S0U    S1U      EC       EU        OC         OU       MC     MU  
   
   
   <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="https://skydh.github.io/2019/11/12/kafka 服务端基本知识/">
+    <link itemprop="mainEntityOfPage" href="https://skydh.github.io/2019/11/12/kafka/kafka 服务端基本知识/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="name" content="skydh">
@@ -1562,7 +1564,7 @@ S0C    S1C    S0U    S1U      EC       EU        OC         OU       MC     MU  
         
           <h1 class="post-title" itemprop="name headline">
                 
-                <a class="post-title-link" href="/2019/11/12/kafka 服务端基本知识/" itemprop="url">kafka 服务端基本知识</a></h1>
+                <a class="post-title-link" href="/2019/11/12/kafka/kafka 服务端基本知识/" itemprop="url">kafka 服务端基本知识</a></h1>
         
 
         <div class="post-meta">
@@ -1654,7 +1656,7 @@ S0C    S1C    S0U    S1U      EC       EU        OC         OU       MC     MU  
 
   
   <nav class="pagination">
-    <span class="page-number current">1</span><a class="page-number" href="/page/2/">2</a><span class="space">&hellip;</span><a class="page-number" href="/page/14/">14</a><a class="extend next" rel="next" href="/page/2/"><i class="fa fa-angle-right"></i></a>
+    <span class="page-number current">1</span><a class="page-number" href="/page/2/">2</a><span class="space">&hellip;</span><a class="page-number" href="/page/13/">13</a><a class="extend next" rel="next" href="/page/2/"><i class="fa fa-angle-right"></i></a>
   </nav>
 
 
@@ -1700,7 +1702,7 @@ S0C    S1C    S0U    S1U      EC       EU        OC         OU       MC     MU  
               
                 <a href="/archives/">
               
-                  <span class="site-state-item-count">131</span>
+                  <span class="site-state-item-count">125</span>
                   <span class="site-state-item-name">日志</span>
                 </a>
               </div>

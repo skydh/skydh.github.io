@@ -1,0 +1,827 @@
+<!DOCTYPE html>
+
+
+
+  
+
+
+<html class="theme-next pisces use-motion" lang="zh-Hans">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css" />
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=5.1.3" rel="stylesheet" type="text/css" />
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=5.1.3">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=5.1.3">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=5.1.3">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=5.1.3" color="#222">
+
+
+
+
+
+  <meta name="keywords" content="Hexo, NexT" />
+
+
+
+
+
+
+
+
+
+
+<meta name="description" content="概念多线程中的变量　　首先我介绍的是volatile关键字，其次是原子变量，最后则是ThreadLocal线程本地变量 java基本内存模型　　用到volatile这个关键字以及后面的原子变量之前，我们必须先了解一下什么是java基本内存模型。　　先明确几个概念：　　主内存：主内存就是所有线程共享的内存，对于一个共享变">
+<meta property="og:type" content="article">
+<meta property="og:title" content="volatile,原子变量和ThreadLocal">
+<meta property="og:url" content="https://skydh.github.io/2017/12/27/java/volatile,原子变量和ThreadLocal/index.html">
+<meta property="og:site_name" content="learning, progress, future.">
+<meta property="og:description" content="概念多线程中的变量　　首先我介绍的是volatile关键字，其次是原子变量，最后则是ThreadLocal线程本地变量 java基本内存模型　　用到volatile这个关键字以及后面的原子变量之前，我们必须先了解一下什么是java基本内存模型。　　先明确几个概念：　　主内存：主内存就是所有线程共享的内存，对于一个共享变量来说，主内存存放其真实数据（本尊数据）　　线程工作内存：线程对数据操作时，都会">
+<meta property="og:locale" content="zh-Hans">
+<meta property="og:updated_time" content="2020-03-25T05:43:03.902Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="volatile,原子变量和ThreadLocal">
+<meta name="twitter:description" content="概念多线程中的变量　　首先我介绍的是volatile关键字，其次是原子变量，最后则是ThreadLocal线程本地变量 java基本内存模型　　用到volatile这个关键字以及后面的原子变量之前，我们必须先了解一下什么是java基本内存模型。　　先明确几个概念：　　主内存：主内存就是所有线程共享的内存，对于一个共享变量来说，主内存存放其真实数据（本尊数据）　　线程工作内存：线程对数据操作时，都会">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Pisces',
+    version: '5.1.3',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: true,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    duoshuo: {
+      userId: '0',
+      author: '博主'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="https://skydh.github.io/2017/12/27/java/volatile,原子变量和ThreadLocal/"/>
+
+
+
+
+
+  <title>volatile,原子变量和ThreadLocal | learning, progress, future.</title>
+  
+
+
+
+
+
+
+
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/"  class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">learning, progress, future.</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle">skydh</p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br />
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />
+            
+            归档
+          </a>
+        </li>
+      
+
+      
+    </ul>
+  
+
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="https://skydh.github.io/2017/12/27/java/volatile,原子变量和ThreadLocal/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="skydh">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="learning, progress, future.">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">volatile,原子变量和ThreadLocal</h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2017-12-27T15:00:13+08:00">
+                2017-12-27
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+          
+
+          
+          
+
+          
+            <span class="post-meta-divider">|</span>
+            <span class="page-pv"><i class="fa fa-file-o"></i>
+            <span class="busuanzi-value" id="busuanzi_value_page_pv" ></span>
+            </span>
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <h1 id="概念"><a href="#概念" class="headerlink" title="概念"></a>概念</h1><h2 id="多线程中的变量"><a href="#多线程中的变量" class="headerlink" title="多线程中的变量"></a>多线程中的变量</h2><p>　　首先我介绍的是volatile关键字，其次是原子变量，最后则是ThreadLocal线程本地变量</p>
+<h2 id="java基本内存模型"><a href="#java基本内存模型" class="headerlink" title="java基本内存模型"></a>java基本内存模型</h2><p>　　用到volatile这个关键字以及后面的原子变量之前，我们必须先了解一下什么是java基本内存模型。<br>　　先明确几个概念：<br>　　主内存：主内存就是所有线程共享的内存，对于一个共享变量来说，主内存存放其真实数据（本尊数据）<br>　　线程工作内存：线程对数据操作时，都会有自己的工作内存，对共享变量操作前，会先从主内存中获取到值，操作完后在回写回去。
+　　</p>
+<h2 id="volatile"><a href="#volatile" class="headerlink" title="volatile"></a>volatile</h2><p>　　现在有２个线程Ａ，Ｂ，他们要主内存中间的一个变量s=0;此时A线程要修改这个共享变量，它是先获取到这个值复制到线程工作内存里面去，然后在线程工作内存里面把这个值修改了，然后把这个值再写到主内存里面去。此时B读取这个s变量，那么值可能是0，也可能是线程A所修改的值。<br>　　使用volatile这个关键字可以避免上述这种情况（使用锁来对变量加锁或者synchronized开销太大）。<br>　　针对上述的例子，volatile的可见性保证了不会出现上述问题。<br>　　什么是可见性呢？<br>　　当一个线程修改了变量的值，新的值会立刻同步到主内存当中。而其他线程读取这个变量的时候，也会从主内存中拉取最新的变量值。<br>　　当然这种可见性不是原子性哦。当遇到以下情况会有问题<br>　　１．多个线程同时修改变量且修改时依赖变量本身。<br>　　２．多个volatile变量维护一个条件，若是别的线程对其多个变量修改，那么可能造成条件的不成立。<br>　　针对上述情况于是有了原子变量（后面介绍），保证了其原子性。<br>　　volatile还有一个特性就是禁止指令重排序。那么什么是指令重排序呢？<br>　　指令重排序：编译器的字节码的重排序。cpu指令的重排序。<br>　　指令重排序的目的是在不改变单线程下程序的逻辑下，优化程序执行效率。对于多线程于是就有了问题。有的程序时单线程下，调换一下顺序也没什么的，但是，对于多线程，调换一下顺序，可能回到其他线程造成大的影响。<br>　　而volatile则是解决了这个问题，他利用了内存屏障来来辅助解决了这个。</p>
+<h2 id="原子变量"><a href="#原子变量" class="headerlink" title="原子变量"></a>原子变量</h2><p>　　说到原子变量就不得不说CAS。<br>　　什么是ＣＡＳ呢？<br>　　就是更新一个值的时候，查询内存中的值，和自己要更新前获取到的值是否一致，若是一致，那么更新。<br>　　与synchronized相比，cas是乐观锁，我认为并发不会修改到我的值，不加锁，只是提前获取到值，要更新的时候在比对一下，若是内存的值和我的值一致，那么更新，否则不更新。而synchronized则是不管什么直接加锁的。因此是悲观锁。<br>　　什么是ABA问题？<br>　　3个线程A,B,C对cas变量a修改。A,B线程获取到了变量a,A修改变量为b,B线程阻塞，C线程获取到变量b,并把b改成了a,B线程不阻塞了，继续执行，执行成功，这就是ABA问题。这个B线程不应该执行的，但是还是执行了。如这个变量是个对象，其引用没有变化，但是具体指变了，那么会出大问题的。解决方案就是在cas变量上加个版本号或者时间戳来限定。<br>　　具体demo就是Atomic开头的类。具体我就不详细说了。<br>　　与加锁相比这个更加轻量级。</p>
+<h2 id="ThreadLocal"><a href="#ThreadLocal" class="headerlink" title="ThreadLocal"></a>ThreadLocal</h2><p>　　线程本地变量是说，每个线程都有同一个变量的独有拷贝ThreadLocal是一个泛型类，接受一个类型参数T，它只有一个空的构造方法。这个直接看个ｄｅｍｏ</p>
+<p><pre><br>package thread;</pre></p>
+<p>public class ThreadLocal001 {<br>    static ThreadLocal<integer> local = new ThreadLocal<integer>();</integer></integer></p>
+<pre><code>public static void main(String[] args) throws InterruptedException {
+    Thread child = new Thread() {
+        @Override
+        public void run() {
+            System.out.println(&quot;child&quot; + local.get());
+            local.set(200);
+            System.out.println(&quot;child&quot; + local.get());
+        }
+    };
+    local.set(100);
+    child.start();
+    child.join();
+    System.out.println(&quot;main&quot; + local.get());
+}
+</code></pre><p>}<br><br>　　结果如下：</p>
+<p><pre><br>childnull<br>child200<br>main100<br></pre><br>　　这说明，main线程对local变量的设置对child线程不起作用，child线程对local变量的改变也不会影响main线程，它们访问的虽然是同一个变量local，但每个线程都有自己的独立的值，这就是线程本地变量的含义。</p>
+<h2 id="ThreadLocal原理解析。"><a href="#ThreadLocal原理解析。" class="headerlink" title="ThreadLocal原理解析。"></a>ThreadLocal原理解析。</h2><p>　　Thread类里面有一个属性：</p>
+<pre><code>ThreadLocal.ThreadLocalMap threadLocals = null;
+</code></pre><p>　　ThreadLocal 里面的set 方法：</p>
+<pre><code>   public void set(T value) {
+    //获取当前线程
+    Thread t = Thread.currentThread();
+    //获取当前线程的ThreadLocalMap对象。
+    ThreadLocalMap map = getMap(t);
+    //有则把值放进去，没有则创建ThreadLocalMap对象。
+    if (map != null)
+        map.set(this, value);
+    else
+
+        createMap(t, value);
+}
+</code></pre><p>　　ThreadLocal的getMap方法：</p>
+<pre><code>ThreadLocalMap getMap(Thread t) {
+    return t.threadLocals;
+}
+</code></pre><p>　　ThreadLocal的createMap方法：</p>
+<pre><code>void createMap(Thread t, T firstValue) {
+    t.threadLocals = new ThreadLocalMap(this, firstValue);
+}
+</code></pre><p>　　我们发现值是存在当前线程的的一个内部类里面，存的就是当前threadlocal和值的键值对。</p>
+<p>　　ThreadLocalMap的构造方法：</p>
+<pre><code>ThreadLocalMap(ThreadLocal&lt;?&gt; firstKey, Object firstValue) {
+        //创建一个数组，数组对象为entity,初始化大小为16
+        table = new Entry[INITIAL_CAPACITY];
+        int i = firstKey.threadLocalHashCode &amp; (INITIAL_CAPACITY - 1);
+        //根据ThreadLocal的hash值确定其数组位置，在将值放进去
+        table[i] = new Entry(firstKey, firstValue);
+        size = 1;
+        setThreshold(INITIAL_CAPACITY);
+    }
+</code></pre><p>　　ThreadLocalMap的set方法：</p>
+<pre><code>private void set(ThreadLocal&lt;?&gt; key, Object value) {
+
+       // We don&apos;t use a fast path as with get() because it is at
+       // least as common to use set() to create new entries as
+       // it is to replace existing ones, in which case, a fast
+       // path would fail more often than not.
+
+       Entry[] tab = table;
+       int len = tab.length;
+       int i = key.threadLocalHashCode &amp; (len-1);
+
+       for (Entry e = tab[i];
+            e != null;
+            e = tab[i = nextIndex(i, len)]) {
+           ThreadLocal&lt;?&gt; k = e.get();
+
+           if (k == key) {
+               e.value = value;
+               return;
+           }
+
+           if (k == null) {
+               replaceStaleEntry(key, value, i);
+               return;
+           }
+       }
+
+       tab[i] = new Entry(key, value);
+       int sz = ++size;
+       if (!cleanSomeSlots(i, sz) &amp;&amp; sz &gt;= threshold)
+           rehash();
+   }
+</code></pre><p>　　从什么这些我们可以看出来，具体的值是存在Thread对象里面的，因此不同线程之间相互没有影响。具体一点。每个Thread类里面有个属性： ThreadLocal.ThreadLocalMap threadLocals = null。显然这个属性类是ThreadLocal的内部类。我们看看ThreadLocal的get方法：</p>
+<pre><code>public T get() {
+    Thread t = Thread.currentThread();
+    ThreadLocalMap map = getMap(t);
+    if (map != null) {
+        ThreadLocalMap.Entry e = map.getEntry(this);
+        if (e != null) {
+            @SuppressWarnings(&quot;unchecked&quot;)
+            T result = (T)e.value;
+            return result;
+        }
+    }
+    return setInitialValue();
+}
+</code></pre><p>　　我们先获取到当前Thread类，然后的到其ThreadLocalMap类属性，我们的值就存在里面。这个类的属性如下：Entry[]数组，这个key和value分别是ThreadLocal，value。完美解释。</p>
+<p>　　内存泄漏的问题,我们看2段代码即可明白。</p>
+<pre><code>static class Entry extends WeakReference&lt;ThreadLocal&lt;?&gt;&gt; {
+       /** The value associated with this ThreadLocal. */
+       Object value;
+
+       Entry(ThreadLocal&lt;?&gt; k, Object v) {
+           //这里让key放到上层父类处理，使其变成弱引用
+           super(k);
+           value = v;
+       }
+   }
+</code></pre><p>　　首先来说，如果把ThreadLocal置为null，那么意味着Heap中的ThreadLocal实例不在有强引用指向，只有弱引用存在，因此GC是可以回收这部分空间的，也就是key是可以回收的。但是value却存在一条从Current Thread过来的强引用链。因此只有当Current Thread销毁时，value才能得到释放。<br>　　因此，只要这个线程对象被gc回收，就不会出现内存泄露，但在threadLocal设为null和线程结束这段时间内不会被回收的，就发生了我们认为的内存泄露。最要命的是线程对象不被回收的情况，比如使用线程池的时候，线程结束是不会销毁的，再次使用的，就可能出现内存泄露。事实上，在ThreadLocalMap中的set/getEntry方法中，会对key为null（也即是ThreadLocal为null）进行判断，如果为null的话，那么是会对value置为null的。</p>
+<p>   避免方法，先将value remove掉，</p>
+<p>　　</p>
+<p>　　</p>
+
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2017/12/07/java/java线程的并发加锁控制/" rel="next" title="java线程的并发加锁控制">
+                <i class="fa fa-chevron-left"></i> java线程的并发加锁控制
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2017/12/27/java/简述线程池/" rel="prev" title="简述线程池">
+                简述线程池 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <p class="site-author-name" itemprop="name">skydh</p>
+              <p class="site-description motion-element" itemprop="description">skydh</p>
+          </div>
+
+          <nav class="site-state motion-element">
+
+            
+              <div class="site-state-item site-state-posts">
+              
+                <a href="/archives/">
+              
+                  <span class="site-state-item-count">125</span>
+                  <span class="site-state-item-name">日志</span>
+                </a>
+              </div>
+            
+
+            
+
+            
+
+          </nav>
+
+          
+
+          <div class="links-of-author motion-element">
+            
+          </div>
+
+          
+          
+
+          
+          
+
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#概念"><span class="nav-number">1.</span> <span class="nav-text">概念</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#多线程中的变量"><span class="nav-number">1.1.</span> <span class="nav-text">多线程中的变量</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#java基本内存模型"><span class="nav-number">1.2.</span> <span class="nav-text">java基本内存模型</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#volatile"><span class="nav-number">1.3.</span> <span class="nav-text">volatile</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#原子变量"><span class="nav-number">1.4.</span> <span class="nav-text">原子变量</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#ThreadLocal"><span class="nav-number">1.5.</span> <span class="nav-text">ThreadLocal</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#ThreadLocal原理解析。"><span class="nav-number">1.6.</span> <span class="nav-text">ThreadLocal原理解析。</span></a></li></ol></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <script async src="https://dn-lbstatics.qbox.me/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+<div class="copyright">&copy; <span itemprop="copyrightYear">2020</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">skydh</span>
+
+  
+</div>
+
+
+<div class="powered-by">
+<i class="fa fa-user-md"></i><span id="busuanzi_container_site_uv">
+  本站访客数:<span id="busuanzi_value_site_uv"></span>
+</span>
+</div>
+
+  <div class="powered-by">由 <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a> 强力驱动</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">主题 &mdash; <a class="theme-link" target="_blank" href="https://github.com/iissnan/hexo-theme-next">NexT.Pisces</a> v5.1.3</div>
+
+
+
+
+        
+<div class="busuanzi-count">
+  <script async src="https://dn-lbstatics.qbox.me/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+
+  
+    <span class="site-uv">
+      <i class="fa fa-user"></i>
+      <span class="busuanzi-value" id="busuanzi_value_site_uv"></span>
+      
+    </span>
+  
+
+  
+    <span class="site-pv">
+      <i class="fa fa-eye"></i>
+      <span class="busuanzi-value" id="busuanzi_value_site_pv"></span>
+      
+    </span>
+  
+</div>
+
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/canvas-nest/canvas-nest.min.js"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.3"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.3"></script>
+
+
+
+  
+  
+
+
+  <script type="text/javascript" src="/js/src/affix.js?v=5.1.3"></script>
+
+  <script type="text/javascript" src="/js/src/schemes/pisces.js?v=5.1.3"></script>
+
+
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.3"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.3"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.3"></script>
+
+
+
+  
+
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>

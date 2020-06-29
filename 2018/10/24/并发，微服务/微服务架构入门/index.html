@@ -1,0 +1,722 @@
+<!DOCTYPE html>
+
+
+
+  
+
+
+<html class="theme-next pisces use-motion" lang="zh-Hans">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css" />
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=5.1.3" rel="stylesheet" type="text/css" />
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=5.1.3">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=5.1.3">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=5.1.3">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=5.1.3" color="#222">
+
+
+
+
+
+  <meta name="keywords" content="Hexo, NexT" />
+
+
+
+
+
+
+
+
+
+
+<meta name="description" content="什么是OAuth2.0　　１．用于rest/api的代理请求框架。　　２．解耦认证和授权　　３．基于令牌Token的授权，在无需暴露用户密码的情况下，让应用能获得对用户数据的访问权限。　　４．事实上的标准安全框架，支持多种用例场景。适用于，服务端webapp,单页spa,原生app，服务器服务器之间。 OAuth2.0">
+<meta property="og:type" content="article">
+<meta property="og:title" content="微服务入门001 OAuth 2.0">
+<meta property="og:url" content="https://skydh.github.io/2018/10/24/并发，微服务/微服务架构入门/index.html">
+<meta property="og:site_name" content="learning, progress, future.">
+<meta property="og:description" content="什么是OAuth2.0　　１．用于rest/api的代理请求框架。　　２．解耦认证和授权　　３．基于令牌Token的授权，在无需暴露用户密码的情况下，让应用能获得对用户数据的访问权限。　　４．事实上的标准安全框架，支持多种用例场景。适用于，服务端webapp,单页spa,原生app，服务器服务器之间。 OAuth2.0的优势　　１．易于实现。　　２．更加安全，客户端不接触密码，服务端集中保护。本质">
+<meta property="og:locale" content="zh-Hans">
+<meta property="og:image" content="https://raw.githubusercontent.com/skydh/picture/master/token_001.png">
+<meta property="og:updated_time" content="2019-07-15T05:57:48.132Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="微服务入门001 OAuth 2.0">
+<meta name="twitter:description" content="什么是OAuth2.0　　１．用于rest/api的代理请求框架。　　２．解耦认证和授权　　３．基于令牌Token的授权，在无需暴露用户密码的情况下，让应用能获得对用户数据的访问权限。　　４．事实上的标准安全框架，支持多种用例场景。适用于，服务端webapp,单页spa,原生app，服务器服务器之间。 OAuth2.0的优势　　１．易于实现。　　２．更加安全，客户端不接触密码，服务端集中保护。本质">
+<meta name="twitter:image" content="https://raw.githubusercontent.com/skydh/picture/master/token_001.png">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Pisces',
+    version: '5.1.3',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: true,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    duoshuo: {
+      userId: '0',
+      author: '博主'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="https://skydh.github.io/2018/10/24/并发，微服务/微服务架构入门/"/>
+
+
+
+
+
+  <title>微服务入门001 OAuth 2.0 | learning, progress, future.</title>
+  
+
+
+
+
+
+
+
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/"  class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">learning, progress, future.</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle">skydh</p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br />
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />
+            
+            归档
+          </a>
+        </li>
+      
+
+      
+    </ul>
+  
+
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="https://skydh.github.io/2018/10/24/并发，微服务/微服务架构入门/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="skydh">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="learning, progress, future.">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">微服务入门001 OAuth 2.0</h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2018-10-24T11:33:23+08:00">
+                2018-10-24
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+          
+
+          
+          
+
+          
+            <span class="post-meta-divider">|</span>
+            <span class="page-pv"><i class="fa fa-file-o"></i>
+            <span class="busuanzi-value" id="busuanzi_value_page_pv" ></span>
+            </span>
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <h2 id="什么是OAuth2-0"><a href="#什么是OAuth2-0" class="headerlink" title="什么是OAuth2.0"></a>什么是OAuth2.0</h2><p>　　１．用于rest/api的代理请求框架。<br>　　２．解耦认证和授权<br>　　３．基于令牌Token的授权，在无需暴露用户密码的情况下，让应用能获得对用户数据的访问权限。<br>　　４．事实上的标准安全框架，支持多种用例场景。适用于，服务端webapp,单页spa,原生app，服务器服务器之间。</p>
+<h2 id="OAuth2-0的优势"><a href="#OAuth2-0的优势" class="headerlink" title="OAuth2.0的优势"></a>OAuth2.0的优势</h2><p>　　１．易于实现。<br>　　２．更加安全，客户端不接触密码，服务端集中保护。本质上就是解决这个问题。<br>　　３．广泛传播并持续采用。<br>　　４．短寿命和封装的token。<br>　　５. 资源服务器和授权服务器解耦。一个负责授予token权限(客户端访问其，其返回页面给用户，判断是否同意授权，同意，则授予让其有资格访问我的数据)，一个负责判断请求是否具有token<br>　　６．集中授权<br>　　７．基于http/json，易于请求和传递token<br>　　８．考虑了多种客户端场景<br>　　９．客户端有多种信任级别。</p>
+<h2 id="OAuth2-0的不足"><a href="#OAuth2-0的不足" class="headerlink" title="OAuth2.0的不足"></a>OAuth2.0的不足</h2><p>　　１.协议太宽泛了，因此各个实现版本兼容性不好。<br>　　２．和Oauth1.0不兼容。<br>　　３．Oauth2.0不是一个认证协议，他是个授权框架，他本省不会告诉你任何用户信息。是个授权协议。</p>
+<h2 id="Oauth2-0主要角色术语"><a href="#Oauth2-0主要角色术语" class="headerlink" title="Oauth2.0主要角色术语"></a>Oauth2.0主要角色术语</h2><p>　　１．资源拥有者：资源的拥有者，用户。<br>　　２．客户应用：通常是一个web应用，想要访问收到保护的数据。比如微信用户数据等。<br>　　３．资源服务器：一个web站点或者service api,客户想要访问的数据在我这里。<br>　　４．授权服务器：客户想要访问受保护的数据，必须先到我这里来认证，来获取到access token。<br>　　５．客户凭证：在授权服务器上注册后获得的，客户的ClientId和密码用于认证客户。<br>　　６．令牌：授权服务器接受到客户端请求后，验证后颁发的访问令牌<br>　　７．作用域：客户请求访问令牌是，由资源额外指定的细分权限。</p>
+<h2 id="Oauth2-0-令牌类型"><a href="#Oauth2-0-令牌类型" class="headerlink" title="Oauth2.0 令牌类型"></a>Oauth2.0 令牌类型</h2><p>　　１．access token：访问令牌用来代表一个用户或者服务直接去访问受保护的资源。<br>　　２．refresh token:刷新令牌，勇于去授权服务器获取一个新的令牌。（有时候访问令牌过期了，有的流程会支持获取到一个refreshtoken,我可以通过这个换取一个新的令牌）<br>　　３．Bearer Token：不管谁拿到token,都可以访问资源。<br>　　４．pop token:可以校验client是否对token的用友权。<br>　　５．Authorization Code Token:授权码，仅用于授权码授权类型。用于交换获取访问令牌和刷新令牌。</p>
+<h2 id="Ouath2-0的误区"><a href="#Ouath2-0的误区" class="headerlink" title="Ouath2.0的误区"></a>Ouath2.0的误区</h2><p>　　１．该协议仅仅支持http协议。<br>　　２．Oauth 是个授权协议，不是认证协议。<br>　　３．oauth 没有定义token格式<br>　　４．没有定义加密算法<br>　　５．不是单个协议<br>　　６．没有定义授权处理机制<br>　　７．仅仅是个授权框架，用于授权代理
+　　</p>
+<h2 id="授权模式"><a href="#授权模式" class="headerlink" title="授权模式"></a>授权模式</h2><h3 id="授权码模式"><a href="#授权码模式" class="headerlink" title="授权码模式"></a>授权码模式</h3><p>  用下面转载自码农翻身的一张图来解释下</p>
+<p><img src="https://raw.githubusercontent.com/skydh/picture/master/token_001.png" alt="aaa"></p>
+<p>　　１．用户访问客户端，客户端将用户重定向到授权服务器。同时附上客户端凭证和处理完后要重定向的url。<br>　　２．用户选择是否给予客户端授权。<br>　　３．用户给予授权，授权服务器将用户导向客户端事先指定的”重定向URI”（redirection URI），同时附上一个授权码。<br>　　４．客户端收到授权码，附上早先的”重定向URI”，向认证服务器申请令牌。这一步是在客户端的后台的服务器上完成的，对用户不可见。<br>　　５．认证服务器核对了授权码和重定向URI，确认无误后，向客户端发送访问令牌（access token）和更新令牌（refresh token）。</p>
+<h3 id="简化模式"><a href="#简化模式" class="headerlink" title="简化模式"></a>简化模式</h3><p>　　（A）客户端将用户导向认证服务器。<br>　　（B）用户决定是否给于客户端授权。<br>　　（C）假设用户给予授权，认证服务器将用户导向客户端指定的”重定向URI”，并在URI的Hash部分包含了访问令牌。<br>　　（D）浏览器向资源服务器发出请求，其中不包括上一步收到的Hash值。<br>　　（E）资源服务器返回一个网页，其中包含的代码可以获取Hash值中的令牌。<br>　　（F）浏览器执行上一步获得的脚本，提取出令牌。<br>　　（G）浏览器将令牌发给客户端。</p>
+<h3 id="密码模式"><a href="#密码模式" class="headerlink" title="密码模式"></a>密码模式</h3><p>　　这个通常需要客户端是操作系统的一部分，或者是一个著名公司出品，而认证服务器无法授权处理才使用。<br>　　（A）用户向客户端提供用户名和密码。<br>　　（B）客户端将用户名和密码发给认证服务器，向后者请求令牌。<br>　　（C）认证服务器确认无误后，向客户端提供访问令牌。</p>
+<h3 id="客户端模式"><a href="#客户端模式" class="headerlink" title="客户端模式"></a>客户端模式</h3><p>　　其实不存在授权问题，客户端自己向授权服务器拿令牌。<br>　　（A）客户端向认证服务器进行身份认证，并要求一个访问令牌。<br>　　（B）认证服务器确认无误后，向客户端提供访问令牌。</p>
+<p>为何要加个授权码呢？<br>   为了避免把token透露给浏览器，最好是透明的，我们不希望处理到这个token暴露在浏览器里面，每次重定向都会经过浏览器的。因此如果直接返回token的话就会产生问题。因此我们一般使用授权码的方式。</p>
+
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2018/09/27/redis/redis 数据类型实现机制/" rel="next" title="redis 数据类型实现机制">
+                <i class="fa fa-chevron-left"></i> redis 数据类型实现机制
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2018/11/15/git/git 双库合并/" rel="prev" title="git双库合并">
+                git双库合并 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <p class="site-author-name" itemprop="name">skydh</p>
+              <p class="site-description motion-element" itemprop="description">skydh</p>
+          </div>
+
+          <nav class="site-state motion-element">
+
+            
+              <div class="site-state-item site-state-posts">
+              
+                <a href="/archives/">
+              
+                  <span class="site-state-item-count">125</span>
+                  <span class="site-state-item-name">日志</span>
+                </a>
+              </div>
+            
+
+            
+
+            
+
+          </nav>
+
+          
+
+          <div class="links-of-author motion-element">
+            
+          </div>
+
+          
+          
+
+          
+          
+
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#什么是OAuth2-0"><span class="nav-number">1.</span> <span class="nav-text">什么是OAuth2.0</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#OAuth2-0的优势"><span class="nav-number">2.</span> <span class="nav-text">OAuth2.0的优势</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#OAuth2-0的不足"><span class="nav-number">3.</span> <span class="nav-text">OAuth2.0的不足</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Oauth2-0主要角色术语"><span class="nav-number">4.</span> <span class="nav-text">Oauth2.0主要角色术语</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Oauth2-0-令牌类型"><span class="nav-number">5.</span> <span class="nav-text">Oauth2.0 令牌类型</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Ouath2-0的误区"><span class="nav-number">6.</span> <span class="nav-text">Ouath2.0的误区</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#授权模式"><span class="nav-number">7.</span> <span class="nav-text">授权模式</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#授权码模式"><span class="nav-number">7.1.</span> <span class="nav-text">授权码模式</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#简化模式"><span class="nav-number">7.2.</span> <span class="nav-text">简化模式</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#密码模式"><span class="nav-number">7.3.</span> <span class="nav-text">密码模式</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#客户端模式"><span class="nav-number">7.4.</span> <span class="nav-text">客户端模式</span></a></li></ol></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <script async src="https://dn-lbstatics.qbox.me/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+<div class="copyright">&copy; <span itemprop="copyrightYear">2020</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">skydh</span>
+
+  
+</div>
+
+
+<div class="powered-by">
+<i class="fa fa-user-md"></i><span id="busuanzi_container_site_uv">
+  本站访客数:<span id="busuanzi_value_site_uv"></span>
+</span>
+</div>
+
+  <div class="powered-by">由 <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a> 强力驱动</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">主题 &mdash; <a class="theme-link" target="_blank" href="https://github.com/iissnan/hexo-theme-next">NexT.Pisces</a> v5.1.3</div>
+
+
+
+
+        
+<div class="busuanzi-count">
+  <script async src="https://dn-lbstatics.qbox.me/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+
+  
+    <span class="site-uv">
+      <i class="fa fa-user"></i>
+      <span class="busuanzi-value" id="busuanzi_value_site_uv"></span>
+      
+    </span>
+  
+
+  
+    <span class="site-pv">
+      <i class="fa fa-eye"></i>
+      <span class="busuanzi-value" id="busuanzi_value_site_pv"></span>
+      
+    </span>
+  
+</div>
+
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/canvas-nest/canvas-nest.min.js"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.3"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.3"></script>
+
+
+
+  
+  
+
+
+  <script type="text/javascript" src="/js/src/affix.js?v=5.1.3"></script>
+
+  <script type="text/javascript" src="/js/src/schemes/pisces.js?v=5.1.3"></script>
+
+
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.3"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.3"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.3"></script>
+
+
+
+  
+
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>

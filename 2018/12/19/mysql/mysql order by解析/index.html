@@ -1,0 +1,717 @@
+<!DOCTYPE html>
+
+
+
+  
+
+
+<html class="theme-next pisces use-motion" lang="zh-Hans">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css" />
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=5.1.3" rel="stylesheet" type="text/css" />
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=5.1.3">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=5.1.3">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=5.1.3">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=5.1.3" color="#222">
+
+
+
+
+
+  <meta name="keywords" content="Hexo, NexT" />
+
+
+
+
+
+
+
+
+
+
+<meta name="description" content="全字段排序　　当我们要进行排序，mysql会为当前线程分配一个叫做sort_buffer的内存来进行排序。　　mysql根据sql,依照索引，把要查出来的数据从数据中一行行取出满足条件的数据全部放进sort_buffer，也就是说所有要查出来的字段全部加到sort_buffer里面。从而进行排序。　　其排序方式可能就在">
+<meta property="og:type" content="article">
+<meta property="og:title" content="mysql order by解析">
+<meta property="og:url" content="https://skydh.github.io/2018/12/19/mysql/mysql order by解析/index.html">
+<meta property="og:site_name" content="learning, progress, future.">
+<meta property="og:description" content="全字段排序　　当我们要进行排序，mysql会为当前线程分配一个叫做sort_buffer的内存来进行排序。　　mysql根据sql,依照索引，把要查出来的数据从数据中一行行取出满足条件的数据全部放进sort_buffer，也就是说所有要查出来的字段全部加到sort_buffer里面。从而进行排序。　　其排序方式可能就在内部完成，也可能因为内存不够数据量那么大，就要使用磁盘临时文件排序。存在sort">
+<meta property="og:locale" content="zh-Hans">
+<meta property="og:updated_time" content="2018-12-21T03:23:02.009Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="mysql order by解析">
+<meta name="twitter:description" content="全字段排序　　当我们要进行排序，mysql会为当前线程分配一个叫做sort_buffer的内存来进行排序。　　mysql根据sql,依照索引，把要查出来的数据从数据中一行行取出满足条件的数据全部放进sort_buffer，也就是说所有要查出来的字段全部加到sort_buffer里面。从而进行排序。　　其排序方式可能就在内部完成，也可能因为内存不够数据量那么大，就要使用磁盘临时文件排序。存在sort">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Pisces',
+    version: '5.1.3',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: true,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    duoshuo: {
+      userId: '0',
+      author: '博主'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="https://skydh.github.io/2018/12/19/mysql/mysql order by解析/"/>
+
+
+
+
+
+  <title>mysql order by解析 | learning, progress, future.</title>
+  
+
+
+
+
+
+
+
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/"  class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">learning, progress, future.</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle">skydh</p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br />
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />
+            
+            归档
+          </a>
+        </li>
+      
+
+      
+    </ul>
+  
+
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="https://skydh.github.io/2018/12/19/mysql/mysql order by解析/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="skydh">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="learning, progress, future.">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">mysql order by解析</h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2018-12-19T09:17:40+08:00">
+                2018-12-19
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+          
+
+          
+          
+
+          
+            <span class="post-meta-divider">|</span>
+            <span class="page-pv"><i class="fa fa-file-o"></i>
+            <span class="busuanzi-value" id="busuanzi_value_page_pv" ></span>
+            </span>
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <h2 id="全字段排序"><a href="#全字段排序" class="headerlink" title="全字段排序"></a>全字段排序</h2><p>　　当我们要进行排序，mysql会为当前线程分配一个叫做sort_buffer的内存来进行排序。<br>　　mysql根据sql,依照索引，把要查出来的数据从数据中一行行取出满足条件的数据全部放进sort_buffer，也就是说所有要查出来的字段全部加到sort_buffer里面。从而进行排序。<br>　　其排序方式可能就在内部完成，也可能因为内存不够数据量那么大，就要使用磁盘临时文件排序。存在sort_buffer不大，同时数据量很大的情况下，选出的数据会存为多个文件，那么很显然，我们使用归并排序的思想，对每个文件先排序，排好序后，然后用一个堆（大顶树或者小顶树）作为内存中暂存，然后一个一个元素丢到排好序的文件里面。</p>
+<h2 id="rowid-排序"><a href="#rowid-排序" class="headerlink" title="rowid 排序"></a>rowid 排序</h2><p>　　当我们要排序的单行数据很多的时候，那么在内存的总行数就会不多，因此我们可以通过设置一个参数</p>
+<pre><code>SET max_length_for_sort_data = 16;
+</code></pre><p>　　来使用另外一种算法来提高效率，这个参数就是单行数据字符数不超过１６才使用全字段排序算法。和前面的全字段排序不一样的是只把id+要排序的字段加到sort_buffer里面，其余的不加进去。这样sort_buffer里面放的行数就多了很多。然后排完序后，然后更急id从主键索引里面取出所有数据。</p>
+<h2 id="思索"><a href="#思索" class="headerlink" title="思索"></a>思索</h2><p>　　这种排序体现了mysql的一种思想：如果内存够，就要多利用内存，尽量减少磁盘访问。第二个会回表，因此，默认和优先全字段排序，但是无论怎么说，mysql排序很消耗性能。<br>　　有个办法可以不用临时表，那就是联合索引把要排序的字段加到索引里面，那就默认有序了，我们查到一个就直接返回，直到遇到不满足条件的，或者limit到极限的。<br>　　或者更加优化，使用覆盖索引。</p>
+<h2 id="临时表"><a href="#临时表" class="headerlink" title="临时表"></a>临时表</h2><p>　　前面说了，对于innodb来说最好使用全字段排序，因为没有最后的回表操作，减少了磁盘io，但是对于存在于内存的临时表来说，回表操作不是磁盘io，那么肯定是优先使用rowid排序。</p>
+<pre><code>mysql&gt; select word from words order by rand() limit 3;
+</code></pre><p>　　比如上面的语句就创建了临时表，使用的是memory引擎，且这个表是没有索引的。对于上面的语句来说，表有2个字段，一个字段是rand()函数生成一个随机的小数，一个就是word类型的字段。然后从表中将数据全部取出来后放到这个临时表里面。然后对这个字段排序，排序规则就是根据我们生成的这个随机数，然后我们取出这个随机数，以及位置信息放到sort_buffer里面，对随机数进行排序，然后取出数据即可。<br>　　这里的位置信息相当于innodb里面的主键，因为在memory这个存储引擎里面是没有类似索引这种操作的，他是类似于数组。<br>　　再比如，innodb里面，你删除了主键，那么innodb就会生成一个长度为6字节的rowid作为隐藏的主键。</p>
+<p>　　不是所有的临时表都是内存表。这个要依据tmp_table_size这个参数来确定，默认是16m,如果大于这个值，那么就用磁盘临时表（innodb），否则则是内存临时表（memory）。</p>
+<h2 id="新的算法"><a href="#新的算法" class="headerlink" title="新的算法"></a>新的算法</h2><p>　　在mysql5.6之后引用了优先队列算法。比如上面的语句只要查出前面3个，如果使用归并排序，就是对所有数据进行排序，但是我们只要查出前面3个，那么我们就可以使用一个堆结构来存，从而迅速获取到前面3个值。但是如果limit过多，那么就不用这个算法，那就使用归并算法，因为这种情况下使用优先队列算法就划不来了。</p>
+<h2 id="排序很消耗性能，临时表更加消耗性能"><a href="#排序很消耗性能，临时表更加消耗性能" class="headerlink" title="排序很消耗性能，临时表更加消耗性能"></a>排序很消耗性能，临时表更加消耗性能</h2><p>　　我们要尽量减少创建临时表，和排序，若是没有办法，那只能如此了。</p>
+
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2018/12/14/mysql/select count优化/" rel="next" title="mysql select count(*)优化">
+                <i class="fa fa-chevron-left"></i> mysql select count(*)优化
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2018/12/25/eclipse/eclipse发布工程到本地仓库/" rel="prev" title="eclipse发布工程到本地仓库">
+                eclipse发布工程到本地仓库 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <p class="site-author-name" itemprop="name">skydh</p>
+              <p class="site-description motion-element" itemprop="description">skydh</p>
+          </div>
+
+          <nav class="site-state motion-element">
+
+            
+              <div class="site-state-item site-state-posts">
+              
+                <a href="/archives/">
+              
+                  <span class="site-state-item-count">125</span>
+                  <span class="site-state-item-name">日志</span>
+                </a>
+              </div>
+            
+
+            
+
+            
+
+          </nav>
+
+          
+
+          <div class="links-of-author motion-element">
+            
+          </div>
+
+          
+          
+
+          
+          
+
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#全字段排序"><span class="nav-number">1.</span> <span class="nav-text">全字段排序</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#rowid-排序"><span class="nav-number">2.</span> <span class="nav-text">rowid 排序</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#思索"><span class="nav-number">3.</span> <span class="nav-text">思索</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#临时表"><span class="nav-number">4.</span> <span class="nav-text">临时表</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#新的算法"><span class="nav-number">5.</span> <span class="nav-text">新的算法</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#排序很消耗性能，临时表更加消耗性能"><span class="nav-number">6.</span> <span class="nav-text">排序很消耗性能，临时表更加消耗性能</span></a></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <script async src="https://dn-lbstatics.qbox.me/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+<div class="copyright">&copy; <span itemprop="copyrightYear">2020</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">skydh</span>
+
+  
+</div>
+
+
+<div class="powered-by">
+<i class="fa fa-user-md"></i><span id="busuanzi_container_site_uv">
+  本站访客数:<span id="busuanzi_value_site_uv"></span>
+</span>
+</div>
+
+  <div class="powered-by">由 <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a> 强力驱动</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">主题 &mdash; <a class="theme-link" target="_blank" href="https://github.com/iissnan/hexo-theme-next">NexT.Pisces</a> v5.1.3</div>
+
+
+
+
+        
+<div class="busuanzi-count">
+  <script async src="https://dn-lbstatics.qbox.me/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+
+  
+    <span class="site-uv">
+      <i class="fa fa-user"></i>
+      <span class="busuanzi-value" id="busuanzi_value_site_uv"></span>
+      
+    </span>
+  
+
+  
+    <span class="site-pv">
+      <i class="fa fa-eye"></i>
+      <span class="busuanzi-value" id="busuanzi_value_site_pv"></span>
+      
+    </span>
+  
+</div>
+
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/canvas-nest/canvas-nest.min.js"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.3"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.3"></script>
+
+
+
+  
+  
+
+
+  <script type="text/javascript" src="/js/src/affix.js?v=5.1.3"></script>
+
+  <script type="text/javascript" src="/js/src/schemes/pisces.js?v=5.1.3"></script>
+
+
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.3"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.3"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.3"></script>
+
+
+
+  
+
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>

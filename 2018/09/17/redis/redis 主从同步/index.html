@@ -1,0 +1,718 @@
+<!DOCTYPE html>
+
+
+
+  
+
+
+<html class="theme-next pisces use-motion" lang="zh-Hans">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css" />
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=5.1.3" rel="stylesheet" type="text/css" />
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=5.1.3">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=5.1.3">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=5.1.3">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=5.1.3" color="#222">
+
+
+
+
+
+  <meta name="keywords" content="Hexo, NexT" />
+
+
+
+
+
+
+
+
+
+
+<meta name="description" content="什么是主从同步　　主从分布是部署多个redis实例，一主多从，当主实例挂了，那么我们就可以用从实例替换上去，增加了系统的稳定性。 CAP理论　　Ｃ：一致性：分布式的系统中同一时刻有一样的值。　　Ａ：可用性：集群故障之后依旧可以相应客户端的读写请求。　　Ｐ：分区容错性：系统如果不能在时限内达成数据一致性，就意味着发生了分">
+<meta property="og:type" content="article">
+<meta property="og:title" content="redis主从同步和集群">
+<meta property="og:url" content="https://skydh.github.io/2018/09/17/redis/redis 主从同步/index.html">
+<meta property="og:site_name" content="learning, progress, future.">
+<meta property="og:description" content="什么是主从同步　　主从分布是部署多个redis实例，一主多从，当主实例挂了，那么我们就可以用从实例替换上去，增加了系统的稳定性。 CAP理论　　Ｃ：一致性：分布式的系统中同一时刻有一样的值。　　Ａ：可用性：集群故障之后依旧可以相应客户端的读写请求。　　Ｐ：分区容错性：系统如果不能在时限内达成数据一致性，就意味着发生了分区的情况，必须就当前操作在C和A之间做出选择。　　而分布式系统往往分布在不同的机">
+<meta property="og:locale" content="zh-Hans">
+<meta property="og:updated_time" content="2018-09-19T11:46:58.417Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="redis主从同步和集群">
+<meta name="twitter:description" content="什么是主从同步　　主从分布是部署多个redis实例，一主多从，当主实例挂了，那么我们就可以用从实例替换上去，增加了系统的稳定性。 CAP理论　　Ｃ：一致性：分布式的系统中同一时刻有一样的值。　　Ａ：可用性：集群故障之后依旧可以相应客户端的读写请求。　　Ｐ：分区容错性：系统如果不能在时限内达成数据一致性，就意味着发生了分区的情况，必须就当前操作在C和A之间做出选择。　　而分布式系统往往分布在不同的机">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Pisces',
+    version: '5.1.3',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: true,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    duoshuo: {
+      userId: '0',
+      author: '博主'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="https://skydh.github.io/2018/09/17/redis/redis 主从同步/"/>
+
+
+
+
+
+  <title>redis主从同步和集群 | learning, progress, future.</title>
+  
+
+
+
+
+
+
+
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/"  class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">learning, progress, future.</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle">skydh</p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br />
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />
+            
+            归档
+          </a>
+        </li>
+      
+
+      
+    </ul>
+  
+
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="https://skydh.github.io/2018/09/17/redis/redis 主从同步/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="skydh">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="learning, progress, future.">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">redis主从同步和集群</h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2018-09-17T17:48:05+08:00">
+                2018-09-17
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+          
+
+          
+          
+
+          
+            <span class="post-meta-divider">|</span>
+            <span class="page-pv"><i class="fa fa-file-o"></i>
+            <span class="busuanzi-value" id="busuanzi_value_page_pv" ></span>
+            </span>
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <h2 id="什么是主从同步"><a href="#什么是主从同步" class="headerlink" title="什么是主从同步"></a>什么是主从同步</h2><p>　　主从分布是部署多个redis实例，一主多从，当主实例挂了，那么我们就可以用从实例替换上去，增加了系统的稳定性。</p>
+<h2 id="CAP理论"><a href="#CAP理论" class="headerlink" title="CAP理论"></a>CAP理论</h2><p>　　Ｃ：一致性：分布式的系统中同一时刻有一样的值。<br>　　Ａ：可用性：集群故障之后依旧可以相应客户端的读写请求。<br>　　Ｐ：分区容错性：系统如果不能在时限内达成数据一致性，就意味着发生了分区的情况，必须就当前操作在C和A之间做出选择。<br>　　而分布式系统往往分布在不同的机器上面。这意味着必然有网络断开的风险，这个网络断开的场景的专业词汇叫网络分区。<br>　　当网络之间无法通信时，节点数据不在统一，那么一致性不满足了，或者我们暂停服务，那么可用性不满足了。<br>　　也就是说当网络分区时，一致性和可用性无法２全。</p>
+<h2 id="redis的最终一致性"><a href="#redis的最终一致性" class="headerlink" title="redis的最终一致性"></a>redis的最终一致性</h2><p>　　redis的主从数据是异步同步的，所以redis系统不满足一致性要求。redis的主节点修改数据后，立即返回，因此就算主从网络断开，主节点依旧可以提供服务。满足可用性，当网络恢复了，从节点会尽可能的同步数据。</p>
+<h2 id="增量同步"><a href="#增量同步" class="headerlink" title="增量同步"></a>增量同步</h2><p>　　这个同步方式是主节点会把对自己状态修改的指令记录在内存buffer中，redis的复制内存buffer是一个定长的环形数组，如果数组满了，将会覆盖这个数组。因此如果长时间无法同步，那么指令可能会被覆盖。</p>
+<h2 id="快照同步"><a href="#快照同步" class="headerlink" title="快照同步"></a>快照同步</h2><p>　　需要将主库的数据全部快照到磁盘文件，然后将快照文件传给子节点。从节点立即进行一次全量加载，加载之前需要将数据清空，加载后，在进行增量同步。（个人理解是和持久化一样的策略，进行快照时，新的操作用增量），但是存在一种情况，就是在快照和同步的时候，增量缓存已经被覆盖，那么只增在进行快照，然后buffer又被覆盖，进入了死循环。因此buffer大小必须设置好。</p>
+<h2 id="无盘复制"><a href="#无盘复制" class="headerlink" title="无盘复制"></a>无盘复制</h2><p>　　快照时会很严重的io操作，对系统很大的影响，我们可以通过服务器直接将套接字将快照内容发到从节点，生成快照是一个遍历的过程，主节点一遍遍历内存一遍序列化内容发送到从节点，从节点接受后也是先缓存到磁盘，然后加载到从节点里面。<br>　　我们可以用wait指令强行同步复制。wait 1 1,1就是一个从库，0就是最多等待时间。如果时间=0，那么将将无限制一致等待。</p>
+<h2 id="sentinel-自动化切换"><a href="#sentinel-自动化切换" class="headerlink" title="sentinel 自动化切换"></a>sentinel 自动化切换</h2><p>　　前面介绍了主从同步的策略实现以及原理。但是主节点出现故障，还是要手动去切换到从节点，为了避免这个问题，redis官方提供了一个方案-redis sentinel 来处理。可以在主节点挂了之后自动切换到从节点。<br>　　我们一般用3~5个sentinel作为集群，来监察redis的集群。客户端访问redis集群的时候，一般先去访问sentinel,从其中获取主节点地址，然后再去访问redis，当redis主节点挂了之后，客户端访问失败后，再次访问sentinel,他会选一个最优的从节点作为主节点，并把地址返回给客户端。而sentinel会持续监控这个坏掉的主节点，等其回复了之后将其作为从节点。<br>　　主节点断掉了，那么以为消息的丢失，因为redis的消息同和和zookeeper不一样是异步，如果延迟过大，可能造成很大的影响。</p>
+<pre><code>min-slaves-to-write 1
+min-slaves-max-lag 10
+</code></pre><p>　　Sentinel 采用上面的命令来尽量减少丢失，第一个参数是，起码必须有1个正在正常复制中，第二个参数是如果超过10秒没有复制，那么就是不正常复制了。</p>
+<h2 id="codis-方案"><a href="#codis-方案" class="headerlink" title="codis 方案"></a>codis 方案</h2><p>　　大数据量下单个redis实例是明显不够的，原因如下：<br>　　１．导致内存过大，这样主从复制的时候全量同步时间过长，其次持久化时间也太长，重启消耗大量时间资源。<br>　　２．云环境下，单个实例内存是收到限制的。<br>　　３．redis是基于多路io复用的单线程，对cpu利用率不高。<br>　　因此redis集群应运而生，多个redis实例可以有效提高cpu使用率，而codis是一个非常好的方案，它是一个代理中间件和redis一样使用redis的协议来对外提供服务。当客户端向codis发送指令时，codis负责将指令转发到后面的redis实例完成，起到一个负载均衡，代理的作用。codis上连接的所有redis实例构成了一个集群。codis对客户端是透明的，客户端就像直接使用redis实例一样。codis是无状态的，我们可以同时启动多个实例，来增加其容错性，以及提高并发量。<br>　　那么问题来了，一个key到底对应哪个redis实例呢？<br>　　codis这样玩的，他对每个key做一个运算，然后对1024取模得到一个值，codis在内存维护的一个映射关系。就是redis实例和1024的对应关系，然后这个值通过这个映射关系，找打对应的redis实例。<br>　　那么问题又来了，我们如何对codis同步数据，同步映射关系，这边采用的是使用zookeeper来持久化映射关系，同时codis提供了一个dashboard来观察修改槽位关系，当槽位关系变化时,codis会监听到变化，从而同步其关系。<br>　　缺点：key分布式了，所以不再支持事务，其次是动态扩容时，key的迁移消耗资源太大。</p>
+<h2 id="cluster-亲儿子"><a href="#cluster-亲儿子" class="headerlink" title="cluster(亲儿子)"></a>cluster(亲儿子)</h2><p>　　cluster是redis官方推出的方案，采用去中心化的方案来集群，多个节点通过一个二进制协议交换集群信息。redis将数据的key分为16384 的 slots，其槽点的信息存在每一个节点里面，当客户端获取数据时，先获取到整个槽点的信息，且将其缓存下来。RedisCluster 的每个节点会将集群的配置信息持久化到配置文件中，所以必须确保配置文件是可写的，而且尽量不要依靠人工修改配置文件。具体配置看详细即可。欧了</p>
+
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2018/09/17/redis/redis 小对象压缩/" rel="next" title="redis 小对象压缩">
+                <i class="fa fa-chevron-left"></i> redis 小对象压缩
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2018/09/17/mysql/mysql 数据库分表分库/" rel="prev" title="mysql 分库分表">
+                mysql 分库分表 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <p class="site-author-name" itemprop="name">skydh</p>
+              <p class="site-description motion-element" itemprop="description">skydh</p>
+          </div>
+
+          <nav class="site-state motion-element">
+
+            
+              <div class="site-state-item site-state-posts">
+              
+                <a href="/archives/">
+              
+                  <span class="site-state-item-count">125</span>
+                  <span class="site-state-item-name">日志</span>
+                </a>
+              </div>
+            
+
+            
+
+            
+
+          </nav>
+
+          
+
+          <div class="links-of-author motion-element">
+            
+          </div>
+
+          
+          
+
+          
+          
+
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#什么是主从同步"><span class="nav-number">1.</span> <span class="nav-text">什么是主从同步</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#CAP理论"><span class="nav-number">2.</span> <span class="nav-text">CAP理论</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#redis的最终一致性"><span class="nav-number">3.</span> <span class="nav-text">redis的最终一致性</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#增量同步"><span class="nav-number">4.</span> <span class="nav-text">增量同步</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#快照同步"><span class="nav-number">5.</span> <span class="nav-text">快照同步</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#无盘复制"><span class="nav-number">6.</span> <span class="nav-text">无盘复制</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#sentinel-自动化切换"><span class="nav-number">7.</span> <span class="nav-text">sentinel 自动化切换</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#codis-方案"><span class="nav-number">8.</span> <span class="nav-text">codis 方案</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#cluster-亲儿子"><span class="nav-number">9.</span> <span class="nav-text">cluster(亲儿子)</span></a></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <script async src="https://dn-lbstatics.qbox.me/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+<div class="copyright">&copy; <span itemprop="copyrightYear">2020</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">skydh</span>
+
+  
+</div>
+
+
+<div class="powered-by">
+<i class="fa fa-user-md"></i><span id="busuanzi_container_site_uv">
+  本站访客数:<span id="busuanzi_value_site_uv"></span>
+</span>
+</div>
+
+  <div class="powered-by">由 <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a> 强力驱动</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">主题 &mdash; <a class="theme-link" target="_blank" href="https://github.com/iissnan/hexo-theme-next">NexT.Pisces</a> v5.1.3</div>
+
+
+
+
+        
+<div class="busuanzi-count">
+  <script async src="https://dn-lbstatics.qbox.me/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+
+  
+    <span class="site-uv">
+      <i class="fa fa-user"></i>
+      <span class="busuanzi-value" id="busuanzi_value_site_uv"></span>
+      
+    </span>
+  
+
+  
+    <span class="site-pv">
+      <i class="fa fa-eye"></i>
+      <span class="busuanzi-value" id="busuanzi_value_site_pv"></span>
+      
+    </span>
+  
+</div>
+
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/canvas-nest/canvas-nest.min.js"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.3"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.3"></script>
+
+
+
+  
+  
+
+
+  <script type="text/javascript" src="/js/src/affix.js?v=5.1.3"></script>
+
+  <script type="text/javascript" src="/js/src/schemes/pisces.js?v=5.1.3"></script>
+
+
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.3"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.3"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.3"></script>
+
+
+
+  
+
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>

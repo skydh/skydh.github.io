@@ -1,0 +1,876 @@
+<!DOCTYPE html>
+
+
+
+  
+
+
+<html class="theme-next pisces use-motion" lang="zh-Hans">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css" />
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=5.1.3" rel="stylesheet" type="text/css" />
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=5.1.3">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=5.1.3">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=5.1.3">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=5.1.3" color="#222">
+
+
+
+
+
+  <meta name="keywords" content="Hexo, NexT" />
+
+
+
+
+
+
+
+
+
+
+<meta name="description" content="线程创建简介　　1.在java中表示线程的是Thread类。无论是那种方式创建线程，本质上都是创建Thread类的对象。　　２.Thread类继承Runnable接口，且也有以Runnable作为参数的构造方法。　　３．FutureTask这个类也实现了Runnable接口，故也可以作为参数传进Thread 里面来创建">
+<meta property="og:type" content="article">
+<meta property="og:title" content="java线程的3种创建方式及优缺点">
+<meta property="og:url" content="https://skydh.github.io/2017/11/23/java/java线程的3种创建方式及优缺点/index.html">
+<meta property="og:site_name" content="learning, progress, future.">
+<meta property="og:description" content="线程创建简介　　1.在java中表示线程的是Thread类。无论是那种方式创建线程，本质上都是创建Thread类的对象。　　２.Thread类继承Runnable接口，且也有以Runnable作为参数的构造方法。　　３．FutureTask这个类也实现了Runnable接口，故也可以作为参数传进Thread 里面来创建线程。 线程的创建继承Thread类package thread;  /**">
+<meta property="og:locale" content="zh-Hans">
+<meta property="og:image" content="https://raw.githubusercontent.com/skydh/picture/master/thread_003.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/skydh/picture/master/thread_002.png">
+<meta property="og:updated_time" content="2017-11-26T15:22:10.880Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="java线程的3种创建方式及优缺点">
+<meta name="twitter:description" content="线程创建简介　　1.在java中表示线程的是Thread类。无论是那种方式创建线程，本质上都是创建Thread类的对象。　　２.Thread类继承Runnable接口，且也有以Runnable作为参数的构造方法。　　３．FutureTask这个类也实现了Runnable接口，故也可以作为参数传进Thread 里面来创建线程。 线程的创建继承Thread类package thread;  /**">
+<meta name="twitter:image" content="https://raw.githubusercontent.com/skydh/picture/master/thread_003.png">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Pisces',
+    version: '5.1.3',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: true,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    duoshuo: {
+      userId: '0',
+      author: '博主'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="https://skydh.github.io/2017/11/23/java/java线程的3种创建方式及优缺点/"/>
+
+
+
+
+
+  <title>java线程的3种创建方式及优缺点 | learning, progress, future.</title>
+  
+
+
+
+
+
+
+
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/"  class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">learning, progress, future.</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle">skydh</p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br />
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />
+            
+            归档
+          </a>
+        </li>
+      
+
+      
+    </ul>
+  
+
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="https://skydh.github.io/2017/11/23/java/java线程的3种创建方式及优缺点/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="skydh">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="learning, progress, future.">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">java线程的3种创建方式及优缺点</h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2017-11-23T22:09:25+08:00">
+                2017-11-23
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+          
+
+          
+          
+
+          
+            <span class="post-meta-divider">|</span>
+            <span class="page-pv"><i class="fa fa-file-o"></i>
+            <span class="busuanzi-value" id="busuanzi_value_page_pv" ></span>
+            </span>
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <h2 id="线程创建简介"><a href="#线程创建简介" class="headerlink" title="线程创建简介"></a>线程创建简介</h2><p>　　1.在java中表示线程的是Thread类。无论是那种方式创建线程，本质上都是创建Thread类的对象。<br><img src="https://raw.githubusercontent.com/skydh/picture/master/thread_003.png" alt="aaa"><br>　　２.Thread类继承Runnable接口，且也有以Runnable作为参数的构造方法。<br><img src="https://raw.githubusercontent.com/skydh/picture/master/thread_002.png" alt="aaa"><br>　　３．FutureTask这个类也实现了Runnable接口，故也可以作为参数传进Thread 里面来创建线程。</p>
+<h2 id="线程的创建"><a href="#线程的创建" class="headerlink" title="线程的创建"></a>线程的创建</h2><h3 id="继承Thread类"><a href="#继承Thread类" class="headerlink" title="继承Thread类"></a>继承Thread类</h3><pre>package thread;
+
+/**
+ * 继承thread类来创建线程
+ * 
+ * @author dh
+ *
+ */
+public class ExtendsThread extends Thread {
+
+    public void run() {
+        for (int i = 0; i < 10; i++) {
+            System.out.println(Thread.currentThread().getName() + "    _"+i);
+        }
+    }
+
+}
+</pre>
+### 实现Runnable接口
+ <pre>package thread;
+
+/**
+ * 实现 Runnable接口
+ * 
+ * @author dh
+ *
+ */
+public class ImplementRunnable implements Runnable {
+    private int i;
+
+    public ImplementRunnable(int i) {
+        this.i = i;
+    }
+
+    @Override
+    public void run() {
+
+        for (; i < 20; i++) {
+            System.out.println(Thread.currentThread().getName() + "   _" + i);
+        }
+    }
+
+}
+</pre>
+### 实现Callable接口
+ <pre>package thread;
+
+import java.util.concurrent.Callable;
+
+/**
+ * 
+ * @author dh
+ *
+ */
+public class ImplementCallable implements Callable<string> {
+
+    private int i;
+
+    public ImplementCallable(int i) {
+        this.i = i;
+    }
+
+    @Override
+    public String call() throws Exception {
+        for (; i < 20; i++) {
+            System.out.println(Thread.currentThread().getName() + "   _" + i);
+
+        }
+        return "1";
+    }
+
+}
+</string></pre>
+### 创建线程
+<pre>package thread;
+
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.FutureTask;
+/**
+ * 
+ * @author dh
+ *
+ */
+public class TestD {
+
+    public static void main(String[] args) throws InterruptedException, ExecutionException {
+        ExtendsThread et = new ExtendsThread();
+        et.run();
+
+
+
+        ImplementRunnable imr = new ImplementRunnable(0);
+        Thread thread = new Thread(imr);
+        thread.start();
+        Thread thread1 = new Thread(imr);
+        thread1.start();
+
+
+        ImplementCallable implCallable = new ImplementCallable(1);
+        FutureTask<string> ft = new FutureTask<string>(implCallable);
+        Thread thread2 = new Thread(ft);
+        thread2.start();
+        System.out.println(ft.get());
+
+    }
+
+}
+}
+</string></string></pre>
+
+<p>结果如下：</p>
+<pre>main    _0
+main    _1
+main    _2
+main    _3
+main    _4
+main    _5
+main    _6
+main    _7
+main    _8
+main    _9
+Thread-1   _0
+Thread-2   _0
+Thread-1   _1
+Thread-2   _2
+Thread-1   _3
+Thread-2   _4
+Thread-1   _5
+Thread-2   _6
+Thread-1   _7
+Thread-2   _8
+Thread-1   _9
+Thread-2   _10
+Thread-1   _11
+Thread-2   _12
+Thread-1   _13
+Thread-2   _14
+Thread-1   _15
+Thread-2   _16
+Thread-1   _17
+Thread-2   _18
+Thread-1   _19
+Thread-3   _1
+Thread-3   _2
+Thread-3   _3
+Thread-3   _4
+Thread-3   _5
+Thread-3   _6
+Thread-3   _7
+Thread-3   _8
+Thread-3   _9
+Thread-3   _10
+Thread-3   _11
+Thread-3   _12
+Thread-3   _13
+Thread-3   _14
+Thread-3   _15
+Thread-3   _16
+Thread-3   _17
+Thread-3   _18
+Thread-3   _19
+1
+</pre>
+
+<h2 id="3种方式创建的优缺点"><a href="#3种方式创建的优缺点" class="headerlink" title="3种方式创建的优缺点"></a>3种方式创建的优缺点</h2><p>1.继承Thread显然有个很大的缺点，java是单继承了，如果继承了Thread那么就无法继承其他类。但是继承Thread编写简单，实现方便。<br><br></p>
+<p>2.实现Runnable接口和Callable接口。大致一样，区别就是Callable接口的实现可以有返回值，且可以抛出显示异常。其余大致一样。<br>他们的优势是实现接口，那么实现类可以有其他父类，避免的Thread的问题，其次可以用一个实现了该接口的对象来创建多个线程，从而方便一些基本的资源共享，因为是同一个对象。</p>
+
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2017/11/23/java/java线程的基本概念/" rel="next" title="java线程的基本概念">
+                <i class="fa fa-chevron-left"></i> java线程的基本概念
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2017/11/29/java/java线程的常用方法和属性介绍/" rel="prev" title="java线程的常用方法和属性介绍">
+                java线程的常用方法和属性介绍 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <p class="site-author-name" itemprop="name">skydh</p>
+              <p class="site-description motion-element" itemprop="description">skydh</p>
+          </div>
+
+          <nav class="site-state motion-element">
+
+            
+              <div class="site-state-item site-state-posts">
+              
+                <a href="/archives/">
+              
+                  <span class="site-state-item-count">125</span>
+                  <span class="site-state-item-name">日志</span>
+                </a>
+              </div>
+            
+
+            
+
+            
+
+          </nav>
+
+          
+
+          <div class="links-of-author motion-element">
+            
+          </div>
+
+          
+          
+
+          
+          
+
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#线程创建简介"><span class="nav-number">1.</span> <span class="nav-text">线程创建简介</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#线程的创建"><span class="nav-number">2.</span> <span class="nav-text">线程的创建</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#继承Thread类"><span class="nav-number">2.1.</span> <span class="nav-text">继承Thread类</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#3种方式创建的优缺点"><span class="nav-number">3.</span> <span class="nav-text">3种方式创建的优缺点</span></a></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <script async src="https://dn-lbstatics.qbox.me/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+<div class="copyright">&copy; <span itemprop="copyrightYear">2020</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">skydh</span>
+
+  
+</div>
+
+
+<div class="powered-by">
+<i class="fa fa-user-md"></i><span id="busuanzi_container_site_uv">
+  本站访客数:<span id="busuanzi_value_site_uv"></span>
+</span>
+</div>
+
+  <div class="powered-by">由 <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a> 强力驱动</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">主题 &mdash; <a class="theme-link" target="_blank" href="https://github.com/iissnan/hexo-theme-next">NexT.Pisces</a> v5.1.3</div>
+
+
+
+
+        
+<div class="busuanzi-count">
+  <script async src="https://dn-lbstatics.qbox.me/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+
+  
+    <span class="site-uv">
+      <i class="fa fa-user"></i>
+      <span class="busuanzi-value" id="busuanzi_value_site_uv"></span>
+      
+    </span>
+  
+
+  
+    <span class="site-pv">
+      <i class="fa fa-eye"></i>
+      <span class="busuanzi-value" id="busuanzi_value_site_pv"></span>
+      
+    </span>
+  
+</div>
+
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/canvas-nest/canvas-nest.min.js"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.3"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.3"></script>
+
+
+
+  
+  
+
+
+  <script type="text/javascript" src="/js/src/affix.js?v=5.1.3"></script>
+
+  <script type="text/javascript" src="/js/src/schemes/pisces.js?v=5.1.3"></script>
+
+
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.3"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.3"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.3"></script>
+
+
+
+  
+
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>
