@@ -643,7 +643,7 @@
         
           <h1 class="post-title" itemprop="name headline">
                 
-                <a class="post-title-link" href="/2019/01/28/es/es 入门2.0/" itemprop="url">未命名</a></h1>
+                <a class="post-title-link" href="/2019/01/28/es/es 入门2.0/" itemprop="url">Elasticsearch入门002</a></h1>
         
 
         <div class="post-meta">
@@ -695,9 +695,7 @@
       
         
           
-            <hr>
-<hr>
-<h2 id="2种通信方式"><a href="#2种通信方式" class="headerlink" title="2种通信方式"></a>2种通信方式</h2><p>　　我们有２个方式和服务端集群交互，第一个是通过9300端口并使用Elasticsearch原生传输协议和集群交互，同时集群的节点也是通过这个端口彼此通信的。这个只能通过java实现，同时maven依赖版本必须和es版本保持一致，不然可能连不上去。第二个方式就是其他语言包括java都可以使用的，就是通过restful api 9200端口和Elasticsearch交互。  </p>
+            <h2 id="2种通信方式"><a href="#2种通信方式" class="headerlink" title="2种通信方式"></a>2种通信方式</h2><p>　　我们有２个方式和服务端集群交互，第一个是通过9300端口并使用Elasticsearch原生传输协议和集群交互，同时集群的节点也是通过这个端口彼此通信的。这个只能通过java实现，同时maven依赖版本必须和es版本保持一致，不然可能连不上去。第二个方式就是其他语言包括java都可以使用的，就是通过restful api 9200端口和Elasticsearch交互。  </p>
 <h2 id="查询性能"><a href="#查询性能" class="headerlink" title="查询性能"></a>查询性能</h2><p>　　１．ES的搜索引擎严重依赖于底层的filesystem cache，你如果给filesystem cache更多的内存，尽量让内存可以容纳所有的idx segment file索引数据文件，那么你搜索的时候就基本都是走内存的，性能会非常高。一般来说，内存空间要达到磁盘数据量的一般，使用es性能才好。<br>　　２.在es中，如果内存留给filesystem cache的空间是1g，那么你的索引数据就要控制在1g以内，那么你的数据几乎都是走内存来搜索，性能极高。比如你只需要根据id，name,age3个字段来搜索，但是你把一行数据30多个字段都丢进去了，那么有大量的数据不是用来搜索的，占了filesystem cache的空间，浪费了。因此我们建议将id+name,age,其余的数据存在mysql里面，然后通过索引再mysql里面查询。<br>　　３．数据预热，可以搞个子系统，手动访问某些数据，将数据加热，提前刷到filesystem cache里面。<br>　　４．es深度分页性能很差，方案，去除深度分页。</p>
 <h2 id="倒排索引"><a href="#倒排索引" class="headerlink" title="倒排索引"></a>倒排索引</h2><p>　　Elasticsearch是通过Lucene的倒排索引技术实现比关系型数据库更快的过滤。特别是它对多条件的过滤支持非常好，倒排索引。
 　　
