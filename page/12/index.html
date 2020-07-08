@@ -232,6 +232,131 @@
   
   
   <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="https://skydh.github.io/2018/02/08/网络/tcp ip协议/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="skydh">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="learning, progress, future.">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                <a class="post-title-link" href="/2018/02/08/网络/tcp ip协议/" itemprop="url">tcp/ip协议</a></h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2018-02-08T14:24:27+08:00">
+                2018-02-08
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            <h2 id="什么是tcp-ip协议"><a href="#什么是tcp-ip协议" class="headerlink" title="什么是tcp/ip协议"></a>什么是tcp/ip协议</h2><p>　　tcp/ip是2个协议，tcp是运输端协议，ip是网络端协议，这2个协议一般一起使用的。ip协议是来确定和找到地址的，tcp则是具体的传输信息的工作。</p>
+<h2 id="tcp的三次握手和四次挥手协议"><a href="#tcp的三次握手和四次挥手协议" class="headerlink" title="tcp的三次握手和四次挥手协议"></a>tcp的三次握手和四次挥手协议</h2><p>　　理解这个过程首先要知道tcp的2个序号和3个标志位的含义。<br>　　seq:表示传输数据的序号。tcp传输时每一个字节都有序号，发送时会把第一个序号发过去。接收端通过序号判断数据是否完整，如果不完整则重发。<br>　　ack:表示确认号，接受端表示数据已经完整接受，向发送端发送确认号。表示希望接受到数据的编号。一般为接受端报文最后的序号+1.<br>　　ACk：表示确认位。只有ACK=1时ack才会起作用。正常通信时ACK=1,第一次的话没有接收方确认是0.<br>　　SYN:这个是同步标志位，当SYN=1,ACK=0时表示这是个连接请求报文段，握手完成后SYN标志位为1<br>　　FIN:FIN=1表示数据已经发送完要求释放运输连接。</p>
+<p><img src="https://raw.githubusercontent.com/skydh/picture/master/tcp_001.png" alt="aaa"><br><img src="https://raw.githubusercontent.com/skydh/picture/master/tcp_002.png" alt="aaa"><br>　　简述下３次握手和四次挥手<br>　　三次握手<br>　    1.客户端向服务端发送连接请求包，ACk位为0，SYN为1，seq=X,ACk是因为没有接受到确认信息故为0，因此需要同步标志位来确认其为有效连接。<br>　　２．服务端向客户端发送确认信息：标识位SYN=1，ACK=1，希望收到的下个信息的序号为ack=x+1;自身的seq序号为y.<br>　　３．客户端向服务端发送确认报文，ACK=1,SYN=1,ack=y+1,seq=x+1。<br>　　为何需要三次握手？<br>　　第一次，服务端知道自己接受数据没问题，第二次，客户端知道自己自己发送数据和接受数据没问题，第三次服务端知道自己发送数据没问题。然后，数据开始发送。<br>　　四次挥手<br>　　１．客户发送FIN=1,seq=x,来像服务器发送终止请求。<br>　　２．服务端接受到FIN后，发送一个ACK=1,seq=y,ACK=x+1.<br>　　３．关闭服务端到客户端的连接，且发送一个FIN给客户端。<br>　　４．客户端收到FIN后，且发送一个ACK=1,seq=x+1,ack=y+1.<br>　　简而言之这样的：<br>　　第一次客户端发送一个fin,表示自己数据发完了，服务端收到后，若是数据没有发送完，就发送一个ack，表示，已经收到你的请求，但是服务端数据没有发送完，继续发送数据，等到数据发送完了，就发送一个fin,客户端收到fin后就发送一个ack,表示确认收到，服务端就可以关闭连接了。但是客户端还是要等一个周期时间，如果客户端发送ack丢失了，服务端没有收到就会继续发送fin,直到收到信息后，才关闭，而客户端在一定周期内没有收到信号也关闭。<br>　　为何是结束是4次握手？<br>　　数据可能没有发送完。如果都是同时发送完了，那么也是3次握手，3次握手是由于没有数据传送<br>　　注意到每一次连接都要消耗3次握手和4次握手，<br>　　故有了tcp长连接和短连接，http的长连接和短连接实际上就是tcp的．</p>
+<p>　　短连接：就是一次简单的tcp连接，数据发送完直接关闭。连接→数据传输→关闭连接</p>
+<p>　　长连接：就是在一次连接内多次发送数据包，中间若是没有数据那么靠心跳保活协议维护， 连接→数据传输→保持连接(心跳)→数据传输→保持连接(心跳)→……→关闭连接<br>　　这样子就减少了多次连接所消耗的握手
+　　</p>
+
+          
+        
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
     <link itemprop="mainEntityOfPage" href="https://skydh.github.io/2018/02/08/网络/DNS协议简介/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -1596,526 +1721,6 @@ class MyTask implements Runnable {
 
 
     
-      
-
-  
-
-  
-  
-  
-
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-  
-  
-  
-  <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="https://skydh.github.io/2017/12/07/java/java线程的并发加锁控制/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="skydh">
-      <meta itemprop="description" content="">
-      <meta itemprop="image" content="/images/avatar.gif">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="learning, progress, future.">
-    </span>
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-                
-                <a class="post-title-link" href="/2017/12/07/java/java线程的并发加锁控制/" itemprop="url">java线程的并发加锁控制</a></h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">发表于</span>
-              
-              <time title="创建于" itemprop="dateCreated datePublished" datetime="2017-12-07T13:03:24+08:00">
-                2017-12-07
-              </time>
-            
-
-            
-
-            
-          </span>
-
-          
-
-          
-            
-          
-
-          
-          
-
-          
-
-          
-
-          
-
-        </div>
-      </header>
-    
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          
-            <h2 id="synchronized和Lock的加锁机制"><a href="#synchronized和Lock的加锁机制" class="headerlink" title="synchronized和Lock的加锁机制"></a>synchronized和Lock的加锁机制</h2><p>　　synchronized关键字加锁。<br>　　第一，我们先明确几个概念。<br>　　我们使用synchronized关键字时，锁不是加在代码上，而是加在对象上。<br>　　我先准备了一个测试类来验证信息，Counter类是一个公共线程信息类</p>
-<pre>  package thread;
-
-import java.text.SimpleDateFormat;
-import java.util.Date;
-import java.util.concurrent.locks.Condition;
-import java.util.concurrent.locks.Lock;
-import java.util.concurrent.locks.ReentrantLock;
-
-public class Counter {
-
-    public final Lock lock = new ReentrantLock();
-    private Condition condition = lock.newCondition();
-    private volatile int a = 1;
-    private Students stu = new Students();
-
-    public int geta() {
-        return a;
-    }
-
-    public synchronized void add() {
-        a++;
-        try {
-            SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-            System.out.println("add开始执行" + df.format(new Date()));
-            Thread.sleep(10000);
-            System.out.println("add is ing");
-            System.out.println("add执行结束" + df.format(new Date()));
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
-    }
-
-    public synchronized void add1() {
-        a++;
-        try {
-            SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-            System.out.println("add1开始执行" + df.format(new Date()));
-            Thread.sleep(10000);
-            System.out.println("add1 is ing");
-            System.out.println("add1开始执行" + df.format(new Date()));
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
-    }
-
-    public void add2() {
-        synchronized (stu) {
-            SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-            System.out.println("add2开始执行" + df.format(new Date()));
-            System.out.println("add2 is ing");
-            System.out.println("add2开始执行" + df.format(new Date()));
-        }
-    }
-
-    public static synchronized void addStatic() {
-
-        try {
-            SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-            System.out.println("addStatic开始执行" + df.format(new Date()));
-            Thread.sleep(10000);
-            System.out.println("addStatic is ing");
-            System.out.println("addStatic开始执行" + df.format(new Date()));
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
-    }
-
-    public void add3() {
-
-        lock.lock();
-        try {
-            System.out.println("进入add3");
-            a++;
-
-            Thread.sleep(10000);
-            System.out.println("add3");
-
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
-        lock.unlock();
-    }
-
-    public void add4() {
-
-
-
-        lock.lock();
-        System.out.println("进入add4");
-        try {
-            Thread.sleep(10000);
-        } catch (InterruptedException e) {
-
-            e.printStackTrace();
-        }
-        System.out.println("add4");
-
-        condition.signal();
-        lock.unlock();
-
-    }
-
-
-
-}
- </pre>
-　　创建一个Counter类的对象，这个对象里面一共有4个锁，第一个就是counter对象锁，第二个就是students对象锁，第三个就是Students这个类的锁，因为每个类都是Class类的对象。第四个就是ReentrantLock这个可重入锁。
-　　这几个概念明确后，写几个demo来测试说明下:
-<pre>  
-package thread;
-
-public class Test003 {
-
-    public class Thread1 extends Thread {
-        private Counter counter;
-
-        public Thread1(Counter counter) {
-            this.counter = counter;
-        }
-
-        public void run() {
-            counter.add();
-        }
-    }
-
-    public class Thread2 extends Thread {
-        private Counter counter;
-
-        public Thread2(Counter counter) {
-            this.counter = counter;
-        }
-
-        public void run() {
-            counter.add1();
-        }
-    }
-
-    public class Thread3 extends Thread {
-        private Counter counter;
-
-        public Thread3(Counter counter) {
-            this.counter = counter;
-        }
-
-        public void run() {
-            counter.add2();
-        }
-    }
-
-    public class ThreadStatic extends Thread {
-        public void run() {
-            Counter.addStatic();
-        }
-    }
-
-    public class Thread4 extends Thread {
-        private Counter counter;
-
-        public Thread4(Counter counter) {
-            this.counter = counter;
-        }
-
-        public void run() {
-            counter.add3();
-        }
-    }
-
-    public class Thread5 extends Thread {
-        private Counter counter;
-
-        public Thread5(Counter counter) {
-            this.counter = counter;
-        }
-
-        public void run() {
-            counter.add4();
-        }
-    }
-}
-
- </pre>
-　　这些是即将要调用的线程类，已来方便我们使用测试。
-第一种情况：
-<pre>
-public static void main(String[] args) throws InterruptedException {
-
-        Counter counter = new Counter();
-        Test003 test003 = new Test003();
-        Thread1 thread1 = test003.new Thread1(counter);
-        Thread2 thread2 = test003.new Thread2(counter);
-
-        thread1.start();
-        thread2.start();
-
-    }
-</pre>
-　　结果如下：
-<pre>
-add1开始执行2017-12-21 14:28:48
-add1 is ing
-add1开始执行2017-12-21 14:28:58
-add开始执行2017-12-21 14:28:58
-add is ing
-add执行结束2017-12-21 14:29:08
-
-</pre>
-　　结果解析：无论执行多少次，要么add1先执行，要么add先执行，但是任意一个没有执行完，另一个是不会执行的，即便调用了sleep方法，为什么呢。因为这2个线程公用一个对象，而调用的方法都加了synchronized的方法，由于第一个执行执行方法的将获得对象锁。其余的线程就无法获取到对象锁，只能进入等待队列。
-　　第二种情况：
-<pre>
-public static void main(String[] args) throws InterruptedException {
-        Counter counter = new Counter();
-        Test003 test003 = new Test003();
-        Thread1 thread1 = test003.new Thread1(counter);
-        Thread3 thread3 = test003.new Thread3(counter);
-        thread1.start();
-        thread3.start();
-    }
-</pre>
-　　结果如下
-<pre>
-add2开始执行2017-12-21 14:41:10
-add2 is ing
-add开始执行2017-12-21 14:41:10
-add2开始执行2017-12-21 14:41:10
-add is ing
-add执行结束2017-12-21 14:41:20</pre>
-　　结果解析：２个线程交叉执行，虽然都加了锁，但是是不同的对象锁，因此交叉执行。
-第三种情况：
-<pre>
-public static void main(String[] args) throws InterruptedException {
-        Counter counter = new Counter();
-        Counter counter1 = new Counter();
-        Test003 test003 = new Test003();
-        Thread1 thread1 = test003.new Thread1(counter);
-        Thread2 thread2 = test003.new Thread2(counter1);
-        thread1.start();
-        thread2.start();
-    }
-</pre>
-　　结果如下：
-<pre>
-add开始执行2017-12-21 14:45:03
-add1开始执行2017-12-21 14:45:03
-add1 is ing
-add is ing
-add1开始执行2017-12-21 14:45:13
-add执行结束2017-12-21 14:45:13</pre>
-　　结果解析：虽然都是一个类，一个代码，但是是２个对象，synchronized这个关键字加锁是加到对象身上去了。而这个2个线程锁持有的Counter对象时不一样的，因此锁也是不一样的，故交叉执行很正常。
-　　第四种情况：
-<pre>
-public static void main(String[] args) throws InterruptedException {
-        Counter counter = new Counter();
-        Test003 test003 = new Test003();
-        Thread1 thread1 = test003.new Thread1(counter);
-        ThreadStatic threadStatic = test003.new ThreadStatic();
-        thread1.start();
-        threadStatic.start();
-    }
-</pre>
-　　结果如下：
-<pre>
-addStatic开始执行2017-12-21 18:35:55
-add开始执行2017-12-21 18:35:55
-addStatic is ing
-add is ing
-addStatic开始执行2017-12-21 18:36:05
-add执行结束2017-12-21 18:36:05</pre>
-　　结果解析：结果交叉执行为何，因为静态方法是属于类本身的，那么在这个静态方法上加的synchronized，那么这个锁则对应的是类本身，那么2个线程执行普通方法和静态方法（都加了synchronized关键字）时是并发执行的了。
-　　第五种情况：
-<pre>
-public static void main(String[] args) throws InterruptedException {
-        Counter counter = new Counter();
-        Test003 test003 = new Test003();
-        Thread4 thread4 = test003.new Thread4(counter);
-        Thread5 thread5 = test003.new Thread5(counter);
-        thread4.start();
-        thread5.start();
-    }
-</pre>
-　　结果如下：
-<pre>
-进入add4
-add4
-进入add3
-add3</pre>
-　　结果解析：同一个Counter对象那么对应同一个ReentrantLock锁。那么这2个线程所执行的方法都加了ReentrantLock,那么执行的时候注定要加锁等待，所以无法并发执行，结果按顺序执行。
-
-
-## 并发条件控制
-　　正如大家所知，synchronized关键字对应了wait()方法和notify（）方法来控制并发控制，那么lock呢，也对应一系列的方法来处理。我们使用Condition这个类的方法来加以控制，下面，我将展示这2个加锁方式的控制的简单实现
-　　第一个：lock的条件控制
-<pre>
-
-
-    public final Lock lock = new ReentrantLock();
-    private Condition condition = lock.newCondition();
-    private volatile int a = 1;
-    public void add3() {
-        System.out.println("进入add3");
-        lock.lock();
-        try {
-            a++;
-            System.out.println("add3");
-            condition.await();
-            System.out.println("add31");
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
-        lock.unlock();
-    }
-
-    public void add4() {
-        System.out.println("add4");
-        while (true) {
-            if (a > 1) {
-                System.out.println("进入循环");
-                lock.lock();
-                System.out.println("add4");
-                System.out.println("add41");
-                condition.signal();
-                lock.unlock();
-                break;
-            }
-        }
-    }
-public static void main(String[] args) throws InterruptedException {
-        Counter counter = new Counter();
-        Test003 test003 = new Test003();
-        Thread4 thread4 = test003.new Thread4(counter);
-        Thread5 thread5 = test003.new Thread5(counter);
-        thread4.start();
-        thread5.start();
-    }
-</pre>
-　　结果如下
-<pre>
-add4
-进入add3
-add3
-进入循环
-add4
-add41
-add31</pre>
-　　结果解析：２个线程无论谁先执行，先获取到锁的总是add3()方法。因为a=1,无法获取到锁，因此先执行add3方法，在放弃锁并进入到等待队列，然后a>1了，那么add4有机会执行代码了。在唤醒add3()方法，恩，完美。
-
-　　第二种情况：使用Object类的wait方法。
-<pre>
-    private volatile int a = 1;
-    public void add() {
-
-        synchronized (this) {
-            try {
-                SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-                System.out.println("add开始执行" + df.format(new Date()));
-                // Thread.sleep(10000);
-                a++;
-                wait();
-                System.out.println("add is ing");
-                System.out.println("add执行结束" + df.format(new Date()));
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
-        }
-    }
-
-    public void add1() {
-        while (true) {
-            if (a > 1) {
-                synchronized (this) {
-                    SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-                    System.out.println("add1开始执行" + df.format(new Date()));
-                    // Thread.sleep(10000);
-                    System.out.println("add1 is ing");
-                    System.out.println("add1开始执行" + df.format(new Date()));
-                    notify();
-                }
-                break;
-            }
-        }
-    }
-    public static void main(String[] args) throws InterruptedException {
-
-        Counter counter = new Counter();
-
-        Test003 test003 = new Test003();
-        Thread1 thread1 = test003.new Thread1(counter);
-
-        Thread2 thread2 = test003.new Thread2(counter);
-
-        thread1.start();
-        thread2.start();
-        thread1.join();
-}</pre>
-
-<p>　结果如下</p>
-<p><pre><br>add开始执行2017-12-21 19:32:23<br>add1开始执行2017-12-21 19:32:23<br>add1 is ing<br>add1开始执行2017-12-21 19:32:23<br>add is ing<br>add执行结束2017-12-21 19:32:23</pre><br>　　结果解析：逻辑和上面一样，只是不同的实现方式罢了。</p>
-<p>　　wait()方法在这里要再次说下，他是在加了synchronized这个关键字的对象调用的，不然报错。还有Thread类的join()方法源码里面的wait()方法是让主线程进入等待队列，并且等待这个锁，当这个子线程执行完后，则会自动调用notify方法，让等待子线程对象锁的主线程可以继续执行，恩，完美解释join（）方法。</p>
-<p>　　</p>
-<p>　　
-　　</p>
-
-          
-        
-      
-    </div>
-    
-    
-    
-
-    
-
-    
-
-    
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </div>
-  
-  
-  
-  </article>
-
-
-    
   </section>
 
   
@@ -2166,7 +1771,7 @@ add31</pre>
               
                 <a href="/archives/">
               
-                  <span class="site-state-item-count">125</span>
+                  <span class="site-state-item-count">126</span>
                   <span class="site-state-item-name">日志</span>
                 </a>
               </div>

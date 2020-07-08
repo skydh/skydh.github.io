@@ -232,6 +232,142 @@
   
   
   <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="https://skydh.github.io/2018/05/04/java/java虚拟机运行时数据区域/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="skydh">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="learning, progress, future.">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                <a class="post-title-link" href="/2018/05/04/java/java虚拟机运行时数据区域/" itemprop="url">java虚拟机运行时数据区域</a></h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2018-05-04T11:05:35+08:00">
+                2018-05-04
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            <h1 id="进程和线程"><a href="#进程和线程" class="headerlink" title="进程和线程"></a>进程和线程</h1><p>　　这里必须先提一下操作系统的进程和线程。</p>
+<h2 id="什么是进程？"><a href="#什么是进程？" class="headerlink" title="什么是进程？"></a>什么是进程？</h2><p>　　在操作系统中每一个独立的程序单元就是一个进程。每个进程都有相互隔离的内存空间（显然，不然一些流氓进程就可以访问网上银行账号密码等之类的敏感数据了），因此进程之间通信极其不容易。</p>
+<h2 id="什么是线程？"><a href="#什么是线程？" class="headerlink" title="什么是线程？"></a>什么是线程？</h2><p>　　线程是进程里面的执行流，每个线程都有自己的程序栈，也有自己TLS,独立的线程私有空间，由于线程是进程里面的一部分，那么线程也可以访问公有内存，线程也有自己私有的空间。因此线程之间的信息交流会非常方便。</p>
+<h2 id="线程与进程的关系。"><a href="#线程与进程的关系。" class="headerlink" title="线程与进程的关系。"></a>线程与进程的关系。</h2><p>　　线程是真正的程序执行流，每个程序由一个主线程和多个子线程一起运行工作完成的，因此线程才是真正的程序运行的东东，而进程相当于一个容器，这个容器给线程提供了相对隔离的内存空间，和一个相对安全的访问条件。</p>
+<h1 id="jvm-的运行数据分布"><a href="#jvm-的运行数据分布" class="headerlink" title="jvm 的运行数据分布"></a>jvm 的运行数据分布</h1><p>　　了解了一下进程和线程后。我们看看虚拟机的内存分布。</p>
+<h2 id="程序计数器"><a href="#程序计数器" class="headerlink" title="程序计数器"></a>程序计数器</h2><p>　　程序计数器：是jvm中一小块内存空间，可以当做当前线程的字节码文件的行号，字节码解释器通过改变这个值来获取下一个指令。Java多线程通过线程轮流切换处理器的执行时间来执行的，大家知道现代处理器的原理，每次一个核上只能一个线程进行运转，由于中断，当线程切换后能恢复到原先正确的位置。因此每个程序计数器都是独立的，这些程序计数器的所在的内存称为线程私有的内存。如果线程执行的是java方法，那么程序计数器指代的是当前字节码指令的地址，如果是native方法，程序计数器的值为空，这处区域是jvm没有定义OutOfMemoryError错误。就是放代码的地方，通过操作这个栈，来执行这个代码。</p>
+<h2 id="虚拟机栈"><a href="#虚拟机栈" class="headerlink" title="虚拟机栈"></a>虚拟机栈</h2><p>　　打个比方，一般吧java内存粗略分为堆栈，这个虚拟机栈中的局部变量表就是传说中的栈，线程私有的，描述java方法执行的内存模型：每个方法在执行的时候都会建立一个这个;用于存储局部变量表，操作数栈，动态链接，方法出口等，每一个方法从调用到执行完，就代表一个栈帧在虚拟机栈中从入栈到出栈的过程，其中局部变量表存放了编译器可知的基本变量（boolean,int,double,float,char）,还有引用类型（），renturnAddress类型（指向了一个字节码的地址）局部变量表的大小信息在编译期间就确定好了，运行期间不会改变其大小，该虚拟机栈回报2个错误，第一个就是请求的栈帧大于虚拟机栈的深度回报StackOverflowError错误第二个错误就是虚拟机栈动态扩张，扩张到无法申请到内存时报OutOfMemoryError错误。</p>
+<h1 id="本地方法栈"><a href="#本地方法栈" class="headerlink" title="本地方法栈"></a>本地方法栈</h1><p>　　和虚拟机栈差不多，不过不是java方法是native方法，java规范对native方法的语言和数据格式没有强制要求虚拟机可以自由的去实现它，报的错误也是StackOverflowError错误和OutOfMemoryError错误．</p>
+<h2 id="Java堆："><a href="#Java堆：" class="headerlink" title="Java堆："></a>Java堆：</h2><p>　　第一它是所有线程共享的，虚拟机启动创建堆，主要用于存储对象实例和数组，Java垃圾处理器主要处理的就是java堆，因此java堆也被称为gc堆，从内存回收的角度上讲可以划分为新生代和老生代，从内存分配角度讲，可以划分出多个线程私有的内存区域等，java堆有多种划分方式，但是无论怎么划分都是存储对象实例，多重划分是为了更好的划分内存和回收内存，java堆可以位于内存上不连续的空间上，只要逻辑上连续即可，java堆可以实现为固定大小的，也可以实现为可扩展大小的，要是java堆上无法为实例对象分配内存，那么就会报这个OutOfMemoryError．<br>　　堆划分为新生代，老年代，默认比例为１:２，新生代划分为３个区域，eden,From survivor,to survivor,比例为8:1:1。为何呢。参照下面：IBM研究发现，９８％的新生态对象生存周期很短的，于是一个新的算法出来了，就是把内存分为3部分，8：1：1，每次使用其中的0.9部分，当发生垃圾回收的时候那就把剩余的对象就放到剩余的0.1那里，当然剩余的0.1可能不够那就可以把一部分对象转化为老年态暂时存到老年态里面，这样子就只浪费0.1的内存了，性价比可以。<br>　　参数设定：新生代和老年代的比例–XX:NewRatio. 新生代中，eden,from,to的参数为–XX:SurvivorRatio。</p>
+<h2 id="方法区"><a href="#方法区" class="headerlink" title="方法区:"></a>方法区:</h2><p>　　各个线程共享的区域，主要存储被虚拟机加载的类信息，常量，静态变量，编译器编译后的代码，和java堆一样逻辑上内存，可扩展的实现大小，这个区域的垃圾回收主要针对常量池的回收和类型的卸载，其中类型的卸载要求比较高，但是必要的垃圾回收是必要的，以前低版本的就出现过严重的内存泄漏。</p>
+<h2 id="运行期常量池"><a href="#运行期常量池" class="headerlink" title="运行期常量池:"></a>运行期常量池:</h2><p>　　这个区域也是方法区的一部分，编译后的Class文件中的类名啊，方法名啊，常量啊被加载到虚拟机后就会放到方法去的运行常量池来保存，当然常量不止可以只是在编译期间放到常量池中，还可以用string.intern()方法（如果常量池中存在当前字符串, 就会直接返回当前字符串. 如果常量池中没有此字符串, 会将此字符串放入常量池中后, 再返回）来在运行期间放到常量池中，当然要是常量池中无法申请到内存时就会报出OutOfMemoryError这个经典错误。</p>
+<h2 id="直接内存"><a href="#直接内存" class="headerlink" title="直接内存"></a>直接内存</h2><p>　　直接内存是一个重要的问题，首先它不是运行数据区的部分也不是java虚拟机规范的一部分，这个的出现主要和java1.4后出现的NIO相关，一个基于通道和缓冲区的io方式，它可以使用Native函数库来直接分配堆外内存，然后通过一个存在java堆中的DirectByteBuffer这个对象来对这个java堆外的内存的引用来进行操作，可以提高相关性能，因为避免了java堆和native堆中的来回复制数据。<br>　　那个那么重点来了，既然这个直接内存不归java堆管理，但是也会受到总内存的限制，如果管理员设置课动态扩展的javajvm时，如果忽略了这个直接内存的，最后实际内存总和大于实际内存，当jvm要动态扩展内存时，就会出现这个outofmemoryerror错误。</p>
+<h2 id="启动参数配置"><a href="#启动参数配置" class="headerlink" title="启动参数配置"></a>启动参数配置</h2><p>　　-Xms    ：初始堆大小    物理内存的1/64(&lt;1GB)    默认(MinHeapFreeRatio参数可以调整)空余堆内存小于40%时，JVM就会增大堆直到-Xmx的最大限制.</p>
+<p>　　-Xmx：最大堆大小    物理内存的1/4(&lt;1GB)    默认(MaxHeapFreeRatio参数可以调整)空余堆内存大于70%时，JVM会减少堆直到 -Xms的最小限制．</p>
+<p>　　-Xmn    年轻代大小(1.4or lator)<br>     注意：此处的大小是（eden+ 2 survivor space).与jmap -heap中显示的New gen是不同的。整个堆大小=年轻代大小 + 年老代大小 + 持久代大小.增大年轻代后,将会减小年老代大小.此值对系统性能影响较大,Sun官方推荐配置为整个堆的3/8．</p>
+<p>　　-XX:PermSize    设置持久代(perm gen)初始值．</p>
+<p>　　-Xss    每个线程的堆栈大小         JDK5.0以后每个线程堆栈大小为1M,以前每个线程堆栈大小为256K.更具应用的线程所需内存大小进行 调整.在相同物理内存下,减小这个值能生成更多的线程.但是操作系统对一个进程内的线程数还是有限制的,不能无限生成,经验值在3000~5000左右，一般小的应用， 如果栈不是很深， 应该是128k够用的 大的应用建议使用256k。这个选项对性能影响比较大，需要严格的测试。（校长）</p>
+
+          
+        
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
     <link itemprop="mainEntityOfPage" href="https://skydh.github.io/2018/04/22/java/java String +操作导致的问题/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -1586,152 +1722,6 @@ ctorInstance(memory);  //2：初始化对象
 
 
     
-      
-
-  
-
-  
-  
-  
-
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-  
-  
-  
-  <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="https://skydh.github.io/2018/03/18/spring/spring事务机制/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="skydh">
-      <meta itemprop="description" content="">
-      <meta itemprop="image" content="/images/avatar.gif">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="learning, progress, future.">
-    </span>
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-                
-                <a class="post-title-link" href="/2018/03/18/spring/spring事务机制/" itemprop="url">spring 事务机制</a></h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">发表于</span>
-              
-              <time title="创建于" itemprop="dateCreated datePublished" datetime="2018-03-18T17:13:06+08:00">
-                2018-03-18
-              </time>
-            
-
-            
-
-            
-          </span>
-
-          
-
-          
-            
-          
-
-          
-          
-
-          
-
-          
-
-          
-
-        </div>
-      </header>
-    
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          
-            <h1 id="简介"><a href="#简介" class="headerlink" title="简介"></a>简介</h1><ul>
-<li>spring事务通过这个接口来定义的：TransactionDefinition ，这个接口包含了和事务属性有关的方法和参数定义。</li>
-<li>spring事务里面PlatformTransactionManager这个接口定义了事务的具体执行操作方法。其最终的实现类主要有：DataSourceTransactionManager：适用于使用JDBC和iBatis进行数据持久化操作的情况。<br>HibernateTransactionManager：适用于使用Hibernate进行数据持久化操作的情况。<br>JpaTransactionManager：适用于使用JPA进行数据持久化操作的情况。这个类也可以管理jdbc的事务。ps:（This transaction manager also supports direct DataSource access within a<ul>
-<li>transaction (i.e. plain JDBC code working with the same DataSource).）</li>
-</ul>
-</li>
-</ul>
-<h2 id="事务隔离级别"><a href="#事务隔离级别" class="headerlink" title="事务隔离级别"></a>事务隔离级别</h2><p>　　在这个接口里面定义了一些事务隔离级别，这和mysql的事务隔离界别没区别，都是RU,RC,RR,SE。我们可以使用符合自己业务需求的隔离级别。</p>
-<h2 id="事务传播级别"><a href="#事务传播级别" class="headerlink" title="事务传播级别"></a>事务传播级别</h2><p>　　在接口定义中，下面几个参数代表了不同传播级别。事务的传播就是在开启当前事务之前已经开启了一个事务。</p>
-<pre><code>int PROPAGATION_REQUIRED = 0;
-int PROPAGATION_SUPPORTS = 1;
-int PROPAGATION_MANDATORY = 2;
-int PROPAGATION_REQUIRES_NEW = 3;
-int PROPAGATION_NOT_SUPPORTED = 4;
-int PROPAGATION_NEVER = 5;
-int PROPAGATION_NESTED = 6;
-</code></pre><ul>
-<li>PROPAGATION_REQUIRED：若存在事务，则加入当前事务，否则创建一个新事务。</li>
-<li>PROPAGATION_SUPPORTS：若存在事务，则加入当前事务，否则以无事务的状态运行。</li>
-<li>PROPAGATION_MANDATORY：如果存在事务则加入当前事务，没有则抛出异常。</li>
-<li>PROPAGATION_REQUIRES_NEW：创建一个新事务，以这个新事务为主，把已存在的事务挂起。</li>
-<li>PROPAGATION_NOT_SUPPORTED：以非事务的方式运行，若存在事务，则把当前事务挂起。</li>
-<li>PROPAGATION_NEVER：以非事务的方向运行，若存在事务，则抛出异常。</li>
-<li>PROPAGATION_NESTED：若存在事务，则创建一个事务作为当前事务的嵌套事务来执行，没有则是创建一个新事物和PROPAGATION_REQUIRED类似。内嵌事务并不是一个独立的事务，它依赖于外部事务的存在，只有通过外部的事务提交，才能引起内部事务的提交，嵌套的子事务不能单独提交。</li>
-</ul>
-<h1 id="编程式事务"><a href="#编程式事务" class="headerlink" title="编程式事务"></a>编程式事务</h1><p>　　类似于JDBC编程实现事务管理。Spring框架提供一致的事务抽象，因此对于JDBC还是JTA事务都是采用相同的API进行编程。</p>
-<h1 id="声明式事务"><a href="#声明式事务" class="headerlink" title="声明式事务"></a>声明式事务</h1><p>　　声明式事务实际上是通过aop实现的，我们一般也是采用这个方案，可以有效的减少代码code。并且把公共代码全部抽取了出来。我们一般也是采用这个方案。</p>
-
-          
-        
-      
-    </div>
-    
-    
-    
-
-    
-
-    
-
-    
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </div>
-  
-  
-  
-  </article>
-
-
-    
   </section>
 
   
@@ -1782,7 +1772,7 @@ int PROPAGATION_NESTED = 6;
               
                 <a href="/archives/">
               
-                  <span class="site-state-item-count">125</span>
+                  <span class="site-state-item-count">126</span>
                   <span class="site-state-item-name">日志</span>
                 </a>
               </div>

@@ -1,0 +1,741 @@
+<!DOCTYPE html>
+
+
+
+  
+
+
+<html class="theme-next pisces use-motion" lang="zh-Hans">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css" />
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=5.1.3" rel="stylesheet" type="text/css" />
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=5.1.3">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=5.1.3">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=5.1.3">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=5.1.3" color="#222">
+
+
+
+
+
+  <meta name="keywords" content="Hexo, NexT" />
+
+
+
+
+
+
+
+
+
+
+<meta name="description" content="基础包介绍 strings  strings主要针对utf-8 编码，实现一些简单函数，字符串的很多函数基本方法。 1234567891011121314151617181920212223242526272829303132333435/是否包含指定的字符串中任意一个字符 有一个出现过 就返回truefmt.Prin">
+<meta property="og:type" content="article">
+<meta property="og:title" content="go学习2">
+<meta property="og:url" content="https://skydh.github.io/2020/07/07/go学习/go学习2/index.html">
+<meta property="og:site_name" content="learning, progress, future.">
+<meta property="og:description" content="基础包介绍 strings  strings主要针对utf-8 编码，实现一些简单函数，字符串的很多函数基本方法。 1234567891011121314151617181920212223242526272829303132333435/是否包含指定的字符串中任意一个字符 有一个出现过 就返回truefmt.Println(strings.ContainsAny(s1,&quot;glass&quot;))//返回">
+<meta property="og:locale" content="zh-Hans">
+<meta property="og:updated_time" content="2020-07-08T13:03:59.224Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="go学习2">
+<meta name="twitter:description" content="基础包介绍 strings  strings主要针对utf-8 编码，实现一些简单函数，字符串的很多函数基本方法。 1234567891011121314151617181920212223242526272829303132333435/是否包含指定的字符串中任意一个字符 有一个出现过 就返回truefmt.Println(strings.ContainsAny(s1,&quot;glass&quot;))//返回">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Pisces',
+    version: '5.1.3',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: true,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    duoshuo: {
+      userId: '0',
+      author: '博主'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="https://skydh.github.io/2020/07/07/go学习/go学习2/"/>
+
+
+
+
+
+  <title>go学习2 | learning, progress, future.</title>
+  
+
+
+
+
+
+
+
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/"  class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">learning, progress, future.</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle">skydh</p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br />
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />
+            
+            归档
+          </a>
+        </li>
+      
+
+      
+    </ul>
+  
+
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="https://skydh.github.io/2020/07/07/go学习/go学习2/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="skydh">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="learning, progress, future.">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">go学习2</h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2020-07-07T21:07:12+08:00">
+                2020-07-07
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+          
+
+          
+          
+
+          
+            <span class="post-meta-divider">|</span>
+            <span class="page-pv"><i class="fa fa-file-o"></i>
+            <span class="busuanzi-value" id="busuanzi_value_page_pv" ></span>
+            </span>
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <h2 id="基础包介绍"><a href="#基础包介绍" class="headerlink" title="基础包介绍"></a>基础包介绍</h2><ul>
+<li>strings</li>
+</ul>
+<p>strings主要针对utf-8 编码，实现一些简单函数，字符串的很多函数基本方法。</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br></pre></td><td class="code"><pre><span class="line">/是否包含指定的字符串中任意一个字符 有一个出现过 就返回<span class="literal">true</span></span><br><span class="line">fmt.Println(strings.ContainsAny(s1,<span class="string">"glass"</span>))</span><br><span class="line"></span><br><span class="line"><span class="comment">//返回指定字符出现的次数 </span></span><br><span class="line">fmt.Println(strings.Count(s1,<span class="string">"g"</span>))</span><br><span class="line"></span><br><span class="line"><span class="comment">//文本的开头</span></span><br><span class="line">fmt.Println(strings.HasPrefix(s1,<span class="string">"ok"</span>))</span><br><span class="line"><span class="comment">//文本的结尾</span></span><br><span class="line">fmt.Println(strings.HasSuffix(s1,<span class="string">".txt"</span>))</span><br><span class="line"></span><br><span class="line"><span class="comment">//查找指定字符在字符串中存在的位置 如果不存在返回-1</span></span><br><span class="line">fmt.Println(strings.Index(s1,<span class="string">"g"</span>))</span><br><span class="line"><span class="comment">//查找字符中任意一个字符出现在字符串中的位置</span></span><br><span class="line">fmt.Println(strings.IndexAny(s1,<span class="string">"s"</span>))</span><br><span class="line"><span class="comment">//查找指定字符出现在字符串中最后一个的位置</span></span><br><span class="line">fmt.Println(strings.LastIndex(s1,<span class="string">"s"</span>))</span><br><span class="line"></span><br><span class="line"><span class="comment">//字符串的拼接</span></span><br><span class="line">s2:=[]<span class="keyword">string</span>&#123;<span class="string">"123n"</span>,<span class="string">"abc"</span>,<span class="string">"ss"</span>&#125;</span><br><span class="line">s3:=strings.Join(s2,<span class="string">"_"</span>)</span><br><span class="line">fmt.Println(s3)<span class="comment">// 123n_abc_ss</span></span><br><span class="line"></span><br><span class="line"><span class="comment">//字符串的切割</span></span><br><span class="line">s4:=strings.Split(s3,<span class="string">"_"</span>)</span><br><span class="line">fmt.Println(s4)<span class="comment">// 返回切片[]string&#123;"123n","abc","ss"&#125;</span></span><br><span class="line"></span><br><span class="line"><span class="comment">//字符串的替换</span></span><br><span class="line">s5 := <span class="string">"okoletsgo"</span></span><br><span class="line">s6 := strings.Replace(s5, <span class="string">"o"</span>, <span class="string">"*"</span>, <span class="number">1</span>)</span><br><span class="line">fmt.Println(s6)<span class="comment">//*koletsgo</span></span><br><span class="line"><span class="comment">//TODO 1 只替换1次,  -1 全部替换</span></span><br><span class="line"></span><br><span class="line"><span class="comment">//字符串的截取</span></span><br><span class="line"><span class="comment">//str[start:end]包含start 不包含end</span></span><br></pre></td></tr></table></figure>
+<ul>
+<li><p>strconv :主要用于字符串和基本类型的数据类型的转换</p>
+</li>
+<li><p>time: time包操作的都是时间，时间的单位都包括年，月，日，时，分，秒，毫秒，微妙，纳秒，皮秒</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">t := time.Now()</span><br><span class="line">	fmt.Println(t) <span class="comment">//2020-03-31 21:26:01.7307507 +0800 CST m=+0.001999001</span></span><br><span class="line">	<span class="comment">//获取的时间后面的信息是时区</span></span><br><span class="line"></span><br><span class="line">	<span class="comment">//上面的时间看起来不是很方便 于是需要格式化时间</span></span><br><span class="line">	s := t.Format(<span class="string">"2006年1月3日 15:04:05"</span>)</span><br><span class="line">	fmt.Println(s)</span><br></pre></td></tr></table></figure>
+</li>
+</ul>
+<p>需要注意的室Go语言中时间的格式化，需要指定格式化时间的模板, 不管年月日的类型格式怎么写，但是具体的数值必须写成<code>2006-01-02 15:04:05</code>， 如果不是这个日期就不能够格式化，这个时间也是为了纪念Go语言诞生的时间。</p>
+<h2 id="包管理"><a href="#包管理" class="headerlink" title="包管理"></a>包管理</h2><p>早期的Golang被很多开发者所诟病的一个问题就是依赖包的管理。Golang 1.5 release版本的发布之前，只能通过设置多个GOPATH的方式来解决这个问题，例如:我两个工程都依赖了Beego，但A工程依赖的是<code>Beego1.1</code>,B工程依赖的是<code>Beego1.7</code>,我必须设置两个GOPATH来区分，并且在切换工程的时候GOPATH也得切换，无比痛苦。终于终于在Golang 1.5 release 开始支持除了GOROOT和GOPATH之外的依赖查询，那就是<code>vender</code></p>
+<p>但是现在模块管理，包管理一般都是使用mod,go官方推荐的。</p>
+<p>环境变量中可以增加<code>GOPROXY=https://goproxy.io</code> 这样没有梯子的情况下可以正确的加载相应的包文件。</p>
+<h2 id="函数"><a href="#函数" class="headerlink" title="函数"></a>函数</h2><p>我们自定义函数的时候，需要注意按照规则定义必须满足以下格式，函数的名字可以由字母和数字组成，但是不能是数字开头，函数的首字母区分大小写，如果是大写的表示公共的函数，其他包内可以调用到，相当于其他语言中的public 前提是在别的包中引入了当前包。如果是小写的，表示私有的函数，仅能够在本包中调用，相当于其他语言中的private。</p>
+<p>函数可以定义多个返回值，并且返回值类型，返回值数量都必须是一一对应的，return是将结果返回到函数的调用处，结束函数的执行。 <code>_</code> 空白标识符，舍弃返回的数据。</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">main</span><span class="params">()</span></span> &#123;</span><br><span class="line">	s1:=[<span class="number">2</span>]<span class="keyword">string</span>&#123;&#125;</span><br><span class="line">	s3,_:=join(s1)</span><br><span class="line">	fmt.Println(s3)</span><br><span class="line">&#125;</span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">join</span><span class="params">(ele [2]<span class="keyword">string</span>)</span> <span class="params">([2]<span class="keyword">string</span>,<span class="keyword">int</span>)</span></span> &#123;</span><br><span class="line"></span><br><span class="line">	<span class="keyword">return</span>  ele,<span class="number">12</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>函数也可以声明为一个变量。</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">c:=join</span><br><span class="line">c(s1)</span><br></pre></td></tr></table></figure>
+<p>匿名函数</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">res:=<span class="function"><span class="keyword">func</span><span class="params">(a <span class="keyword">int</span>,b <span class="keyword">int</span>)</span> <span class="title">int</span></span>&#123;</span><br><span class="line">		fmt.Println(a+b)</span><br><span class="line">		<span class="keyword">return</span>  a+b</span><br><span class="line">	&#125;(<span class="number">12</span>,<span class="number">13</span>)</span><br><span class="line">	fmt.Println(res)</span><br><span class="line"></span><br><span class="line">	a:=<span class="function"><span class="keyword">func</span><span class="params">(a, b <span class="keyword">int</span>)</span> <span class="title">int</span></span> &#123;</span><br><span class="line">		<span class="keyword">return</span> a + b</span><br><span class="line">	&#125;</span><br><span class="line">	fmt.Println(a)</span><br></pre></td></tr></table></figure>
+<p>加了后面的（），才算调用，不然不算调用。</p>
+<ul>
+<li>匿名函数可以作为另一个函数的参数</li>
+<li>匿名函数可以作为另一个函数的返回值</li>
+<li>根据go语言的数据类型的特点，函数也是一种类型，所以可以将一个函数作为另一个函数的参数传递func1()和func2()是两个函数，将func1函数作为func2这个函数的参数，func2函数就叫做高阶函数，因为他接收了一个函数作为参数。所以func1叫做回调函数，他作为另一个函数的参数。</li>
+</ul>
+<h3 id="defer"><a href="#defer" class="headerlink" title="defer"></a>defer</h3><p>defer 表示延时推迟的意思，在go语言中用来延时一个函数或者方法的执行。如果一个函数或者方法添加了defer关键字，表示则暂时不执行，等到主函数的所有方法都执行完后才开始执行。</p>
+<p>当多个函数被defer的时候他们被添加到一个堆栈中，并且根据先进后出的原则执行。 即 <code>Last In First Out（LIFO）</code></p>
+<p>defer函数调用时候，参数已经传递了，只不过代码暂时不执行而已。等待主函数执行结束后，才会去执行。</p>
+<h3 id="闭包"><a href="#闭包" class="headerlink" title="闭包"></a>闭包</h3><p>一个外层函数当中有内层函数，这个内层函数会操作外层函数的局部变量。并且，外层函数把内层函数作为返回值，则这里内层函数和外层函数的局部变量，统称为 <strong>闭包结构</strong> 。 这个外层函数的局部变量的生命周期会随着发生改变，原本当一个函数执行结束后，函数内部的局部变量也会随之销毁。但是闭包结构内的局部变量不会随着外层函数的结束而销毁。</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">main</span><span class="params">()</span></span> &#123;</span><br><span class="line">    res := closure()</span><br><span class="line">    fmt.Println(res) <span class="comment">//0x49a880  返回内层函数函数体地址</span></span><br><span class="line">    r1 := res()      <span class="comment">//执行closure函数返回的匿名函数</span></span><br><span class="line">    fmt.Println(r1)  <span class="comment">//1</span></span><br><span class="line">    r2 := res()</span><br><span class="line">    fmt.Println(r2) <span class="comment">//2 </span></span><br><span class="line">    <span class="comment">//普通的函数应该返回1，而这里存在闭包结构所以返回2 。</span></span><br><span class="line">    <span class="comment">//一个外层函数当中有内层函数，这个内层函数会操作外层函数的局部变量,并且外层函数把内层函数作为返回值,则这里内层函数和外层函数的局部变量,统称为闭包结构。这个外层函数的局部变量的生命周期会发生改变，不会随着外层函数的结束而销毁。</span></span><br><span class="line">    <span class="comment">//所以上面打印的r2 是累计到2 。</span></span><br><span class="line"></span><br><span class="line">    res2 := closure() <span class="comment">//再次调用则产生新的闭包结构 局部变量则新定义的</span></span><br><span class="line">    fmt.Println(res2)</span><br><span class="line">    r3 := res2()<span class="comment">//1</span></span><br><span class="line">    fmt.Println(r3)</span><br><span class="line">    	r4 := res()</span><br><span class="line">	fmt.Println(r4)<span class="comment">//3</span></span><br><span class="line">	fmt.Println(res())<span class="comment">//4</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">//定义一个闭包结构的函数 返回一个匿名函数</span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">closure</span><span class="params">()</span> <span class="title">func</span><span class="params">()</span> <span class="title">int</span></span> &#123; <span class="comment">//外层函数</span></span><br><span class="line">    <span class="comment">//定义局部变量a</span></span><br><span class="line">    a := <span class="number">0</span> <span class="comment">//外层函数的局部变量</span></span><br><span class="line">    <span class="comment">//定义内层匿名函数 并直接返回</span></span><br><span class="line">    <span class="keyword">return</span> <span class="function"><span class="keyword">func</span><span class="params">()</span> <span class="title">int</span></span> &#123; <span class="comment">//内层函数</span></span><br><span class="line">        a++ <span class="comment">//在匿名函数中将变量自增。内层函数用到了外层函数的局部变量，此变量不会随着外层函数的结束销毁</span></span><br><span class="line">        <span class="keyword">return</span> a</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h3 id="指针"><a href="#指针" class="headerlink" title="指针"></a>指针</h3><p>指针是存储另一个变量的内存地址的变量。 例如： 变量B的值为100， 地址为0x1122。变量A的值为变量B的地址0x1122，那么A就拥有了变量B的地址，则A就成为指针。Go语言中通过<code>&amp;</code>获取变量的地址。通过<code>*</code>获取指针所对应的变量存储的数值。</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">a := <span class="number">2</span></span><br><span class="line"><span class="keyword">var</span> i *<span class="keyword">int</span>         <span class="comment">//声明一个int类型的指针</span></span><br><span class="line">fmt.Println(&amp;a)	   <span class="comment">//0xc00000c1c8</span></span><br><span class="line">i = &amp;a             <span class="comment">//将a的地址取出来放到i里面</span></span><br><span class="line">fmt.Println(&amp;i)    <span class="comment">//0xc000006028</span></span><br><span class="line"><span class="keyword">var</span> a2 **<span class="keyword">int</span>       <span class="comment">//声明一个指针类型的指针</span></span><br><span class="line">a2 = &amp;i            <span class="comment">//再把i的地址放进a2里面</span></span><br><span class="line">fmt.Println(a2)    <span class="comment">//获取的是a2所对应的数值0xc000006028也就是i的地址</span></span><br></pre></td></tr></table></figure>
+<p>指针的指针，无线套娃。</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//创建一个普通的数组</span></span><br><span class="line">arr := [<span class="number">3</span>]<span class="keyword">int</span>&#123;<span class="number">1</span>, <span class="number">2</span>, <span class="number">3</span>&#125;</span><br><span class="line">fmt.Println(arr)</span><br><span class="line"></span><br><span class="line"><span class="comment">//创建一个指针 用来存储数组的地址 即：数组指针</span></span><br><span class="line"><span class="keyword">var</span> p *[<span class="number">3</span>]<span class="keyword">int</span></span><br><span class="line">p = &amp;arr        <span class="comment">//将数组arr的地址，存储到数组指针p上。</span></span><br><span class="line">fmt.Println(p[<span class="number">0</span>])  <span class="comment">//数组的指针 &amp;[1 2 3] 后面跟数组的内容</span></span><br><span class="line">fmt.Println((*p)[<span class="number">0</span>])  <span class="comment">//数组的指针 &amp;[1 2 3] 后面跟数组的内容</span></span><br></pre></td></tr></table></figure>
+<p>直接传递数组是传递的数据，传递指针，才是传递真实数据</p>
+
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2020/06/29/go学习/go学习1/" rel="next" title="go学习1">
+                <i class="fa fa-chevron-left"></i> go学习1
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <p class="site-author-name" itemprop="name">skydh</p>
+              <p class="site-description motion-element" itemprop="description">skydh</p>
+          </div>
+
+          <nav class="site-state motion-element">
+
+            
+              <div class="site-state-item site-state-posts">
+              
+                <a href="/archives/">
+              
+                  <span class="site-state-item-count">126</span>
+                  <span class="site-state-item-name">日志</span>
+                </a>
+              </div>
+            
+
+            
+
+            
+
+          </nav>
+
+          
+
+          <div class="links-of-author motion-element">
+            
+          </div>
+
+          
+          
+
+          
+          
+
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#基础包介绍"><span class="nav-number">1.</span> <span class="nav-text">基础包介绍</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#包管理"><span class="nav-number">2.</span> <span class="nav-text">包管理</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#函数"><span class="nav-number">3.</span> <span class="nav-text">函数</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#defer"><span class="nav-number">3.1.</span> <span class="nav-text">defer</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#闭包"><span class="nav-number">3.2.</span> <span class="nav-text">闭包</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#指针"><span class="nav-number">3.3.</span> <span class="nav-text">指针</span></a></li></ol></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <script async src="https://dn-lbstatics.qbox.me/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+<div class="copyright">&copy; <span itemprop="copyrightYear">2020</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">skydh</span>
+
+  
+</div>
+
+
+<div class="powered-by">
+<i class="fa fa-user-md"></i><span id="busuanzi_container_site_uv">
+  本站访客数:<span id="busuanzi_value_site_uv"></span>
+</span>
+</div>
+
+  <div class="powered-by">由 <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a> 强力驱动</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">主题 &mdash; <a class="theme-link" target="_blank" href="https://github.com/iissnan/hexo-theme-next">NexT.Pisces</a> v5.1.3</div>
+
+
+
+
+        
+<div class="busuanzi-count">
+  <script async src="https://dn-lbstatics.qbox.me/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+
+  
+    <span class="site-uv">
+      <i class="fa fa-user"></i>
+      <span class="busuanzi-value" id="busuanzi_value_site_uv"></span>
+      
+    </span>
+  
+
+  
+    <span class="site-pv">
+      <i class="fa fa-eye"></i>
+      <span class="busuanzi-value" id="busuanzi_value_site_pv"></span>
+      
+    </span>
+  
+</div>
+
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/canvas-nest/canvas-nest.min.js"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.3"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.3"></script>
+
+
+
+  
+  
+
+
+  <script type="text/javascript" src="/js/src/affix.js?v=5.1.3"></script>
+
+  <script type="text/javascript" src="/js/src/schemes/pisces.js?v=5.1.3"></script>
+
+
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.3"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.3"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.3"></script>
+
+
+
+  
+
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>

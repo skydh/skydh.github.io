@@ -232,6 +232,128 @@
   
   
   <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="https://skydh.github.io/2019/05/20/mysql/大表的全表扫描/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="skydh">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="learning, progress, future.">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                <a class="post-title-link" href="/2019/05/20/mysql/大表的全表扫描/" itemprop="url">大表的全表扫描</a></h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2019-05-20T20:11:31+08:00">
+                2019-05-20
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            <h2 id="问题"><a href="#问题" class="headerlink" title="问题"></a>问题</h2><p>　　你的服务器内存2G,你全表查询一个10g的表，内存会不会炸了。</p>
+<h2 id="答案"><a href="#答案" class="headerlink" title="答案"></a>答案</h2><p>　　不会。逻辑如下，语句，select * from t；服务端不会存放完整的结果集，其流程和流很类似。<br>　　１.获取一行，写到net_buffer中。这个值由参数net_buffer_length决定，默认16k。<br>　　２.重复获取行，直到，写满net_buffer<br>　　３.若发送成功，就清空net_buffer,然后取下一行，写入搭配net_buffer。<br>　　４.如果发送函数返回EAGAIN,或者WSAEWOULDBLOCK。就表示本地网络栈满了，进入等待，直到可以重写，再继续发送。</p>
+<h2 id="参数"><a href="#参数" class="headerlink" title="参数"></a>参数</h2><p>　　-quick：mysql_use_result方法，这个方法是读一行，处理一行。默认的话mysql_store_result这个接口。这个是把结果保存到本地内存。</p>
+
+          
+        
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
     <link itemprop="mainEntityOfPage" href="https://skydh.github.io/2019/05/15/maven/上传jar到私服命令模式/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -1365,159 +1487,6 @@
 
 
     
-      
-
-  
-
-  
-  
-  
-
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-  
-  
-  
-  <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="https://skydh.github.io/2018/12/25/eclipse/eclipse发布工程到本地仓库/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="skydh">
-      <meta itemprop="description" content="">
-      <meta itemprop="image" content="/images/avatar.gif">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="learning, progress, future.">
-    </span>
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-                
-                <a class="post-title-link" href="/2018/12/25/eclipse/eclipse发布工程到本地仓库/" itemprop="url">eclipse发布工程到本地仓库</a></h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">发表于</span>
-              
-              <time title="创建于" itemprop="dateCreated datePublished" datetime="2018-12-25T09:47:19+08:00">
-                2018-12-25
-              </time>
-            
-
-            
-
-            
-          </span>
-
-          
-
-          
-            
-          
-
-          
-          
-
-          
-
-          
-
-          
-
-        </div>
-      </header>
-    
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          
-            <h2 id="目的"><a href="#目的" class="headerlink" title="目的"></a>目的</h2><p>　　想把项目里面的api工程发布到本地仓库，做了一个关于dubbo的demo，想测试下。</p>
-<h2 id="方案"><a href="#方案" class="headerlink" title="方案"></a>方案</h2><p>　　在你要打包的工程的pom文件中，添加</p>
-<pre><code>&lt;distributionManagement&gt;
-    &lt;repository&gt;
-        &lt;id&gt;localRepository&lt;/id&gt;
-        &lt;url&gt;file:I:\repertory&lt;/url&gt;
-    &lt;/repository&gt;
-&lt;/distributionManagement&gt;
-</code></pre><p>　　然后右键项目，点击run as / maven build,在goals里面输入 deploy -e即可将你想打包的工程发布到你的本地仓库里面。</p>
-<p>　　如果你要上传到远程私服。那么pom文件添加：</p>
-<pre><code>&lt;distributionManagement&gt;
-    &lt;repository&gt;
-        &lt;id&gt;nexus-releases&lt;/id&gt;
-         &lt;name&gt;NexusReleases&lt;/name&gt;
-        &lt;url&gt;http://192.168.14.217:9091/nexus/content/repositories/releases/&lt;/url&gt;
-    &lt;/repository&gt;
-    &lt;snapshotRepository&gt;
-        &lt;id&gt;nexus-snapshots&lt;/id&gt;
-        &lt;name&gt;NexusSnapshots&lt;/name&gt;
-        &lt;url&gt;http://192.168.14.217:9091/nexus/content/repositories/snapshots&lt;/url&gt;
-    &lt;/snapshotRepository&gt;
-&lt;/distributionManagement&gt;
-</code></pre><p>　　然后在你的maven的setting文件里面添加：</p>
-<pre><code>&lt;server&gt;
-    &lt;id&gt;nexus-releases&lt;/id&gt;
-    &lt;username&gt;admin&lt;/username&gt;
-     &lt;password&gt;admin123&lt;/password&gt;
-&lt;/server&gt;
-&lt;server&gt;
-    &lt;id&gt;nexus-snapshots&lt;/id&gt;
-    &lt;username&gt;admin&lt;/username&gt;
-     &lt;password&gt;admin123&lt;/password&gt;
-&lt;/server&gt;
-</code></pre><p>　　然后和上传本地的方法一样的操作步骤。<br>mvn install –settings c:\user\settings.xml </p>
-
-          
-        
-      
-    </div>
-    
-    
-    
-
-    
-
-    
-
-    
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </div>
-  
-  
-  
-  </article>
-
-
-    
   </section>
 
   
@@ -1568,7 +1537,7 @@
               
                 <a href="/archives/">
               
-                  <span class="site-state-item-count">125</span>
+                  <span class="site-state-item-count">126</span>
                   <span class="site-state-item-name">日志</span>
                 </a>
               </div>
